@@ -93,7 +93,7 @@ class Scene {
   
   void SetSceneUniforms(Pass& pass, const Camera& camera);
 
- internal:
+ public:
   std::map<std::string, std::shared_ptr<Camera>> cameras_;
   std::map<std::string, std::shared_ptr<Actor>>  actors_;
   std::map<std::string, std::shared_ptr<Light>>  lights_;

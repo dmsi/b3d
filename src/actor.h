@@ -39,9 +39,6 @@
 
 class Actor;
 
-// C# ness
-#define internal public
-
 namespace Actor_cppness {
   template <class TComponent> auto GetComponent(Actor& actor);
   template <class TComponent> auto AddComponent(Actor& actor);
@@ -167,7 +164,7 @@ class Actor {
     return Actor_cppness::GetComponent<TComponent>(*this);
   }
 
- internal: // Security brich, but i dont see any other simple solution
+ public: // Security brich, but i dont see any other simple solution
   using ActionPtr = std::shared_ptr<Action>;
   using ActionId  = std::size_t;
 
