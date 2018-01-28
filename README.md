@@ -3,7 +3,7 @@
 ![](screenshots/the_knight.png)
 
 
-3D rendering enging writter in C++, inspired by Unity3D and UnrealEngine. 
+3D rendering engine writter in C++, inspired by Unity3D and UnrealEngine. 
 
 ## License
 MIT

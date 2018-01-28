@@ -94,6 +94,7 @@ set(SANDBOX
   #postprocess_bloom
   #shadowmap
   #glm_rotations
+  pointlight
 )
 
 foreach(EX ${EXAMPLES})
