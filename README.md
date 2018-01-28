@@ -34,6 +34,16 @@ It uses cmake as the build system.
  - glfw: http://www.glfw.org 
  - glew: http://glew.sourceforge.net
 
+GLM and yaml-cpp are included as submodules, the rest is installed the usual way.
+```bash
+git submodule update --recurcive
+cd submodules/yaml-cpp
+mkdir build
+cd build
+cmake ..
+make
+```
+
 ### OSX / Linux
 ```bash
 ln -s Makefile.osx Makefile
@@ -329,4 +339,5 @@ int main(int argc, char* argv[]) {
  - "Quick and dirty" under the hood.
  - Euler ... Quaternion ... Matricess are inconsistent.
  - Unit tests (gtest)
+ - Logging to stderr
  - Other to come...
