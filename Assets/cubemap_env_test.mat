@@ -1,0 +1,59 @@
+name: skybox_cubemap 
+
+textures:
+  0: 
+    - Assets/Dbg/cubemap/d_right.ppm
+    - Assets/Dbg/cubemap/d_left.ppm
+    - Assets/Dbg/cubemap/d_top.ppm
+    - Assets/Dbg/cubemap/d_bottom.ppm
+    - Assets/Dbg/cubemap/d_back.ppm
+    - Assets/Dbg/cubemap/d_front.ppm
+
+pass:
+  name   : pass0 
+  cull   : cw 
+  queue  : 10
+  tags   : [onscreen]
+  zwrite : off
+  ztest  : on
+
+  vertex : | 
+          #version 330 core
+
+          layout(location = 0) in vec3 vertex_position;
+
+          out VertexData {
+            vec3 cube_uv;
+            vec3 wpos;
+          } OUT;
+
+          uniform mat4 SU_V_MATRIX;
+          uniform mat4 SU_P_MATRIX;
+          uniform mat4 SU_M_MATRIX;
+
+          void main() {
+            // Remove translation from the view matrix
+            mat4 view = SU_V_MATRIX; 
+            view[3][0] = 0;
+            view[3][1] = 0;
+            view[3][2] = 0;
+            mat4 pvm = SU_P_MATRIX * view * SU_M_MATRIX; 
+            vec3 p = vertex_position * 10; // prevent from projection clipping
+            OUT.cube_uv = vertex_position; 
+            gl_Position = (pvm * vec4(p, 1));
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in VertexData {
+            vec3 cube_uv;
+            vec3 wpos;
+          } IN;
+          
+          out vec4 OUT_color;
+          uniform samplerCube TEXTURE_0;
+
+          void main () {
+            OUT_color = texture(TEXTURE_0, IN.cube_uv);
+          }

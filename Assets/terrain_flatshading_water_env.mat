@@ -1,0 +1,114 @@
+name: terrain_flatshading_water_env.mat 
+
+.VS: &VS | 
+ #version 330 core
+
+ // Input must follow the layout
+ layout(location = 0) in vec3 IN_position;
+ layout(location = 2) in vec4 IN_color;
+
+ out VertexData {
+   vec3 wpos;    // positing in world space
+   vec3 vcol;    // vertex color
+ } OUT;
+
+ uniform mat4 SU_PVM_MATRIX;
+ uniform mat4 SU_M_MATRIX;
+
+ void main() {
+   gl_Position = SU_PVM_MATRIX * vec4(IN_position, 1); 
+   OUT.wpos = (SU_M_MATRIX * vec4(IN_position, 1)).xyz;
+   OUT.vcol = IN_color.rgb; // invert colors for fun!
+ }
+
+.GS: &GS |
+ #version 330 core
+
+ layout (triangles) in;
+ layout (triangle_strip, max_vertices=3) out;
+
+ in VertexData {
+   vec3 wpos;
+   vec3 vcol;
+ } IN[3]; 
+
+ out VertexData {
+   vec3 wnrm; // world space normal - same for all 3 vertex in triangle, the whole idea of flat shading
+   vec3 vcol; // color - same for all 3 vertex in triangle (in fact the same for whole quad) 
+ } OUT; 
+  
+ // Water level clip plane, in order to get get reflections and refractions of the object
+ uniform vec4 clip_plane;
+
+ // In order to reduce/avoid the glithy edges when water meets terrain
+ const float clip_plane_bias = 1; 
+
+ void main() {
+   vec3 col = IN[0].vcol;
+
+   vec3 normal = normalize( cross(IN[1].wpos - IN[0].wpos,
+                                  IN[2].wpos - IN[0].wpos) );
+
+   vec4 reflect_clip = vec4(clip_plane.x, clip_plane.y, clip_plane.z, clip_plane.w + clip_plane_bias);
+   vec4 refract_clip = vec4(clip_plane.x, -clip_plane.y, clip_plane.z, -clip_plane.w + clip_plane_bias); 
+
+   for (int i = 0; i < gl_in.length(); i++) {
+     gl_Position        = gl_in[i].gl_Position;
+     OUT.wnrm           = normal;
+     OUT.vcol           = col;
+     gl_ClipDistance[0] = dot(reflect_clip, vec4(IN[i].wpos, 1)); // reflections 
+     gl_ClipDistance[1] = dot(refract_clip, vec4(IN[i].wpos, 1)); // refractions
+     EmitVertex();
+   }
+   EndPrimitive();
+ }
+
+.FS: &FS | 
+ #version 330 core
+
+ in VertexData {
+   vec3 wnrm;
+   vec3 vcol;
+ } IN;
+ 
+ out vec3 OUT_color;
+
+ uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
+ uniform vec4 SU_DIRECTIONAL_LIGHT_COLOR_0;
+
+ const vec3 ambient = vec3(.4, .4, .4);
+
+ void main () {
+   vec3 ldir = normalize(-SU_DIRECTIONAL_LIGHT_DIRECTION_0);
+   vec3 diffuse = max(dot(IN.wnrm, ldir), 0) * SU_DIRECTIONAL_LIGHT_COLOR_0.rgb;
+   OUT_color = max(diffuse, ambient) * IN.vcol;
+ }
+
+pass:
+  name       : pass.normal
+  tags       : [onscreen]
+  queue      : 100
+  cull       : ccw 
+  vertex     : *VS
+  geometry   : *GS
+  fragment   : *FS
+
+pass:
+  name       : pass.reflection
+  tags       : [reflection]
+  queue      : 100
+  cull       : ccw 
+  clipping   : [0]
+  vertex     : *VS
+  geometry   : *GS
+  fragment   : *FS
+
+pass:
+  name       : pass.refraction
+  tags       : [refraction]
+  queue      : 100
+  cull       : ccw 
+  clipping   : [1]
+  vertex     : *VS
+  geometry   : *GS
+  fragment   : *FS

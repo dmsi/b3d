@@ -1,0 +1,58 @@
+name: cubemap_rr_surface 
+
+.VS: &VS | 
+ #version 330 core
+
+ layout(location = 0) in vec3 IN_position;
+ layout(location = 2) in vec4 IN_color;
+
+ out VertexData {
+   vec3 wpos;    // positing in world space
+   vec3 weye;    // position to camera
+   vec3 wnrm;
+ } OUT;
+
+ uniform mat4 SU_PVM_MATRIX;
+ uniform mat4 SU_V_MATRIX;
+ uniform mat4 SU_M_MATRIX;
+ 
+ void main() {
+   OUT.wpos = (SU_M_MATRIX * vec4(IN_position, 1)).xyz;
+   OUT.weye = (inverse(SU_V_MATRIX) * vec4(0, 0, 0, 1)).xyz - OUT.wpos;
+   OUT.wnrm = (SU_M_MATRIX * vec4(IN_position, 0)).xyz;
+   gl_Position = SU_PVM_MATRIX * vec4(IN_position, 1); 
+ }
+
+.FS: &FS | 
+ #version 330 core
+
+ in VertexData {
+   vec3 wpos;
+   vec3 weye;
+   vec3 wnrm;
+ } IN;
+ 
+ out vec4 OUT_color;
+
+ uniform samplerCube TEXTURE_0;
+
+ uniform vec4 tint = vec4(0, 1, 1, 1);
+ uniform float rr_factor = 0.0;
+ uniform float refractive_index = 0.91;
+
+ void main () {
+   vec3 e = normalize(-IN.weye);
+   vec3 n = normalize(IN.wnrm);
+   vec3 rl = normalize(reflect(e, n));
+   vec3 rr = normalize(refract(e, n, refractive_index)); // for instance 1/1.33 - air/water refraction
+   OUT_color.rgb = mix(texture(TEXTURE_0, rl), texture(TEXTURE_0, rr), rr_factor).rgb * tint.rgb;
+   OUT_color.a = 1;
+ }
+
+pass:
+  name       : pass0
+  tags       : [onscreen]
+  queue      : 100
+  cull       : ccw 
+  vertex     : *VS
+  fragment   : *FS

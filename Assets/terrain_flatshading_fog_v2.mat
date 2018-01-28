@@ -1,0 +1,104 @@
+name: terrain_flatshading_water_env.mat 
+
+.VS: &VS | 
+ #version 330 core
+
+ layout(location = 0) in vec3 IN_position;
+ layout(location = 2) in vec4 IN_color;
+
+ out VertexData {
+   vec3 wpos;    // positing in world space
+   vec3 vcol;    // vertex color
+   float fog;    // fog visibility, 0 - no fog, 1 - 100% fog
+ } OUT;
+
+ uniform mat4 SU_PVM_MATRIX;
+ uniform mat4 SU_V_MATRIX;
+ uniform mat4 SU_M_MATRIX;
+ 
+ // fog = e^-(distance * density)^gradient
+ uniform float fog_density = 0.002; // less density => less fog
+ uniform float fog_gradient = 1.5;  // how smooth the transition, more gradient => sharper the transition
+
+ void main() {
+   vec3 wcam = (inverse(SU_V_MATRIX) * vec4(0, 0, 0, 1)).xyz;
+   OUT.wpos = (SU_M_MATRIX * vec4(IN_position, 1)).xyz;
+   OUT.vcol = IN_color.bgr / 1.5; // invert colors for fun!
+   
+   float distance = length(wcam - OUT.wpos);
+   OUT.fog = exp(-pow((distance * fog_density), fog_gradient));
+   OUT.fog = clamp(OUT.fog, 0, 1);
+
+   gl_Position = SU_PVM_MATRIX * vec4(IN_position, 1); 
+ }
+
+.GS: &GS |
+ #version 330 core
+
+ layout (triangles) in;
+ layout (triangle_strip, max_vertices=3) out;
+
+ in VertexData {
+   vec3 wpos;
+   vec3 vcol;
+   float fog;
+ } IN[3]; 
+
+ out VertexData {
+   vec3 wnrm; // world space normal - same for all 3 vertex in triangle, the whole idea of flat shading
+   vec3 vcol; // color - same for all 3 vertex in triangle (in fact the same for whole quad) 
+   float fog;
+ } OUT; 
+
+  
+ void main() {
+   vec3 col = IN[0].vcol;
+
+   vec3 normal = normalize( cross(IN[1].wpos - IN[0].wpos,
+                                  IN[2].wpos - IN[0].wpos) );
+
+   for (int i = 0; i < gl_in.length(); i++) {
+     gl_Position        = gl_in[i].gl_Position;
+     OUT.wnrm           = normal;
+     OUT.vcol           = col;
+     OUT.fog            = IN[i].fog;
+     EmitVertex();
+   }
+   EndPrimitive();
+ }
+
+.FS: &FS | 
+ #version 330 core
+
+ in VertexData {
+   vec3 wnrm;
+   vec3 vcol;
+   float fog;
+ } IN;
+ 
+ out vec4 OUT_color;
+
+ uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
+ uniform vec4 SU_DIRECTIONAL_LIGHT_COLOR_0;
+
+ //uniform vec4 fog_color = vec4(.4, .4, .4, 1);
+ uniform vec4 fog_color = vec4(.4, .5, .6, 1)/2;
+
+ const vec3 ambient = vec3(.3, .2, .2);
+
+ void main () {
+   vec3 ldir = normalize(-SU_DIRECTIONAL_LIGHT_DIRECTION_0);
+   vec3 diffuse = max(dot(IN.wnrm, ldir), 0) * SU_DIRECTIONAL_LIGHT_COLOR_0.rgb;
+   OUT_color.rgb = (diffuse + ambient) * IN.vcol;
+   OUT_color = mix(fog_color, OUT_color, IN.fog);
+   OUT_color.a = 1;
+ }
+
+pass:
+  name       : pass0
+  tags       : [onscreen]
+  queue      : 100
+  cull       : ccw 
+  vertex     : *VS
+  geometry   : *GS
+  fragment   : *FS

@@ -1,0 +1,39 @@
+name: lamp.mat/Light/Point 
+
+pass:
+  name: Debug/Lamp
+  tags: [onscreen, xyz]
+  cull: ccw 
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 vertex_position;
+
+          uniform mat4 SU_P_MATRIX;
+          uniform mat4 SU_V_MATRIX;
+          uniform mat4 SU_M_MATRIX;
+
+          out vec3 pos;
+
+          void main() {
+            mat4 view = SU_V_MATRIX; 
+            view[3][0] = 0;
+            view[3][1] = 0;
+            view[3][2] = -2;
+            mat4 pvm = SU_P_MATRIX * view * SU_M_MATRIX;
+            gl_Position = pvm * vec4(vertex_position, 1); 
+            pos = vertex_position;
+            //gl_Position.x -= 3;
+          }
+
+  fragment: | 
+          #version 330 core
+
+          uniform vec4 color = vec4(1, 1, 1, 1);
+          in vec3 pos;
+
+          out vec4 OUT_color;
+          void main () {
+            OUT_color = clamp(length(pos), 0, 1) * color * 2; 
+          }
+

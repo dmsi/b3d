@@ -1,0 +1,31 @@
+name: color.mat
+
+pass:
+  name  : color.mat/Pass
+  queue : 100
+  tags  : [onscreen]
+  ztest : off
+  cull  : ccw 
+
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 vertex_position;
+
+          out vec3 pos;
+
+          void main() {
+            pos = vertex_position;
+            gl_Position = vec4(vertex_position, 1); 
+          }
+
+  fragment: | 
+          #version 330 core
+          
+          in vec3 pos;
+
+          out vec4 color;
+          void main () {
+            vec3 p = (pos + 1) / 2;
+            color = vec4(p.x, p.y, 0, 1); 
+          }

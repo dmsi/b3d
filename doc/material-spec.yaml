@@ -1,0 +1,65 @@
+# Material file specification v0.1
+---
+name: Super/Puper/Shader
+
+# Would be nice to have
+#uniforms:
+#  Color: [vec4, [1, 1, 1, 1]]
+#  LDir:  [vec3, [100, 20, 11]]
+#  Scale: [float, 1.22]
+
+# Can be ommitted in case of material does not use textures
+textures:
+  0: Assets/tango-128.dds
+  1: Another.png
+  # cube map order right, left, top, bottom, back, front 
+  3: [positive_x.ppm, negative_x.ppm, positive_y.ppm, negative_y.ppm, positive_x.ppm, netagive_x.ppm]
+
+pass:
+  # full pass name Super/Puper/Shader/SuperPuperPass
+  # "Unnamed" if ommited
+  # TODO(DS) supporf of use pass by name from another shader in the future.
+  name: SuperPuperPass
+
+  # Render queue, lower number means higher priority
+  # This defines ordering of passes
+  # default: 100
+  queue: 100
+
+  # Each render target have tags. These tags are matching with RT ones
+  # to filter passes for RT
+  # No defaults
+  # No tags - no visibility
+  tags: [onscreen, shadow]
+
+  zwrite : on # on/off => on by default
+  ztest  : on # on/off => on by default
+  cull   : cw # front face = cw, ccw, off, cw by default!
+
+  clipping: [0, 1, 2, 3] # clipping planes to enable
+
+  # blend if off by default if the whole session ommited
+  blend:
+    # No defaults, both factors and op must be presented
+    # Factors: one, zero, src_color, src_alpha, dst_color, dst_alpha, 
+    # one_minus_src_color, one_minus_src_alpha, one_minus_dst_color, 
+    # one_minus_dst_alpha
+    factors : [src_alpha, one_minus_src_alpha]
+    # Operations: add, sub, rev_sub
+    op      : add
+
+  # vertex and fragment are required if pass is not a reference to another pass
+  # TODO(DS) More shaders to come!
+  vertex   : Assets/Shaders/vs.glsl
+  fragment : Assets/Shaders/fs.glsl
+  geometry : Assets/Shaders/gs.glsl
+
+  #Some useful stuff for the future
+  #include: [vertex, Assets/ShaderLib/someuseful.glsl]
+  #define: [vertex, SOME_MACRO_DEF]
+
+#pass:
+#  name: AnotherPass
+#  queue: 50
+#  vertex: vs.glsl
+#  fragment: fs.glsl

@@ -1,0 +1,165 @@
+name: water_surf.mat 
+
+# Texture slots
+#  0 - reflectin
+#  1 - refraction
+#  2 - refraction depth
+#  3 - dudv map
+#  4 - normal map
+textures:
+  3: Assets/3rdParty/water/water_dudv_map.ppm
+  4: Assets/3rdParty/water/water_normal_map.ppm
+
+.VS: &VS |
+    #version 330 core
+
+    layout(location = 0) in vec3 IN_vertex;
+    layout(location = 3) in vec2 IN_uv;
+
+    out VertexData {
+      vec4 cspos; // clip space position
+      vec2 uv;    // uv coordinates for dudv and normal maps
+      vec3 weye;  // vertex to camera position (world space) 
+    } OUT;
+
+    uniform mat4 SU_PVM_MATRIX;
+    uniform mat4 SU_V_MATRIX;
+    uniform mat4 SU_M_MATRIX; 
+
+    uniform float uv_tiling = 6.0;
+
+    void main() {
+      OUT.cspos = SU_PVM_MATRIX * vec4(IN_vertex, 1); 
+      OUT.uv = IN_uv * uv_tiling;
+      OUT.weye = (inverse(SU_V_MATRIX) * vec4(0, 0, 0, 1)).xyz - (SU_M_MATRIX * vec4(IN_vertex, 1)).xyz; 
+      gl_Position = OUT.cspos;
+    }
+
+.FS: &FS |
+    #version 330 core
+
+    in VertexData {
+      vec4 cspos; // clip space position
+      vec2 uv;    // uv coordinates for dudv and normal maps
+      vec3 weye;  // vertex to camera vector (world space)
+    } IN;
+    
+    out vec4 OUT_color;
+
+    uniform float dudv_offset; // needs to be updated every frame
+    uniform float dudv_strength      = 0.02;
+    uniform vec4  water_tint         = vec4(0, .8, 1, 1);
+    uniform float specular_shininess = 50.0;
+    uniform float specular_strength  = 0.6;
+    uniform vec3  normal_weight      = vec3(0.5, 1, 0.5); // multiplier when normal is extracted from the normal map
+
+    // 0.1 - almost refraction, 10 - almost reflection, etc
+    // try - 0.1, 2, 10 
+    uniform float fresnel_factor = 1; // refrlection vs refraction, less - favors for refraction
+    uniform float water_soft_edges_factor = 10; // more - more blending on the shores
+
+    uniform sampler2D TEXTURE_0;  // Reflection texture
+    uniform sampler2D TEXTURE_1;  // Refraction texture 
+    uniform sampler2D TEXTURE_2;  // Refraction depth 
+    uniform sampler2D TEXTURE_3;  // DuDv map
+    uniform sampler2D TEXTURE_4;  // Normal map
+          
+    uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
+    uniform vec4 SU_DIRECTIONAL_LIGHT_COLOR_0;
+    uniform mat4 SU_P_MATRIX;
+ 
+    // Converts clip space position to UV coordinates
+    vec2 ClipSpaceToUV(vec4 cspos) {
+      vec2 ndc = cspos.xy / cspos.w; // normal device coords, 0,0 - center, 1,1 - right/top
+      return ndc / 2.0 + 0.5;
+    }
+
+    void main () {
+      //
+      // Clip space UV for projective texture mapping
+      //
+      vec2 cs_uv = ClipSpaceToUV(IN.cspos);
+      vec2 reflect_uv = vec2(cs_uv.x, 1.0 - cs_uv.y);
+      vec2 refract_uv = vec2(cs_uv.x, cs_uv.y);
+      
+      //
+      // DuDv displacement 
+      //
+      vec2 dist_uv = texture(TEXTURE_3, vec2(IN.uv.x + dudv_offset, IN.uv.y)).rg * 0.1;
+      dist_uv = IN.uv + vec2(dist_uv.x, dist_uv.y + dudv_offset);
+      vec2 dist = (texture(TEXTURE_3, dist_uv).rg * 2.0 - 1.0) * dudv_strength;
+
+      vec2 depth_uv = refract_uv;
+      reflect_uv += dist;
+      refract_uv += dist;
+
+      vec4 reflection = vec4(texture(TEXTURE_0, reflect_uv).rgb, 1);
+      vec4 refraction = vec4(texture(TEXTURE_1, refract_uv).rgb, 1);
+      
+      //
+      // Water Depth
+      //
+      // Calculate water_depth, as a distance between water surface 
+      // and the terrain below the water surface. I.e. how deep it is 
+      // in camera direction.
+      // Assume the perspective projection.
+      float m32 = SU_P_MATRIX[3][2];
+      float m22 = SU_P_MATRIX[2][2];
+
+      float depth = texture(TEXTURE_2, depth_uv).r * 2.0 - 1.0;
+      float floor_distance = m32 / (m22 + depth); 
+
+      depth = gl_FragCoord.z * 2.0 - 1.0; 
+      float water_distance = m32 / (m22 + depth); 
+      float water_depth = floor_distance - water_distance;
+
+      //
+      // Specular
+      // 
+      // Sample the normal map and convert color to normal as (2*r - 1, b, 2*g - 1)
+      // Usually it happens in tangent space, but our water always lies horizontally
+      vec3 to_eye = normalize(IN.weye);
+      vec4 normal_color = texture(TEXTURE_4, dist_uv);
+      vec3 normal = normalize(vec3(normal_weight.x*(normal_color.r * 2.0 - 1.0),
+                                   normal_weight.y*normal_color.b,
+                                   normal_weight.z*(normal_color.g * 2.0 - 1.0)));
+
+      // Calculating specular using half vector instead of reflected light direction.
+      vec3 l_col = SU_DIRECTIONAL_LIGHT_COLOR_0.rgb;
+      vec3 l_dir = -normalize(SU_DIRECTIONAL_LIGHT_DIRECTION_0); // we shall normalize this in C++!
+      vec3 h = normalize(l_dir + to_eye);
+      float specular = max(dot(h, normal), 0);
+      specular = pow(specular, specular_shininess);
+      vec3 specular_highlights = l_col * specular * specular_strength;
+
+      //
+      // Fresnel effect.
+      //
+      float fresnel = pow(dot(to_eye, normal), fresnel_factor);
+
+      //
+      // Result reflection and Refraction color 
+      //
+      //refraction = mix(refraction, water_tint, clamp(water_depth/40, 0, 1));
+      refraction *= water_tint;
+      vec4 rr = mix(reflection, refraction, fresnel);
+
+      // Calculate final color and alpha.
+      // Alpha is used in blending, deeper in camera direction - less blending.
+      OUT_color = rr + vec4(specular_highlights, 0);
+      OUT_color.a = clamp(water_depth/water_soft_edges_factor, 0, 1); 
+    }
+
+pass:
+  name     : water_surf.mat/pass0
+  queue    : 200
+  tags     : [onscreen]
+  blend:
+    factors : 
+      - src_alpha
+      - one_minus_src_alpha
+    op      : add 
+  cull     : ccw 
+  vertex   : *VS
+  fragment : *FS
+

@@ -1,0 +1,50 @@
+name: texture_mca 
+
+textures: 
+  0: Assets/tango-128.ppm
+
+pass:
+  name  : pass0 
+  queue : 100
+  tags  : [onscreen]
+  cull  : ccw 
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 IN_vertex;
+          layout(location = 3) in vec2 IN_uv;
+
+          out VertexData {
+            vec2 uv;
+          } OUT;
+
+          uniform mat4 SU_PVM_MATRIX;
+
+          void main() {
+            gl_Position = SU_PVM_MATRIX * vec4(IN_vertex, 1); 
+            OUT.uv = IN_uv;
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in VertexData {
+            vec2 uv;
+          } IN;
+
+          layout(location = 0) out vec4 OUT_color0;
+          layout(location = 1) out vec4 OUT_color1;
+          layout(location = 2) out vec4 OUT_color2;
+          layout(location = 3) out vec4 OUT_color3;
+
+          uniform sampler2D TEXTURE_0; 
+
+          void main () {
+            vec2 uv = vec2(IN.uv.x, 1-IN.uv.y);
+            vec4 tex = texture(TEXTURE_0, uv);
+            OUT_color0 = tex.rgba; 
+            OUT_color1 = tex.bgra; 
+            OUT_color2 = vec4(0, 1, 0, 1); 
+            OUT_color3 = vec4(1, 1, 0, 1); 
+          }
+

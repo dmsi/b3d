@@ -1,0 +1,58 @@
+#Calculate reflection and refraction uv for cubemap in the vertex shader
+name: cubemap_rr_surface_vs
+
+.VS: &VS | 
+ #version 330 core
+
+ layout(location = 0) in vec3 IN_position;
+ layout(location = 2) in vec4 IN_color;
+
+ out VertexData {
+   vec3 rl_uv;
+   vec3 rr_uv;
+ } OUT;
+
+ uniform mat4 SU_PVM_MATRIX;
+ uniform mat4 SU_V_MATRIX;
+ uniform mat4 SU_M_MATRIX;
+ 
+ uniform float refractive_index = 0.91;
+ 
+ void main() {
+   vec3 wpos = (SU_M_MATRIX * vec4(IN_position, 1)).xyz;
+   vec3 e = normalize(wpos - (inverse(SU_V_MATRIX) * vec4(0, 0, 0, 1)).xyz);
+   vec3 n = normalize((SU_M_MATRIX * vec4(IN_position, 0)).xyz);
+   OUT.rl_uv = normalize(reflect(e, n));
+   OUT.rr_uv = normalize(refract(e, n, refractive_index)); // for instance 1/1.33 - air/water refraction
+
+   gl_Position = SU_PVM_MATRIX * vec4(IN_position, 1); 
+ }
+
+.FS: &FS | 
+ #version 330 core
+
+ in VertexData {
+   vec3 rl_uv;
+   vec3 rr_uv;
+ } IN;
+ 
+ out vec4 OUT_color;
+
+ uniform samplerCube TEXTURE_0;
+
+ uniform vec4  tint      = vec4(0, 1, 1, 1);
+ uniform float rr_factor = 0.0;
+
+ void main () {
+   OUT_color.rgb = mix(texture(TEXTURE_0, IN.rl_uv), 
+                       texture(TEXTURE_0, IN.rr_uv), rr_factor).rgb * tint.rgb;
+   OUT_color.a = 1;
+ }
+
+pass:
+  name       : pass0
+  tags       : [onscreen]
+  queue      : 100
+  cull       : ccw 
+  vertex     : *VS
+  fragment   : *FS

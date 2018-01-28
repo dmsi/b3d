@@ -1,0 +1,54 @@
+name: water.mat 
+
+.VS: &VS |
+    #version 330 core
+
+    layout(location = 0) in vec3 vertex_position;
+    layout(location = 3) in vec2 vertex_uv;
+
+    out VertexData {
+      vec4 cspos; // clip space position
+    } OUT;
+
+    uniform mat4 SU_PVM_MATRIX;
+
+    void main() {
+      OUT.cspos = SU_PVM_MATRIX * vec4(vertex_position, 1); 
+      gl_Position = OUT.cspos;
+    }
+
+.FS: &FS |
+    #version 330 core
+
+    in VertexData {
+      vec4 cspos; // clip space position
+    } IN;
+
+    uniform sampler2D TEXTURE_0; 
+ 
+    // Converts clip space position to UV coordinates
+    vec2 ClipSpaceToUV(vec4 cspos) {
+      // Get Normal device coordinates
+      vec2 ndc = cspos.xy / cspos.w; // 0,0 - center, 1,1 - right/top
+      return ndc / 2.0 + 0.5;
+    }
+
+    out vec4 color;
+    void main () {
+      vec2 uv = ClipSpaceToUV(IN.cspos);
+      vec2 reflection_uv = vec2(uv.x, 1.0 - uv.y);
+      vec3 reflection = texture(TEXTURE_0, reflection_uv).rgb; 
+      color = vec4(0, .9, .9, 1) * vec4(reflection, 1);
+    }
+
+pass:
+  name: water.mat/pass0
+  queue: 200
+  tags: [onscreen]
+  cull: ccw 
+  #blend:
+  #  factors : [src_alpha, one]
+  #  op      : add
+  vertex: *VS
+  fragment: *FS
+

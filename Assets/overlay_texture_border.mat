@@ -1,0 +1,59 @@
+name: overlay_texture 
+
+pass:
+  name   : pass0 
+  tags   : [onscreen]
+  queue  : 1000
+  ztest  : off
+  cull   : ccw 
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 IN_position;
+          layout(location = 3) in vec2 IN_uv;
+
+          out VertexData {
+            vec2 uv;
+          } OUT;
+
+          uniform mat4 SU_M_MATRIX;
+          uniform int uv_flip_horiz = 0;
+          uniform int uv_flip_vert = 0;
+
+          void main() {
+            vec4 wpos = SU_M_MATRIX * vec4(IN_position, 1);
+            gl_Position = wpos;
+            OUT.uv = IN_uv;
+
+            if (uv_flip_horiz > 0) {
+              OUT.uv.x = 1 - OUT.uv.x;
+            }
+
+            if (uv_flip_vert > 0) {
+              OUT.uv.y = 1 - OUT.uv.y;
+            }
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in VertexData {
+            vec2 uv;
+          } IN;
+          
+          out vec4 OUT_color;
+
+          uniform sampler2D TEXTURE_0; 
+          uniform vec4  tint          = vec4(1, 1, 1, 1);
+          uniform float border_width  = 0.01;
+          uniform float border_height = 0.01 * 16.0 / 9;
+
+          void main () {
+            vec2 uv = IN.uv;
+            if (uv.x < border_width || uv.x > 1-border_width || uv.y < border_height || uv.y > 1-border_height) {
+              OUT_color = vec4(0, 0, 0, 1);
+            } else {
+              OUT_color = texture(TEXTURE_0, uv) * tint;
+              //OUT_color.rgb = OUT_color.rrr;
+            }
+          }

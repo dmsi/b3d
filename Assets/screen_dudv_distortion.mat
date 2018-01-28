@@ -1,0 +1,65 @@
+name: DuDv_distortion
+
+textures: 
+  0: Assets/tango-128.ppm
+  1: Assets/3rdParty/water/water_dudv_map.ppm
+
+pass:
+  name   : pass0
+  tags   : [post-processing]
+  queue  : 1000
+  ztest  : off
+  cull   : ccw 
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 IN_position;
+          layout(location = 3) in vec2 IN_uv;
+
+          out VertexData {
+            vec2 uv;
+          } OUT;
+
+          void main() {
+            OUT.uv = IN_uv;
+            gl_Position = vec4(IN_position, 1); 
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in VertexData {
+            vec2 uv;    
+          } IN;
+          
+          out vec4 OUT_color;
+
+          uniform sampler2D TEXTURE_0; 
+          uniform sampler2D TEXTURE_1; 
+
+          uniform vec4 color            = vec4(1, 1, 1, 1);
+          uniform int  invert_uv        = 0;
+          uniform vec2 dudv_tiling      = vec2(2*1.6, 2);
+          uniform float dudv_offset     = 0;
+          uniform float dudv_strength   = 0.02;
+          uniform float dudv_u_strength = 0.1;
+
+          void main () {
+            vec2 uv = IN.uv;
+            if (invert_uv > 0) {
+              uv.y = 1.0 - uv.y;
+            }
+
+            vec2 dudv_uv = uv * dudv_tiling;
+
+            vec2 dx = vec2(dudv_offset, 0);
+            vec2 dy = vec2(0, dudv_offset);
+
+            vec2 dist_uv = texture(TEXTURE_1, dudv_uv + dx).rg * dudv_u_strength;
+            dist_uv = dudv_uv + dist_uv + dy; 
+            vec2 dist = (texture(TEXTURE_1, dist_uv).rg * 2.0 - 1.0) * dudv_strength;
+
+            uv += dist;
+
+            OUT_color = texture(TEXTURE_0, uv) * color;
+          }

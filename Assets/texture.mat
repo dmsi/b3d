@@ -1,0 +1,46 @@
+# No shading, just a texture 
+name: texture.mat 
+
+textures: 
+  0: Assets/tango-128.ppm
+
+pass:
+  name: texture.mat/Pass
+  queue: 100
+  tags: [onscreen]
+  cull: ccw 
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 vertex_position;
+          layout(location = 3) in vec2 vertex_uv;
+
+          out VertexData {
+            vec2 uv;
+          } OUT;
+
+          uniform mat4 SU_PVM_MATRIX;
+
+          void main() {
+            gl_Position = SU_PVM_MATRIX * vec4(vertex_position, 1); 
+            OUT.uv = vertex_uv;
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in VertexData {
+            vec2 uv;
+          } IN;
+
+          uniform sampler2D TEXTURE_0; 
+
+          out vec3 color;
+          void main () {
+            // Inverted y - OGL UV coordinates specific
+            // Invert in the model or in the colormap?
+            vec2 uv = vec2(IN.uv.x, 1-IN.uv.y);
+            vec4 tex = texture(TEXTURE_0, uv);
+            color = tex.rgb; 
+          }
+

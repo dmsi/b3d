@@ -1,0 +1,119 @@
+name: shadowreceiver
+
+.VS: &VS |
+  #version 330 core
+  // All calculations are in world space.
+
+  layout(location = 0) in vec3 IN_position;
+  layout(location = 1) in vec3 IN_normal;
+  layout(location = 2) in vec4 IN_color;
+  layout(location = 3) in vec2 IN_uv;
+
+  out InOut {
+    vec3 wpos;
+    vec3 wnrm;
+    vec2 uv;
+    vec3 vcol;
+    vec3 weye; // vector from vertex to camera
+    vec4 shadow_coord;
+  } OUT;
+
+  uniform mat4 SU_PVM_MATRIX;
+  uniform mat4 SU_M_MATRIX;
+  uniform mat4 SU_V_MATRIX;
+  uniform mat4 depth_bias_pvm;  // bias * p * v * m of the shadowmap camera
+
+  void main() {
+    OUT.wpos = (SU_M_MATRIX * vec4(IN_position, 1)).xyz;
+    OUT.wnrm = normalize((SU_M_MATRIX * vec4(IN_normal.xyz, 0)).xyz);
+    vec4 campos = inverse(SU_V_MATRIX) * vec4(0, 0, 0, 1);
+    OUT.weye = campos.xyz - OUT.wpos; // to camera vector, no need to normalize just yet
+    OUT.uv = IN_uv;
+    OUT.vcol = IN_color.rgb;
+    OUT.shadow_coord = depth_bias_pvm * vec4(OUT.wpos, 1); // !!! world position
+    gl_Position = SU_PVM_MATRIX * vec4(IN_position, 1); 
+  }
+
+.FS: &FS |
+  #version 330 core
+
+  in InOut {
+    vec3 wpos;
+    vec3 wnrm;
+    vec2 uv;
+    vec3 vcol;
+    vec3 weye;
+    vec4 shadow_coord;
+  } IN;
+  
+  out vec3 OUT_color;
+
+  struct Material {
+    vec4  diffuse;
+    vec4  ambient;
+    vec4  specular;
+    float shininess;
+  };
+
+  uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
+  uniform vec4 SU_DIRECTIONAL_LIGHT_COLOR_0;
+  uniform sampler2DShadow TEXTURE_0; 
+
+  uniform Material surface = Material (
+    vec4(.6, .6, .8, 1), // diffuse
+    vec4(.1, .1, .1, 1), // ambient
+    vec4(.6, .6, .6, 1), // specular
+    50                   // shininess
+  ); 
+
+  ///////////////////////////////////////////////////////////////////////////
+  // n          - unit normal
+  // e          - unit point to camera
+  // l          - unit point to light source
+  // lc         - light source color
+  // suface     - surface properties
+  // kd_texture - sampled texture color
+  ///////////////////////////////////////////////////////////////////////////
+  vec3 Lighting(vec3 n, vec3 e, vec3 l, vec3 lc, Material surface, vec4 kd_texture) {
+    vec3 spec = vec3(0);
+
+    float diff_int = max(dot(n, l), 0); 
+    if (diff_int > 0) {
+      // the half vector
+      vec3 h = normalize(l + e);
+      float spec_int = max(dot(n, h), 0);
+      spec = surface.specular.rgb * pow(spec_int, surface.shininess);
+    }
+
+    vec3 diff = diff_int * surface.diffuse.rgb * kd_texture.rgb;          
+    vec3 light = (diff + spec) * lc; 
+    return max(light, surface.ambient.rgb);
+  }
+
+  void main () {
+    // normal, to eye and to light unit vectors in world space
+    vec3 n = normalize(IN.wnrm);
+    vec3 e = normalize(IN.weye);
+    vec3 l = -normalize(SU_DIRECTIONAL_LIGHT_DIRECTION_0);
+    vec3 lc = SU_DIRECTIONAL_LIGHT_COLOR_0.rgb;
+    
+    float visibility = texture( TEXTURE_0, vec3(IN.shadow_coord.xy, (IN.shadow_coord.z)/IN.shadow_coord.w) );
+
+    OUT_color = visibility*Lighting(n, e, l, lc, surface, vec4(1,1,1,1));
+  }
+
+pass:
+  name     : pass.normal 
+  tags     : [onscreen]
+  queue    : 110
+  cull     : ccw 
+  vertex   : *VS
+  fragment : *FS 
+
+//pass:
+//  name     : pass.normal 
+//  tags     : [shadow-receiver]
+//  queue    : 100
+//  cull     : ccw 
+//  vertex   : *VS
+//  fragment : *FS 

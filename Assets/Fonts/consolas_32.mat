@@ -1,0 +1,35 @@
+textures: 
+  0: Assets/Fonts/consolas_32.ppm
+
+pass:
+  name: consolas_32.mat/pass0 
+  tags: [onscreen]
+  queue: 2000
+  ztest  : off
+  blend:
+    factors : [src_alpha, one]
+    op      : add
+  vertex: | 
+          #version 330 core
+          // Input must follow the layout
+          layout(location = 0) in vec3 vertex_position;
+          layout(location = 3) in vec2 vertex_uv;
+
+          out vec2 uv;
+          void main() {
+            gl_Position = vec4(vertex_position, 1); 
+            uv = vertex_uv;
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in vec2 uv;
+
+          uniform sampler2D TEXTURE_0; 
+          uniform vec4 TextColor;
+
+          out vec4 color;
+          void main () {
+            color = TextColor * texture(TEXTURE_0, uv);
+          }

@@ -1,0 +1,45 @@
+# Shader for showing rendered color texture
+name: screen_color_r2t.mat 
+
+pass:
+  name   : screen_color_r2t.mat/pass0
+  tags   : [onscreen]
+  queue  : 1000
+  ztest  : off
+  cull   : ccw 
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 vertex_position;
+          layout(location = 3) in vec2 vertex_uv;
+
+          out vec2 uv;
+
+          void main() {
+            gl_Position = vec4(vertex_position, 1); 
+            uv = vertex_uv;
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in vec2 uv;
+
+          uniform sampler2D TEXTURE_0; 
+          uniform vec4 Color = vec4(1,1,1,1);
+          uniform int  Invert_uv = 0;
+
+          out vec4 out_color;
+          void main () {
+            float frame_size = 0.01;
+            if (uv.x < frame_size || uv.x > 1-frame_size ||
+                uv.y < frame_size || uv.y > 1-frame_size) {
+              out_color = vec4(0, 0, 0, 1);
+            } else {
+              vec2 result_uv = uv;
+              if (Invert_uv > 0) {
+                result_uv.y = 1.0 - result_uv.y;
+              }
+              out_color = texture(TEXTURE_0, result_uv) * Color;
+            }
+          }
