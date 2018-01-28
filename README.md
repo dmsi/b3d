@@ -36,7 +36,7 @@ It uses cmake as the build system.
 
 GLM and yaml-cpp are included as submodules, the rest is installed the usual way.
 ```bash
-git submodule update --recurcive
+git submodule update --recursive
 cd submodules/yaml-cpp
 mkdir build
 cd build
