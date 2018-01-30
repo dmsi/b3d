@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   auto cube_tex = Cfg<RenderTarget>(scene, "rt.cubeenv", 0)
     . Camera("camera.cubemap")
     . Tags("cubeenv")
-    . Type(FrameBuffer::kCubemap)
+    . Type(FrameBuffer::kCubeMap)
     . Resolution(w, h)
     . Layer(Layer::kColor, Layer::kReadWrite)
     . Layer(Layer::kDepth, Layer::kWrite)

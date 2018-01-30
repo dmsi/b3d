@@ -3,7 +3,7 @@
 ![](screenshots/the_knight.png)
 
 
-3D rendering engine writter in C++, inspired by Unity3D and UnrealEngine. 
+3D rendering engine written in C++, inspired by Unity3D and UnrealEngine. 
 
 ## License
 MIT
@@ -24,6 +24,7 @@ MIT
 ![](screenshots/multiple_color_attachments.png)
 ![](screenshots/bloom.png)
 ![](screenshots/dudv_distortion.png)
+![](screenshots/omni_shadowmap.png)
 
 ## Build
 It uses cmake as the build system.
@@ -87,7 +88,7 @@ Example - NDC plane covering the screen:
 
 
 ## Examples
-### Red triangle in NDC space
+### Triangle in NDC space
 
 #### C++
 ```c++
@@ -337,7 +338,8 @@ int main(int argc, char* argv[]) {
 
 ## Problems and limitations
  - "Quick and dirty" under the hood.
- - Euler ... Quaternion ... Matricess are inconsistent.
+ - Euler ... Quaternion ... Matrices are inconsistent.
  - Unit tests (gtest)
  - Logging to stderr
+ - No resource management
  - Other to come...

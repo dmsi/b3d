@@ -67,11 +67,11 @@ struct FlipTriangles : public Action {
 struct LemniscateGerono : public Action {
   std::shared_ptr<Camera> camera;
   float angle = 0;
-  float speed = 15; // moving speed - degrees / second in polar coordinates
+  float speed = 25; // moving speed - degrees / second in polar coordinates
   float radius = 7;
 
-  LemniscateGerono(std::shared_ptr<Transformation> t) 
-    : Action(t) {}
+  LemniscateGerono(std::shared_ptr<Transformation> t, std::shared_ptr<Camera> c) 
+    : Action(t), camera(c) {}
 
   void Update() override {
     angle += speed * GetTimer().GetTimeDelta();
@@ -79,7 +79,9 @@ struct LemniscateGerono : public Action {
     float a = glm::radians(angle);
     float z = radius*cos(a);
     float x = radius*sin(a) * cos(a);
-    transform->SetLocalPosition(glm::vec3(x, p.y, z));
+    transform->SetLocalPosition(glm::vec3(x, 3 - abs(cos(a)), z));
+
+    camera->transform->SetLocalPosition(transform->GetGlobalPosition());
   }
 };
 
@@ -99,7 +101,7 @@ struct PtLightUniform : public Action {
 
 int main(int argc, char* argv[]) {
   Scene scene;
-  //using T = std::vector<std::string>;
+  using T = std::vector<std::string>;
   using glm::vec3;
 
   // Initialize application.
@@ -113,18 +115,34 @@ int main(int argc, char* argv[]) {
     . Tags("onscreen")
     . Clear(.4, .4, .4, 1)
     . Done();
-    
+  
+  int w = 400, h = 400;
+  auto cube_tex = Cfg<RenderTarget>(scene, "rt.shadowmap", 0)
+    . Camera("camera.cubemap")
+    . Tags("shadow-caster")
+    . Type(FrameBuffer::kCubeMap)
+    . Resolution(w, h)
+    . Layer(Layer::kColor, Layer::kReadWrite)
+    . Layer(Layer::kDepth, Layer::kReadWrite)
+    . Clear(1, 1, 1, 1)
+    . Done()
+    ->GetLayerAsTexture(0, Layer::kDepth);
+  
   // Compose the scene. 
   Cfg<Camera>(scene, "camera.main")
-    . Perspective(60, (float)width/height, .1, 500)
+    . Perspective(60, (float)width/height, .1, 100)
     . Position(0, 3, 6)
     . EulerAngles(-10, 0, 0)
     . Action<FlyingCameraController>(5)
     . Done();
+  
+  auto cubecam = Cfg<Camera>(scene, "camera.cubemap")
+    . Perspective(90, 1, .1, 100)
+    . Done();
 
   auto lamp = Cfg<Light>(scene, "light.pt.lamp")
-    . Position(0, 4, 0)
-    . Action<LemniscateGerono>()
+    . Position(0, 3, 0)
+    . Action<LemniscateGerono>(cubecam)
     . Done();
 
   Cfg<Actor>(scene, "actor.lamp.dbg")
@@ -135,6 +153,8 @@ int main(int argc, char* argv[]) {
 
   Cfg<Actor>(scene, "actor.room")
     . Model("Assets/unity_cube.dsm", "Assets/pointlight.mat")
+    //. Tags(0, T{"onscreen", "shadow-caster"})
+    . Texture(0, cube_tex)
     . Scale(10, 5, 15)
     . Position(0, 2.5, 0)
     . Action<FlipTriangles>()
@@ -142,13 +162,81 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.k")
+    . Model("Assets/cylinder.dsm", "Assets/pointlight.mat")
+    . Texture(0, cube_tex)
+    . EulerAngles(90, 0, 0)
+    . Scale(.5, .5, 2)
+    . Position(-3, 1, 0)
+    . Action<PtLightUniform>(lamp)
+    . Done();
+
+  Cfg<Actor>(scene, "actor.k1")
+    . Model("Assets/cylinder.dsm", "Assets/pointlight.mat")
+    . Texture(0, cube_tex)
+    . EulerAngles(90, 0, 0)
+    . Scale(.5, .5, 2)
+    . Position(-3, 1, -4)
+    . Action<PtLightUniform>(lamp)
+    . Done();
+
+  Cfg<Actor>(scene, "actor.k2")
+    . Model("Assets/cylinder.dsm", "Assets/pointlight.mat")
+    . Texture(0, cube_tex)
+    . EulerAngles(90, 0, 0)
+    . Scale(.5, .5, 2)
+    . Position(-3, 1, 4)
+    . Action<PtLightUniform>(lamp)
+    . Done();
+  
+  Cfg<Actor>(scene, "actor.k3")
+    . Model("Assets/cylinder.dsm", "Assets/pointlight.mat")
+    . Texture(0, cube_tex)
+    . EulerAngles(90, 0, 0)
+    . Scale(.5, .5, 2)
+    . Position(3, 1, 0)
+    . Action<PtLightUniform>(lamp)
+    . Done();
+
+  Cfg<Actor>(scene, "actor.k4")
+    . Model("Assets/cylinder.dsm", "Assets/pointlight.mat")
+    . Texture(0, cube_tex)
+    . EulerAngles(90, 0, 0)
+    . Scale(.5, .5, 2)
+    . Position(3, 1, -4)
+    . Action<PtLightUniform>(lamp)
+    . Done();
+
+  Cfg<Actor>(scene, "actor.k5")
+    . Model("Assets/cylinder.dsm", "Assets/pointlight.mat")
+    . Texture(0, cube_tex)
+    . EulerAngles(90, 0, 0)
+    . Scale(.5, .5, 2)
+    . Position(3, 1, 4)
+    . Action<PtLightUniform>(lamp)
+    . Done();
+  
+  Cfg<Actor>(scene, "actor.k6")
     . Model("Assets/knight.dsm", "Assets/pointlight.mat")
+    . Texture(0, cube_tex)
     . Action<PtLightUniform>(lamp)
     . Done();
 
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()
     . Done();
+  
+  //Cfg<Actor>(scene, "aaaa")
+  //  . Model("Assets/sphere.dsm", "Assets/skybox_cubemap.mat")
+  //  . Texture(0, cube_tex)
+  //  . Done();
+
+  //Cfg<Actor>(scene, "actor.display")
+  //  . Model("Assets/screen.dsm", "Assets/overlay_texture_border.mat")
+  //  . Tags(0, T{"onscreen"})
+  //  . Texture(0, cube_tex)
+  //  . Scale   (.25, .25, 0)
+  //  . Position(.75, .75, 0)
+  //  . Done();
 
   // Main loop. Press ESC to exit.
   do {

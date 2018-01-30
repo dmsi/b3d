@@ -57,7 +57,7 @@ class RenderTarget {
       throw std::logic_error("RenderTarget::SetFrameBuffer() - " \
                              "framebuffer has already been set!");
     }
-    if (type == FrameBuffer::kCubemap) {
+    if (type == FrameBuffer::kCubeMap) {
       if (!cubemap_mask_.any()) {
         cubemap_mask_.flip();
         for (int i = 0; i < 6; ++i) {

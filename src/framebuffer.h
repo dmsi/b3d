@@ -77,7 +77,7 @@ class Layer {
 
   enum Hint {
     kHintTexture2D,
-    kHintCubemap
+    kHintCubeMap
   };
 
   Layer(Type type, Permission permission, Hint hint, 
@@ -133,7 +133,7 @@ class TextureRender : public Texture {
 //   Rendering to 2D texture. Color and Depth layer are allowed, both support
 //   R+RW modes.
 //
-//  kCubemap:
+//  kCubeMap:
 //   Rendering to a cubemap. Color and Depth layers are allowed. Color in RW
 //   mode, depth in R+RW.
 //
@@ -173,8 +173,8 @@ class TextureRender : public Texture {
 //   ...draw...
 //   fb->Unbind();
 //
-//  kCubemap
-//   auto fb = new FrameBuffer(FrameBuffer::kCubemap, 200, 200);
+//  kCubeMap
+//   auto fb = new FrameBuffer(FrameBuffer::kCubeMap, 200, 200);
 //   fb->AddLayer(Layer::kColor, Layer::kReadWrite); // the only right way!
 //   fb->AddLayer(Layer::kDepth, Layer::kWrite);     // can be R+RW.
 //   fb->SetColorLayerClearValue(Color(1,1,1,1));
@@ -195,9 +195,9 @@ class TextureRender : public Texture {
 class FrameBuffer {
  public:
   enum Type {
-    kScreen,    // Screen framebuffer, linked with the screen
-    kTexture2D, // Texture2D framebuffer  
-    kCubemap,   // Cubemap framebuffer 
+    kScreen,           // Screen framebuffer, linked with the screen
+    kTexture2D,        // Texture2D framebuffer  
+    kCubeMap,          // Cubemap framebuffer
   };
 
   // In case of kScreen width and height can be set to 0
@@ -237,7 +237,7 @@ class FrameBuffer {
 
   // +x -x +y -y +z -z => 0 1 2 3 4 5
   void BindCubemapFace(int face) {
-    assert(type_ == kCubemap);
+    assert(type_ == kCubeMap);
     assert(face >= 0 && face <= 5);
     for (int i = 0; i < color_layers_.size(); ++i) {
       assert(color_layers_[i]->GetPermission() == Layer::kReadWrite);
@@ -256,16 +256,34 @@ class FrameBuffer {
         const Color& c = clear_color_value_;
         glClearColor(c.r, c.g, c.b, c.a);
       }
-      if (clear_depth_flag_) {
-        clear_mask |= GL_DEPTH_BUFFER_BIT;
-        glClearDepth((GLdouble)clear_depth_value_);
-      }
+      //if (clear_depth_flag_) {
+      //  clear_mask |= GL_DEPTH_BUFFER_BIT;
+      //  glClearDepth((GLdouble)clear_depth_value_);
+      //}
       if (clear_stencil_flag_) {
         clear_mask |= GL_STENCIL_BUFFER_BIT;
         glClearStencil(clear_stencil_value_);
       }
       if (clear_mask) {
         glClear(clear_mask);
+      }
+    } // for
+
+    // depth cubemap 
+    if (depth_layer_) {
+      // bind depth cubeface if this is a depth cubemap
+      if (depth_layer_->hint_ == Layer::kHintCubeMap) {
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER, 
+            GL_DEPTH_ATTACHMENT,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+            depth_layer_->gl_id_, 0);
+      }
+
+      // clear depth buffer for each face if we need to
+      if (clear_depth_flag_) {
+        glClearDepth((GLdouble)clear_depth_value_);
+        glClear(GL_DEPTH_BUFFER_BIT);
       }
     }
   }
@@ -274,8 +292,13 @@ class FrameBuffer {
     // Just for consistancy
   }
 
+  // For color layers
   std::shared_ptr<TextureRender> 
   GetLayerAsTexture(int layer_number, Layer::Type layer_type) const;
+
+  // For non color layers
+  std::shared_ptr<TextureRender>
+  GetLayerAsTexture(Layer::Type layer_type) const;
 
  private:
   std::shared_ptr<Layer> GetLayer(int layer_number, Layer::Type layer_type) const;

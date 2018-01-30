@@ -62,13 +62,11 @@ void RenderTarget::Draw(Scene& scene) {
 
 
   framebuffer_->Bind();
-  if (framebuffer_->GetType() == FrameBuffer::kCubemap) {
+  if (framebuffer_->GetType() == FrameBuffer::kCubeMap) {
     for (int i = 0; i < 6; i++) {
       if (!cubemap_mask_[i]) continue;
       camera->transform->SetLocalEulerAngles(GetCubeCameraRotation(i));
       framebuffer_->BindCubemapFace(i);
-      //glClearColor(0, 1, 0, 1);
-      //glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
       render_queue_.Draw(scene, *camera);
       framebuffer_->UnbindCubemapFace(i);
     }

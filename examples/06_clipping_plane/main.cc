@@ -142,9 +142,9 @@ int main(int argc, char* argv[]) {
   actor->transform->SetLocalPosition(0, 0, 1.5);
   actor->AddAction<SetClipPlaneUniform>()->Setup(plane0, plane1);
   
-  actor = SpawnActor("Assets/unity_cube.dsm", "Assets/clip_plane_demo.mat");
-  actor->transform->SetLocalPosition(0, 1, 1.5);
-  actor->transform->SetLocalScale(.5, 1,.5);
+  actor = SpawnActor("Assets/knight.dsm", "Assets/clip_plane_demo.mat");
+  actor->transform->SetLocalPosition(0, .5, 1.5);
+  actor->transform->SetLocalScale(.5, .5, .5);
   actor->AddAction<Rotator>()->rotation_speed = glm::vec3(0, 60, 0);
   actor->AddAction<SetClipPlaneUniform>()->Setup(plane0, plane1);
 

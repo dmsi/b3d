@@ -52,8 +52,13 @@ class Light: public Actor {
     color_ = color;
   }
 
+  void SetAttenuation(const glm::vec3& attenuation) {
+    attenuation_ = attenuation;
+  }
+
   Type GetType() const {return type_;}
   const glm::vec4& GetColor() const {return color_;}
+  const glm::vec3& GetAttenuation() const {return attenuation_;}
 
   // Not the most optimal way, but will do for now
   glm::vec3 GetDirection() const {
@@ -85,6 +90,7 @@ class Light: public Actor {
   float                  intencity_;
   float                  range_;
   float                  spot_angle_;
+  glm::vec3              attenuation_;
 };
 
 

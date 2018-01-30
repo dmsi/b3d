@@ -254,6 +254,19 @@ class Cfg<Light> : public CfgActorBase<Light, Cfg<Light>> {
     return Color(::Color(std::get<0>(rgba), std::get<1>(rgba), 
                        std::get<2>(rgba), std::get<3>(rgba)));
   }
+
+  auto& Attenuation(const glm::vec3& attenuation) {
+    client_->SetAttenuation(attenuation);
+    return *this;
+  }
+
+  template <typename... TArgs>
+  auto& Attenuation(TArgs... args) {
+    auto xyz = std::make_tuple(args...);
+    return Attenuation(glm::vec3(std::get<0>(xyz), 
+                                 std::get<1>(xyz),
+                                 std::get<2>(xyz)));
+  }
   
   auto Done() {
     client_->transform->SetLocalPosition(position_);

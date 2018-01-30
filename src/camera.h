@@ -87,6 +87,14 @@ class Camera : public Actor {
     bottom_ = from->bottom_;
   }
 
+  float GetNear() const {
+    return near_;
+  }
+
+  float GetFar() const {
+    return  far_;
+  }
+
  private:
   Type  type_;
 
