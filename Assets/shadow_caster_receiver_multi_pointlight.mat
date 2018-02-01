@@ -1,0 +1,160 @@
+name: shadow_caster_receiver_pointlight
+
+.VS: &VS_normal | 
+  #version 330 core
+
+  layout(location = 0) in vec3 IN_position;
+  layout(location = 1) in vec3 IN_normal;
+  layout(location = 3) in vec3 IN_uv;
+
+  out InOut {
+    vec3 wpos;
+    vec3 wnrm;
+    vec3 weye;
+    vec2 uv;
+  } OUT;
+
+  uniform mat4 SU_PVM_MATRIX; 
+  uniform mat4 SU_M_MATRIX;
+  uniform mat4 SU_V_MATRIX;
+
+  void main() {
+    OUT.wnrm = normalize(SU_M_MATRIX * vec4(IN_normal, 0)).xyz;
+    OUT.wpos = (SU_M_MATRIX * vec4(IN_position, 1)).xyz;
+    OUT.weye = (inverse(SU_V_MATRIX) * vec4(0, 0, 0, 1)).xyz - OUT.wpos;
+    OUT.uv = vec2(IN_uv.x, 1 - IN_uv.y);
+    gl_Position = SU_PVM_MATRIX * vec4(IN_position, 1); 
+  }
+
+.FS: &FS_normal | 
+  #version 330 core
+
+  in InOut {
+    vec3 wpos;
+    vec3 wnrm;
+    vec3 weye;
+    vec2 uv;
+  } IN;
+
+  out vec4 OUT_color;
+
+  struct PtLight {
+    vec3              position;    //
+    vec3              attenuation; // x + y*d + z*d*d, d - distance
+    vec4              color;       // 
+    vec2              nearfar;     // shadowcamera near/far
+  };
+  
+  struct Material {
+    vec4  diffuse;
+    vec4  ambient;
+    vec4  specular;
+    float shininess;
+  };
+
+  // GLSL 3.3 does not 100% support uniform indices in samplers arrays 
+  uniform int               total_lights;
+  uniform PtLight           light[7];
+  uniform samplerCubeShadow TEXTURE_1;
+  uniform samplerCubeShadow TEXTURE_2;
+  uniform samplerCubeShadow TEXTURE_3;
+  uniform samplerCubeShadow TEXTURE_4;
+  uniform samplerCubeShadow TEXTURE_5;
+  uniform samplerCubeShadow TEXTURE_6;
+  uniform samplerCubeShadow TEXTURE_7;
+
+  uniform int               has_albedo_map;
+  uniform sampler2D         TEXTURE_0; // albedo map 
+  uniform Material          surface;
+
+  // https://stackoverflow.com/questions/10786951/omnidirectional-shadow-mapping-with-depth-cubemap
+  float VectorToDepthValue(vec3 Vec, float n, float f) {
+    vec3 AbsVec = abs(Vec);
+    float LocalZcomp = max(AbsVec.x, max(AbsVec.y, AbsVec.z));
+    float NormZComp = (f+n) / (f-n) - (2*f*n)/(f-n)/LocalZcomp;
+    return (NormZComp + 1.0) * 0.5;
+  }
+  
+  ///////////////////////////////////////////////////////////////////////////
+  // normal       - unit normal
+  // to_eye       - unit point to camera
+  // to_light     - unit point to light source
+  // light_color  - light source color
+  // suface       - surface properties
+  // kd_texture   - sampled texture color
+  // shadow       - shadow visibility: 0 - full shadow, 1 - no shadow
+  // attenuation  - light attenuation value, bigger - less light
+  //
+  // TODO
+  // Dithering to reduce gradient issues
+  ///////////////////////////////////////////////////////////////////////////
+  vec3 Shading(vec3 normal, vec3 to_eye, vec3 to_light, 
+               vec3 light_color, Material surface, vec4 kd_texture, 
+               float shadow, float attenuation) {
+    vec3 spec = vec3(0);
+
+    float diff_int = max(dot(normal, to_light), 0); 
+    if (diff_int > 0) {
+      vec3 half_vec = normalize(to_light + to_eye);
+      float spec_int = max(dot(normal, half_vec), 0);
+      spec = surface.specular.rgb * pow(spec_int, surface.shininess);
+    }
+
+    vec3 diff = shadow * diff_int * surface.diffuse.rgb * kd_texture.rgb;          
+    vec3 light = (diff + spec) * light_color; 
+    return light / attenuation;
+  }
+
+  vec3 Lht(PtLight light, vec3 normal, samplerCubeShadow shadow_map) {
+    vec3  to_light      = light.position - IN.wpos;
+    float light_dist    = length(to_light);
+    vec3  to_light_unit = to_light / light_dist; 
+    float attenuation   = dot(vec3(light.attenuation), vec3(1, light_dist, light_dist*light_dist));
+    
+    float to_light_depth = VectorToDepthValue(to_light, light.nearfar.x, light.nearfar.y); 
+    float shadowmap_pcf = texture(shadow_map, -vec4(to_light_unit, -to_light_depth));
+    float shadow = 1 - 0.35 * (1 - shadowmap_pcf); // 0 - no shadow, 1 - full shadow
+    
+    vec4 kd_texture = vec4(1, 1, 1, 1);
+
+    vec3 to_eye = normalize(IN.weye);
+    return Shading(normal, to_eye, to_light_unit, light.color.rgb, 
+                   surface, kd_texture, shadow, attenuation);
+  }
+
+  void main () {
+    vec3 nrm = normalize(IN.wnrm);
+
+    vec4 kd_texture = vec4(1, 1, 1, 1);
+    if (has_albedo_map > 0) {
+      kd_texture.rgb = texture(TEXTURE_0, IN.uv).rgb;
+    }
+
+    vec3 lht = vec3(0);
+    if (total_lights > 0) lht += Lht(light[0], nrm, TEXTURE_1);
+    if (total_lights > 1) lht += Lht(light[1], nrm, TEXTURE_2);
+    if (total_lights > 2) lht += Lht(light[2], nrm, TEXTURE_3);
+    if (total_lights > 3) lht += Lht(light[3], nrm, TEXTURE_4);
+    if (total_lights > 4) lht += Lht(light[4], nrm, TEXTURE_5);
+    if (total_lights > 5) lht += Lht(light[5], nrm, TEXTURE_6);
+    if (total_lights > 6) lht += Lht(light[6], nrm, TEXTURE_7);
+
+    OUT_color.rgb = lht * kd_texture.rgb + surface.ambient.rgb;
+    OUT_color.a = 1;
+  }
+
+pass:
+  name     : pass.normal
+  queue    : 110
+  tags     : [onscreen]
+  cull     : ccw
+  vertex   : *VS_normal
+  fragment : *FS_normal
+
+pass:
+  name     : pass.shadowcast
+  tags     : [shadow-caster]
+  queue    : 100
+  cull     : cw
+  vertex   : Assets/Shaders/shadowmap_caster.vs
+  fragment : Assets/Shaders/shadowmap_caster.fs

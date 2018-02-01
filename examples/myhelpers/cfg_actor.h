@@ -132,7 +132,7 @@ class CfgActorBase {
   }
 
   template <typename T, typename... TArgs>
-  Ret& Action(TArgs... args) {
+  Ret& Action(TArgs&&... args) {
     client_->template AddAction<T>(std::forward<TArgs>(args)...);
     return CastSelf(); 
   }

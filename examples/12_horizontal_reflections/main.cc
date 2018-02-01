@@ -22,12 +22,8 @@
 // THE SOFTWARE.
 //
 
-#include <iostream>
-#include <memory>
-
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 struct SetClipPlaneUniform: public Action {
   std::shared_ptr<Transformation> plane;

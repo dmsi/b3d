@@ -23,8 +23,7 @@
 //
 
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 // 1. Moves on 'Lemniscate of Gerono' trajectory in xz plane, keeps y
 // 2. Updates camera position which is used for rendering to cubemap

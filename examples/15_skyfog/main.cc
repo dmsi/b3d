@@ -22,13 +22,8 @@
 // THE SOFTWARE.
 //
 
-#include <iostream>
-#include <memory>
-#include <limits>
-
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 int main(int argc, char* argv[]) {
   Scene scene;
@@ -40,13 +35,13 @@ int main(int argc, char* argv[]) {
   int height = AppContext::Instance().display.GetHeight();
   
   // Step 2. Setup RenderTarget.
-  Cfg<RenderTarget>(scene.AddRenderTarget("rt.screen"))
+  Cfg<RenderTarget>(scene, "rt.screen", 1)
     . Tags("onscreen")
     . Clear(.4, .4, .4, 1)
     . Done();
 
   // Step 3. Compose the scene. 
-  Cfg<Camera>(scene, "camera.main")
+  auto camera = Cfg<Camera>(scene, "camera.main")
     . Perspective(60, (float)width/height, 1, 1500)
     . Position(0, 50, 0)
     . Action<FlyingCameraController>(150)
@@ -64,6 +59,11 @@ int main(int argc, char* argv[]) {
 
   Cfg<Actor>(scene, "actor.skybox")
     . Model("Assets/blender_cube.dsm", "Assets/skybox_fog_cubemap_v2.mat")
+    . Done();
+
+  // Show world coordinate axes in right top corner
+  Cfg<Actor>(scene, "actor.axes")
+    . Action<CoordinateAxes>(scene, 0, camera, .15)
     . Done();
 
   Cfg<Actor>(scene, "actor.fps.meter")

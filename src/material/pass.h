@@ -202,6 +202,10 @@ class Pass {
   void SetUniform(const std::string& name, const T& value) {
     shader_->SetUniform(name, value);
   }
+  template <typename T>
+  void SetUniformArray(const std::string& name, const T values[], size_t n_values) {
+    shader_->SetUniformArray(name, values, n_values);
+  }
 
  public:
   std::string             name_;

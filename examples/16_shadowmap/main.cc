@@ -23,8 +23,7 @@
 //
 
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 // Sets various of uniforms for shadow receivers
 // The most important is bias * proj * view matrix of the shadow map camera

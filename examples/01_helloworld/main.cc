@@ -23,7 +23,7 @@
 //
 
 #include "b3d.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 int main(int argc, char* argv[]) {
   Scene scene;

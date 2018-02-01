@@ -50,6 +50,10 @@ class Action {
     return AppContext::Instance().input;
   }
 
+  const Display& GetDisplay() const {
+    return AppContext::Instance().display;
+  }
+
   std::shared_ptr<Transformation> transform; 
 };
 

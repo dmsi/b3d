@@ -34,6 +34,7 @@ pass:
 
           out vec4 OUT_color;
           void main () {
-            OUT_color = clamp(length(pos), 0, 1) * color * 2; 
+            OUT_color.rgb = clamp(length(pos), 0, 1) * color.rgb * 2; 
+            OUT_color.a = 1;
           }
 

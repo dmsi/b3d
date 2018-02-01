@@ -87,6 +87,9 @@ void Scene::Draw() {
   //render_queue_.Draw(*this, *camera_);
 }
 
+// TODO all that string manipulations are very expensive, 
+// it's better to pre-build string names or use direct uniform locations
+// as ints...
 void Scene::SetSceneUniforms(Pass& pass, const Camera& camera) {
   int n_point = 0;
   int n_directional = 0;

@@ -43,6 +43,10 @@ namespace Shader_cppness {
   inline
   void SetUniform(GLint location, const T& value, GLenum expected_type); // compile time error
 
+  template <typename T>
+  inline
+  void SetUniformArray(GLint location, const T values[], size_t n_values, GLenum expected_type);
+
   template <>
   inline
   void SetUniform<float>(GLint location, const float& value, GLenum expected_type) {
@@ -58,6 +62,7 @@ namespace Shader_cppness {
   void SetUniform<int>(GLint location, const int& value, GLenum expected_type) {
     glUniform1i(location, value);
   }
+  
 
   template <>
   inline
@@ -81,6 +86,12 @@ namespace Shader_cppness {
   inline 
   void SetUniform<glm::vec2>(GLint location, const glm::vec2& vec, GLenum expected_type) {
     glUniform2fv(location, 1, &vec[0]);
+  }
+  
+  template <>
+  inline
+  void SetUniformArray<int>(GLint location, const int values[], size_t n_values, GLenum expected_type) {
+    glUniform1iv(location, n_values, values);
   }
 }
 
@@ -159,10 +170,21 @@ class Shader {
   ////////////////////////////////////////////////////////////////////////////
   template <typename T>
   void SetUniform(const std::string& name, const T& value) {
+    // TODO this lookup for every single uniform is expensive need a faster
+    // way of doing this. Direct int locations or uniform buffer instead...
     auto uniform_iter = uniforms_.find(name);
     if (uniform_iter != uniforms_.end()) {
       const UniformInfo& u = uniform_iter->second;
       Shader_cppness::SetUniform(u.location, value, u.type);
+    }
+  }
+
+  template <typename T>
+  void SetUniformArray(const std::string& name, const T values[], size_t n_values) {
+    auto uniform_iter = uniforms_.find(name);
+    if (uniform_iter != uniforms_.end()) {
+      const UniformInfo& u = uniform_iter->second;
+      Shader_cppness::SetUniformArray(u.location, values, n_values, u.type);
     }
   }
 

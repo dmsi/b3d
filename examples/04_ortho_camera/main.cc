@@ -22,12 +22,8 @@
 // THE SOFTWARE.
 //
 
-#include <iostream>
-#include <memory>
-
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 int main(int argc, char* argv[]) {
   Scene scene;

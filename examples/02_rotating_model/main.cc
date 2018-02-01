@@ -22,16 +22,13 @@
 // THE SOFTWARE.
 //
 
-#include <iostream>
-#include <memory>
-
 #include "b3d.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 // Rotating associated actor in all directions.
-struct Rotator: public Action {
+struct MyRotator: public Action {
   glm::vec3 rotation_speed;
-  Rotator(std::shared_ptr<Transformation> transform): Action(transform) {}
+  MyRotator(std::shared_ptr<Transformation> transform): Action(transform) {}
 
   void Update() override {
     transform->Rotate(rotation_speed * GetTimer().GetTimeDelta());
@@ -51,7 +48,7 @@ int main(int argc, char* argv[]) {
   auto actor = scene.Add<Actor>("actor.knight");
   actor->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/texture.mat"));
   actor->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load("Assets/knight.dsm"));
-  actor->AddAction<Rotator>()->rotation_speed = glm::vec3(0, 45, 0);
+  actor->AddAction<MyRotator>()->rotation_speed = glm::vec3(0, 45, 0);
   
   // Step 3. Define main camera. 
   std::shared_ptr<Camera> camera = scene.Add<Camera>("camera.main");

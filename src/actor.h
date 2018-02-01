@@ -111,11 +111,13 @@ class Actor {
   // TODO Replace it with Component storage impl (ECS-like)
   ////////////////////////////////////////////////////////////////////////////
   template <typename TAction, typename... TArgs>
+  //auto AddAction(TArgs&&... args) {
   auto AddAction(TArgs&&... args) {
     auto& ti = typeid(TAction);
     auto id = ti.hash_code();
     if (actions_.find(id) == actions_.end()) {
       ActionPtr action = ActionPtr(new TAction(transform, std::forward<TArgs>(args)...));
+      //ActionPtr action = ActionPtr(new TAction(transform, args...));
       actions_[id] = action; 
       actions_start_queue_[id] = action;
       std::cerr << "[actor " << GetName() << "] " << "Action " << ti.name() << " added!" << std::endl;

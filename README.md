@@ -37,6 +37,7 @@ It uses cmake as the build system.
 
 GLM and yaml-cpp are included as submodules, the rest is installed the usual way.
 ```bash
+git submodule init
 git submodule update --recursive
 cd submodules/yaml-cpp
 mkdir build
@@ -51,9 +52,9 @@ ln -s Makefile.osx Makefile
 make
 ```
 
-### Windows / MSYS
+### Windows (MSYS)
 ```bash
-ln -s Makefile.msys Makefile
+cp Makefile.msys Makefile
 make
 ```
 
@@ -338,6 +339,7 @@ int main(int argc, char* argv[]) {
 
 ## Problems and limitations
  - "Quick and dirty" under the hood.
+ - !!Water and direct light shadows are not working correctly on my Win/NV laptop. 
  - Euler ... Quaternion ... Matrices are inconsistent.
  - Unit tests (gtest)
  - Logging to stderr

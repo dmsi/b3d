@@ -22,13 +22,8 @@
 // THE SOFTWARE.
 //
 
-#include <iostream>
-#include <memory>
-#include <limits>
-
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 #include "terraingenerator_custom.h"
 

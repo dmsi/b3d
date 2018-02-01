@@ -65,6 +65,13 @@ class Material {
     }
   }
 
+  template <typename T>
+  void SetUniformArray(const std::string& name, const T values[], size_t n_values) {
+    for (auto& pass: pass_) {
+      pass->SetUniformArray(name, values, n_values);
+    }
+  }
+
   std::shared_ptr<Pass> GetPass(const std::string& name) const;
   std::shared_ptr<Pass> GetPass(int number) const;
 
