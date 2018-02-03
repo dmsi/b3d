@@ -1,0 +1,39 @@
+name: instance_basic
+
+pass:
+  name: pass0 
+  tags: [onscreen]
+  cull: ccw 
+
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 INv_position; // per-vertex position
+          layout(location = 8) in vec3 INi_offset;   // per-instance offset (local coordinate system)
+          layout(location = 9) in vec4 INi_color;    // per-instance color
+
+          uniform mat4 SU_PVM_MATRIX;
+
+          out InOut {
+            vec4 color;
+          } OUT;
+
+          void main() {
+            vec3 pos    = INv_position + INi_offset;
+            gl_Position = SU_PVM_MATRIX * vec4(pos, 1); 
+            OUT.color   = INi_color; 
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in InOut {
+            vec4 color;
+          } IN;
+
+          out vec4 OUT_color;
+
+          void main () {
+            OUT_color = vec4(.8, .8, .8, 1) * IN.color;
+          }
+

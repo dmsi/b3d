@@ -42,6 +42,11 @@ class Action {
   }
 
  protected:
+
+  auto& GetActor() {
+    return transform->GetActor();
+  }
+
   const Timer& GetTimer() const {
     return AppContext::Instance().timer;
   }

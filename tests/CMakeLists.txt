@@ -42,6 +42,7 @@ add_definitions(
 set(TESTS
   test_transform
   test_camera
+  test_attributelayout
 )
 
 foreach(EX ${TESTS})

@@ -27,17 +27,26 @@
 
 #include "gl_main.h"
 #include "glm_main.h"
+#include "attributelayout.h"
+#include <bitset>
 #include <cstdint>
 #include <vector>
 #include <algorithm>
 #include <string>
 #include <stdexcept>
 
+#include <iostream>
+
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 class VertexArrayObject {
  public:
-  enum { kMaxAttributeSlots = 16 };
+  // Modern OpenGL requirement for vendors is minimun 16 attribute slots
+  enum { 
+    kVboSlots1a = 8,               // 1 VBO => single attribute
+    kVboSlotsNa = kVboSlots1a + 8, // 1 VBO => multi attributes
+    kMaxAttributeSlots = kVboSlotsNa 
+  };
 
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
@@ -75,16 +84,17 @@ class VertexArrayObject {
       vbo_          (kMaxAttributeSlots), 
       indices_vbo_  (0), 
       static_       (static_usage) {
-    std::fill(vbo_.begin(), vbo_.end(), VboData());
+    std::fill(vbo_.begin(), vbo_.end(), VboInfo{});
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
   }
 
   virtual ~VertexArrayObject() {
-    for (auto vbo: vbo_) {
-      if (vbo.vbo_id) {
-        glDeleteBuffers(1, &vbo.vbo_id);
+    for (auto& vbo: vbo_) {
+      if (vbo.id) {
+        glDeleteBuffers(1, &vbo.id);
       }
+      vbo = VboInfo{};
     }
     if (indices_vbo_) {
       glDeleteBuffers(1, &indices_vbo_);
@@ -98,20 +108,88 @@ class VertexArrayObject {
   // Upload data to video memory, to attribute slot
   //////////////////////////////////////////////////////////////////////////////
   void Upload(int attrib_slot, PackedData data) {
-    if (attrib_slot < 0 || attrib_slot >= (int)vbo_.size()) {
-      throw std::logic_error("VertexArrayObject::FillBuffer() bad attrib_slot=" + std::to_string(attrib_slot));
+    if (attrib_slot < 0 || attrib_slot >= kVboSlots1a) { 
+      throw std::logic_error("VertexArrayObject::Upload() bad attrib_slot=" + std::to_string(attrib_slot));
     }
 
-    if (vbo_[attrib_slot].vbo_id == 0) {
-      GLuint vbo_id;
-      glGenBuffers(1, &vbo_id);
-      vbo_[attrib_slot] = VboData(vbo_id, data.num_components, data.type);
+    auto& vbo = vbo_[attrib_slot];
+    if (vbo.IsEmpty()) {
+      GLuint id;
+      glGenBuffers(1, &id);
+      vbo = VboInfo{id, data.num_components, data.type, data.data_size, attrib_slot, 1};
     }
-    GLuint vbo_id = vbo_[attrib_slot].vbo_id;
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
     glBufferData(GL_ARRAY_BUFFER, data.data_size, data.data, static_ ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW); 
     glVertexAttribPointer(attrib_slot, data.num_components, data.type, GL_FALSE, 0, nullptr);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+
+  // For per-instance attributes
+  template <typename TLayout>
+  void Allocate(int start, TLayout& layout, size_t n_elements) {
+    assert(start >= kVboSlots1a && start < kVboSlotsNa);
+
+    constexpr auto total = TLayout::attributes();
+
+    assert(VboHasRoom(start, total));
+    auto& vbo = NewVbo(start, total); 
+    assert(vbo.IsEmpty());
+
+    size_t buff_sz = layout.stride() * n_elements;
+
+    glBindVertexArray(vao_);
+
+    GLuint id;
+    glGenBuffers(1, &id);
+    vbo = VboInfo{id, 0, 0, buff_sz, start, total};
+    glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
+    glBufferData(GL_ARRAY_BUFFER, buff_sz, nullptr, GL_DYNAMIC_DRAW); 
+
+    never_easy::for_<total>([&] (auto i) {
+        using TAttr = typename TLayout::template TAttribute<i.value>; 
+        auto offset = TLayout::template offset<i.value>();
+
+        glVertexAttribPointer(
+            start + i.value, 
+            AttributeTraits<TAttr>::n_components,
+            AttributeTraits<TAttr>::type, 
+            GL_FALSE, 
+            TLayout::stride(), 
+            (void*)offset);
+
+        glVertexAttribDivisor(start + i.value, 1);
+    }); // for_<N>
+  
+    glBindVertexArray(0);
+  }
+  
+  template <typename TLayout>
+  BufferView Map(int start, TLayout& layout, size_t n_elements) {
+    assert(start >= kVboSlots1a && start < kVboSlotsNa);
+    
+    // TODO needed only for allocation
+    //glBindVertexArray(vao_);
+
+    constexpr auto total = TLayout::attributes();
+
+    auto& vbo = GetVbo(start, total); 
+
+    if (vbo.IsEmpty()) {
+      Allocate(start, layout, n_elements);
+    } else {
+      glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
+    }
+    
+    void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    return BufferView(ptr, layout.stride() * n_elements);
+  }
+
+  // assumes it is properly binded
+  void Unmap(int attrib_slot) {
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //glBindVertexArray(0);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -135,12 +213,11 @@ class VertexArrayObject {
   //////////////////////////////////////////////////////////////////////////////
   void Bind() {
     glBindVertexArray(vao_);
-    for (int i = 0; i < (int)vbo_.size(); ++i) {
-      VboData& the_vbo = vbo_[i];
-      if (the_vbo.vbo_id) {
-        glEnableVertexAttribArray(i);
-      }
+  
+    for (auto& v : vbo_) {
+      v.Enable(); 
     }
+
     if (indices_vbo_) {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_);
     }
@@ -150,33 +227,97 @@ class VertexArrayObject {
   // Unbinds after the draw call 
   //////////////////////////////////////////////////////////////////////////////
   void Unbind() {
-    for (int i = 0; i < (int)vbo_.size(); ++i) {
-      VboData& the_vbo = vbo_[i];
-      if (the_vbo.vbo_id) {
-        glDisableVertexAttribArray(i);
-      }
+    for (auto& v: vbo_) {
+      v.Disable();
     }
+
     if (indices_vbo_) {
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
+
     glBindVertexArray(vao_);
   }
 
+  // checks for attribute slots intersections
+  bool IsValid() const {
+    assert(false && "not implemented");
+    return true;
+  }
+
  private:
-  struct VboData {
-    GLuint vbo_id;
-    GLint  num_components;
-    GLenum type;
+  struct VboInfo {
+    GLuint id           = 0;
+    GLint  n_components = 0;  // when total == 1
+    GLenum type         = GL_FLOAT;
+    size_t size         = 0;
+    int    start        = -1; // start VAO slot
+    int    total        = -1; // total VAO slots
 
-    VboData(GLuint _vbo_id = 0, GLint _num_components = 0, GLenum _type = GL_FLOAT) 
-      : vbo_id(_vbo_id), num_components(_num_components), type(_type) {}
+    VboInfo() = default;
+
+    void Enable() const {
+      for (int i = 0; i < total; ++i) {
+        glEnableVertexAttribArray(start + i);
+      }
+    }
+
+    void Disable() const {
+      for (int i = 0; i < total; ++i) {
+        glDisableVertexAttribArray(start + i);
+      }
+    }
+
+    bool IsValid() const {
+      if (id > 0) {
+        return (start >= 0 && total > 0) && n_components > 0 && size > 0;
+      } else {
+        return true;
+      }
+    }
+
+    bool IsEmpty() const {
+      return id == 0;
+    }
   };
+  
+  VboInfo& GetVbo(int start, int total) {
+    //assert(vbo_bitset_[start] == 1);
+    return vbo_[start];
+  }
 
+  VboInfo& NewVbo(int start, int total) {
+    assert(start >= 0 && start < kMaxAttributeSlots);
+    assert(total >= 1);
+    assert(start + total < kMaxAttributeSlots);
+    // Check if start is free
+    assert(vbo_bitset_[start] == 0);
+    for (int i = 0; i < total; ++i) {
+      assert(vbo_bitset_[start + i] == 0);
+      vbo_bitset_[start + i] = 1;
+    }
+    return vbo_[start];
+  }
 
-  GLuint                    vao_; 
-  std::vector<VboData>      vbo_;
-  GLuint                    indices_vbo_;
-  bool                      static_;
+  bool VboHasRoom(int start, int total) const {
+    if (start >= 0 && start <kMaxAttributeSlots &&
+        total >= 1 && start + total < kMaxAttributeSlots) {
+
+      if (start < kVboSlots1a && total > 1)
+        return false;
+
+      for (int i = 0; i < total; i++)
+        if (vbo_bitset_[start+i])
+          return false;
+    }
+
+    return true;
+  }
+  
+  GLuint                          vao_; 
+  std::vector<VboInfo>            vbo_;
+  std::bitset<kMaxAttributeSlots> vbo_bitset_;
+  GLuint                          indices_vbo_;
+  bool                            static_;
 };
 
 #endif // _VERTEXARRAYOBJECT_H_3757C313_50A4_4E57_A091_C276B99E84DB_

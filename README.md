@@ -27,7 +27,24 @@ MIT
 ![](screenshots/omni_shadowmap.png)
 
 ## Build
-It uses cmake as the build system.
+There is master makefile which automatically triggers cmake. Following targets are available:
+```bash
+make release   # builds b3d static lib and all examples in release mode
+make debug     # builds b3d static lib and all examples in debug mode
+make clean     # cleans current build
+make distclean # removes all cmake generated files
+```
+The default target is release.
+ 
+It supports incremental compilation after adding/deleting/modifying files and targets.
+
+Examples binaries are located in 'build' directory. They shall be executed from the working directory on the
+same level with assets directory. 
+I.e. from bash:
+```bash
+./build/01_helloworld
+```
+Alternatively the Assets directory can be copied to build, so the examples can be exetuted from file explorer.
 
 ### Dependencies
  - GLM: https://glm.g-truc.net

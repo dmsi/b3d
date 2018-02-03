@@ -1,6 +1,6 @@
 # Master makefile
 
-all: release
+all: release 
 
 debug: cmake_debug
 	$(MAKE) -C build

@@ -189,6 +189,20 @@ class MeshFilter {
   void Unbind() {
     vao_->Unbind();
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Bypass Map/Unmap this directly to the VAO for now
+  // In order to manipulate per/instance attributes
+  ////////////////////////////////////////////////////////////////////////////
+  template <typename... TArgs>
+  auto Map(TArgs&&... args) {
+    return vao_->Map(std::forward<TArgs>(args)...);
+  }
+  
+  template <typename... TArgs>
+  auto Unmap(TArgs&&... args) {
+    vao_->Unmap(std::forward<TArgs>(args)...);
+  }
   
   ////////////////////////////////////////////////////////////////////////////
   // Some debug-output 

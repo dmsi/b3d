@@ -80,6 +80,7 @@ set(EXAMPLES
   17_omni_shadowmap
   18_omni_shadowmap_multi
   20_multiple_color_attachments
+  25_instancing_raw
   30_postprocess_gauss_blur
   31_postprocess_bloom
 )
@@ -98,6 +99,7 @@ set(SANDBOX
   #glm_rotations
   #pointlight
   #multilights
+  #instances
 )
 
 foreach(EX ${EXAMPLES})

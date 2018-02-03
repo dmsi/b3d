@@ -44,7 +44,7 @@ class Material;
 class Material {
  public:
   // TODO(DS) Hardcoded!
-  enum { kMaxTextureSlots = 8 };
+  enum { kMaxTextureSlots = 32 };
   
   Material() : textures_ (kMaxTextureSlots), name_("Unnamed") {}
   virtual ~Material() {}
