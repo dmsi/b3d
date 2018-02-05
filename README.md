@@ -26,26 +26,29 @@ MIT
 ![](screenshots/dudv_distortion.png)
 ![](screenshots/omni_shadowmap.png)
 
-## Build
+## Build and run
+<aside class="notice">
 C++17 compiler support is required.
-There is master makefile which automatically triggers cmake. Following targets are available:
+</aside>
+Build system is cmake with master makefile on top of it, following targets available:
 ```bash
 make release   # builds b3d static lib and all examples in release mode
 make debug     # builds b3d static lib and all examples in debug mode
 make clean     # cleans current build
 make distclean # removes all cmake generated files
 ```
-The default target is release.
- 
-It supports incremental compilation after adding/deleting/modifying files and targets.
+```bash
+make
+```
+Make command without argument will trigger release target.  
 
-Examples binaries are located in 'build' directory. They shall be executed from the working directory on the
-same level with assets directory. 
-I.e. from bash:
+As the result of the build process it produces static library b3d (i.e. libb3d.a) and bunch of example executables.  
+When running an executable the Asset directory shall be on the same level as executable working directory.  
+I.e. from shell:
 ```bash
 ./build/01_helloworld
 ```
-Alternatively the Assets directory can be copied to build, so the examples can be exetuted from file explorer.
+In order to execute from file explorer Assets can be copied (or symlink-ed) to build directory.
 
 ### Dependencies
  - GLM: https://glm.g-truc.net
@@ -362,4 +365,5 @@ int main(int argc, char* argv[]) {
  - Unit tests (gtest)
  - Logging to stderr
  - No resource management
+ - No proper error handling
  - Other to come...
