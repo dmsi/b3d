@@ -29,7 +29,8 @@ MIT
 ## Build and run
 <aside class="notice">
 C++17 compiler support is required.
-</aside>
+</aside>  
+
 Build system is cmake with master makefile on top of it, following targets available:
 ```bash
 make release   # builds b3d static lib and all examples in release mode
