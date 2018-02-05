@@ -163,7 +163,8 @@ LightInfo CreatePointLight(Scene& scene, float startpos) {
     . Perspective(90, 1, .1, 100)
     . Done();
 
-  auto lamp = Cfg<Light>(scene, "light.pt.lamp" + std::to_string(counter))
+  auto lamp = Cfg<Light>(scene, "light.pt.lamp" + std::to_string(counter),
+                         Light::kPoint)
     . Position    (0, 3, 6.9)
     . Color       (.8, .8, 1, 1) // overwriten in Shading 
     . Attenuation (.8, .3, 0)

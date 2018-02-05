@@ -25,73 +25,56 @@
 #include "b3d.h"
 #include "my/all.h"
 
-struct MoveCameraAround : public Action {
-  glm::vec3 target = glm::vec3(0);
-  glm::vec2 radius = glm::vec2(3, 3);
-  float elevation = 2;
-  float angle = 90;        // starting/current angle
-  float rotate_speed = 10; // degrees/second
-
-  MoveCameraAround(std::shared_ptr<Transformation> transform,
-                   const glm::vec3& target = glm::vec3(0),
-                   const glm::vec2& radius = glm::vec2(3, 3),
-                   float elevation = 2, 
-                   float rotate_speed = 10)
-    : Action(transform) {
-    this->target = target;
-    this->radius = radius;
-    this->elevation = elevation;
-    this->rotate_speed = rotate_speed;
-  }
-
-  void Update() override {
-    angle += rotate_speed * GetTimer().GetTimeDelta();
-    auto a = glm::radians(angle);
-    glm::vec3 pos(radius.x * cos(a), elevation, radius.y * sin(a)); 
-    transform->SetLocalPosition(pos);
-    transform->SetLocalEulerAngles(20, 90-angle, 0); 
-    // LookAt does not work because of different order of rotations
-    // hardcoded target for now...
-  }
-};
-
 int main(int argc, char* argv[]) {
   Scene scene;
 
-  // Step 1. Initialize application.
-  AppContext::Init(1280, 720, "Skybox cubemap [b3d]", Profile("3 3 core"));
+  // Initialize application.
+  AppContext::Init(1280, 720, "Batching actors - one draw call [b3d]", Profile("3 3 core"));
   AppContext::Instance().display.ShowCursor(false);
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
-  
-  // Step 2. Setup RenderTarget.
+
+  // Setup main and shadowmap rendertargets
   Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
+    . Clear(.8, .8, .8, 1)
+    . Done();
+  
+  // 
+  // Batch, all in one draw call. 
+  //
+  int batch_size = 1000;
+  auto batch = Cfg<StdBatch::Batch>(scene, "actor.batch", batch_size)
+    . Model("Assets/arrow.dsm", "Assets/instance_batch.mat")
     . Done();
 
-  // Step 3. Compose the scene. 
+  for (int i = 0; i < batch_size; ++i) {
+    float c = 1. *i/batch_size;
+    float x = i - (int)batch_size/2;
+    float a = 10.*i/2;
+    float g = Math::Random();
+
+    Cfg<StdBatch::Actor>(scene, "actor_in_batch." + std::to_string(i), batch)
+      . EulerAngles (-90, 0, 0)
+      . Position    (x, cos(a)/2, sin(a)/2)
+      . Extra       (c, g, 1-c, 1) // using as color in the shader
+      . Action<Rotator>(glm::vec3(Math::Random()*90, 0, 0))
+      . Done();
+  }
+  
+  // Main camera
   Cfg<Camera>(scene, "camera.main")
-    . Perspective(60, (float)width/height, 1, 500)
-    . Action<MoveCameraAround>(glm::vec3(0), glm::vec2(12), 1, 30)
-    . Done();
-
-  Cfg<Actor>(scene, "actor.plane")
-    .Model("Assets/plane.dsm", "Assets/texture.mat")
-    .Done();
-  
-  Cfg<Actor>(scene, "actor.knight")
-    .Model("Assets/knight.dsm", "Assets/texture.mat")
-    .Done();
-  
-  Cfg<Actor>(scene, "actor.skybox")
-    . Model("Assets/blender_cube.dsm", "Assets/skybox_cubemap.mat")
+    . Perspective(60, (float)width/height, .1, 1000)
+    . Position(0, 1, 25)
+    . Action<FlyingCameraController>(5)
     . Done();
   
+  // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()
     . Done();
-
-  // Step 6. Main loop. Press ESC to exit.
+  
+  // Main loop. Press ESC to exit.
   do {
     AppContext::BeginFrame();
     scene.Update();
@@ -99,7 +82,7 @@ int main(int argc, char* argv[]) {
     AppContext::EndFrame();
   } while (AppContext::Running());
 
-  // Step 7. Cleanup and close the app.
+  // Cleanup and close the app.
   AppContext::Close();
   return 0;
 }

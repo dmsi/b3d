@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
     ->Setup(&scene, "Assets/sphere.dsm", "Assets/skydome_water_env.mat");
 
   // Step 4. Add 'sun' light source.
-  std::shared_ptr<Light> sun = scene.Add<Light>("light.sun");
+  std::shared_ptr<Light> sun = scene.Add<Light>("light.sun", Light::kDirectional);
   sun->transform->SetLocalPosition(0, 5, 5);
   sun->transform->SetLocalEulerAngles(-210, 90, 0);
   

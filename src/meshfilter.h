@@ -194,14 +194,22 @@ class MeshFilter {
   // Bypass Map/Unmap this directly to the VAO for now
   // In order to manipulate per/instance attributes
   ////////////////////////////////////////////////////////////////////////////
-  template <typename... TArgs>
+  template <typename TLayout, typename... TArgs>
   auto Map(TArgs&&... args) {
-    return vao_->Map(std::forward<TArgs>(args)...);
+    assert(vao_);
+    return vao_->Map<TLayout>(std::forward<TArgs>(args)...);
   }
   
   template <typename... TArgs>
   auto Unmap(TArgs&&... args) {
+    assert(vao_);
     vao_->Unmap(std::forward<TArgs>(args)...);
+  }
+
+  template <typename TLayout, typename... TArgs>
+  void UploadPerInstance(TArgs&&... args) {
+    assert(vao_);
+    vao_->Upload<TLayout>(std::forward<TArgs>(args)...);
   }
   
   ////////////////////////////////////////////////////////////////////////////

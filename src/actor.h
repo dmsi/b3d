@@ -32,21 +32,17 @@
 #include <string>
 #include <algorithm>
 #include <map>
+#include <type_traits>
 #include "transformation.h"
 #include "action.h"
 #include "meshfilter.h"
 #include "meshrenderer.h"
+#include "util.h"
 
 class Actor;
 
-namespace Actor_cppness {
-  template <class TComponent> auto GetComponent(Actor& actor);
-  template <class TComponent> auto AddComponent(Actor& actor);
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // Unreal-Enine like Actor, or Unity3D GameObject ...
-// TODO(DS) Remove Actions and Components!
 //////////////////////////////////////////////////////////////////////////////
 class Actor {
  public:
@@ -63,8 +59,7 @@ class Actor {
   }
 
   ////////////////////////////////////////////////////////////////////////////
-  // Start() not calling yet from scene. Moreover the actor should keep track
-  // of recently added actions to call their start once before they're updated!
+  // Called once after adding, during the current or the next frame.
   ////////////////////////////////////////////////////////////////////////////
   virtual void Start() {
     for (auto& kv: actions_) {
@@ -107,11 +102,27 @@ class Actor {
     return name_;
   }
 
+  // Arbitrary extra information about the Actor. To fill last coloumt
+  // of 4x4 transformation matrix for StdBatch. 
+  // Did not think of anything better....
+  void SetExtra(float x, float y, float z, float w) {
+    extra_.x = x;
+    extra_.y = y;
+    extra_.z = z;
+    extra_.w = w;
+  }
+
+  void GetExtra(float& x, float& y, float& z, float& w) const {
+    x = extra_.x;
+    y = extra_.y;
+    z = extra_.z;
+    w = extra_.w;
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   // TODO Replace it with Component storage impl (ECS-like)
   ////////////////////////////////////////////////////////////////////////////
   template <typename TAction, typename... TArgs>
-  //auto AddAction(TArgs&&... args) {
   auto AddAction(TArgs&&... args) {
     auto& ti = typeid(TAction);
     auto id = ti.hash_code();
@@ -151,22 +162,19 @@ class Actor {
   }
 
   ////////////////////////////////////////////////////////////////////////////
-  // Returns std::shared_ptr<TComponent>
+  // Creates component and returns shared pointer to it, args bypassed to 
+  // TComponent constructor.
   ////////////////////////////////////////////////////////////////////////////
-  template <class TComponent>
-  auto AddComponent() {
-    return Actor_cppness::AddComponent<TComponent>(*this);
-  }
+  template <class TComponent, typename... TArgs>
+  auto AddComponent(TArgs&&... args); 
 
   ////////////////////////////////////////////////////////////////////////////
-  // Returns std::shared_ptr<TComponent>
+  // Returns shared pointer to component
   ////////////////////////////////////////////////////////////////////////////
   template <class TComponent>
-  auto GetComponent() {
-    return Actor_cppness::GetComponent<TComponent>(*this);
-  }
+  auto GetComponent();
 
- public: // Security brich, but i dont see any other simple solution
+ private: 
   using ActionPtr = std::shared_ptr<Action>;
   using ActionId  = std::size_t;
 
@@ -178,6 +186,7 @@ class Actor {
   std::shared_ptr<MeshFilter>      mesh_filter_;
   std::shared_ptr<MeshRenderer>    mesh_renderer_;
 
+  glm::vec4                        extra_;
 };
 
 #include "actor.inl"

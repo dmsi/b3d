@@ -48,6 +48,12 @@ class VertexArrayObject {
     kMaxAttributeSlots = kVboSlotsNa 
   };
 
+  enum Usage {
+    kUsageStatic = GL_STATIC_DRAW,   // upload once, use many times
+    kUsageStream = GL_STREAM_DRAW,   // upload once, use few times
+    kUsageDynamic = GL_DYNAMIC_DRAW, // upload once, use once
+  };
+
   ////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
   struct PackedData {
@@ -125,18 +131,18 @@ class VertexArrayObject {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
-  // For per-instance attributes
+  // Per instance attributes allocation 
   template <typename TLayout>
-  void Allocate(int start, TLayout& layout, size_t n_elements) {
+  void Allocate(int start, size_t n_elements, void* data, Usage usage) {
     assert(start >= kVboSlots1a && start < kVboSlotsNa);
 
-    constexpr auto total = TLayout::attributes();
+    constexpr auto total = TLayout::Attributes();
 
     assert(VboHasRoom(start, total));
     auto& vbo = NewVbo(start, total); 
     assert(vbo.IsEmpty());
 
-    size_t buff_sz = layout.stride() * n_elements;
+    size_t buff_sz = TLayout::Stride() * n_elements;
 
     glBindVertexArray(vao_);
 
@@ -144,18 +150,18 @@ class VertexArrayObject {
     glGenBuffers(1, &id);
     vbo = VboInfo{id, 0, 0, buff_sz, start, total};
     glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
-    glBufferData(GL_ARRAY_BUFFER, buff_sz, nullptr, GL_DYNAMIC_DRAW); 
+    glBufferData(GL_ARRAY_BUFFER, buff_sz, data, usage); 
 
     never_easy::for_<total>([&] (auto i) {
         using TAttr = typename TLayout::template TAttribute<i.value>; 
-        auto offset = TLayout::template offset<i.value>();
+        auto offset = TLayout::template Offset<i.value>();
 
         glVertexAttribPointer(
             start + i.value, 
             AttributeTraits<TAttr>::n_components,
             AttributeTraits<TAttr>::type, 
             GL_FALSE, 
-            TLayout::stride(), 
+            TLayout::Stride(), 
             (void*)offset);
 
         glVertexAttribDivisor(start + i.value, 1);
@@ -163,29 +169,48 @@ class VertexArrayObject {
   
     glBindVertexArray(0);
   }
-  
+
+  // Per instance upload
   template <typename TLayout>
-  BufferView Map(int start, TLayout& layout, size_t n_elements) {
+  void Upload(int start, size_t n_elements, void* data, Usage usage) {
+    assert(start >= kVboSlots1a && start < kVboSlotsNa);
+    
+    constexpr auto total = TLayout::Attributes();
+
+    auto& vbo = GetVbo(start, total); 
+
+    if (vbo.IsEmpty()) {
+      Allocate<TLayout>(start, n_elements, data, usage);
+    } else {
+      size_t buff_sz = TLayout::Stride() * n_elements;
+      glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
+      glBufferData(GL_ARRAY_BUFFER, buff_sz, data, usage); 
+    }
+  }
+  
+  // Per instance attribute memory map
+  template <typename TLayout>
+  BufferView Map(int start, size_t n_elements) {
     assert(start >= kVboSlots1a && start < kVboSlotsNa);
     
     // TODO needed only for allocation
     //glBindVertexArray(vao_);
 
-    constexpr auto total = TLayout::attributes();
+    constexpr auto total = TLayout::Attributes();
 
     auto& vbo = GetVbo(start, total); 
 
     if (vbo.IsEmpty()) {
-      Allocate(start, layout, n_elements);
+      Allocate<TLayout>(start, n_elements, nullptr, kUsageStream);
     } else {
       glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
     }
     
     void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    return BufferView(ptr, layout.stride() * n_elements);
+    return BufferView(ptr, TLayout::Stride() * n_elements);
   }
 
-  // assumes it is properly binded
+  // Per instance attribute memory unmap 
   void Unmap(int attrib_slot) {
     glUnmapBuffer(GL_ARRAY_BUFFER);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

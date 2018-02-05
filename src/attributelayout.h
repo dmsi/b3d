@@ -53,37 +53,37 @@ template <typename... T>
 struct AttributeLayout {
   using TTuple = std::tuple<T...>;
 
-  static TTuple tuple; 
-
   template <size_t N>
   using TAttribute = typename std::tuple_element<N, TTuple>::type;
 
-  static constexpr auto attributes() {return std::tuple_size<TTuple>::value; }
+  static constexpr auto Attributes() { return std::tuple_size<TTuple>::value; }
   
   template <size_t N>
-  static constexpr auto offset() {
+  static constexpr auto Offset() {
+    // TODO This does not make it as constexpr
     size_t sum = 0;
     never_easy::for_<N>([&] (auto i) {
-      sum += sizeof(std::get<i.value>(tuple)); 
+      sum += sizeof(TAttribute<i.value>);
     });
     return sum;
   }
 
-  static constexpr auto stride() {
-    constexpr auto N = attributes() - 1;
-    return offset<N>() + sizeof(TAttribute<N>);
+  static constexpr auto Stride() {
+    return (0 + ... + sizeof(T));
   }
 
   template <size_t N, typename Y, typename TBuffer>
-  void Set(int pos, const Y& val, TBuffer& dst) {
+  static
+  void Set(TBuffer& dst, int pos, const Y& val) {
     static_assert(std::is_same<Y, TAttribute<N>>::value, "");
-    dst.Write(pos * stride() + offset<N>(), (void*)&val, sizeof(val));
+    dst.Write(pos * Stride() + Offset<N>(), (void*)&val, sizeof(val));
   }
 
   template <size_t N, typename TBuffer>
-  const auto& Get(int pos, TBuffer& src) {
+  static
+  const auto& Get(TBuffer& src, int pos) {
     // TODO add size for checking bounds
-    void *ptr = src.Read(pos * stride() + offset<N>());
+    void *ptr = src.Read(pos * Stride() + Offset<N>());
     return *(TAttribute<N>*)ptr;
   }
 };
@@ -94,12 +94,9 @@ struct BufferView {
   void Write(size_t offset, void* what, size_t sz) {
     assert(ptr_);
     assert(what);
-    //assert(offset + sz < sz_);
     assert(offset + sz <= sz_);
+    (void)sz_;
     memcpy((uint8_t*)ptr_ + offset, what, sz);
-    //auto& v = *(glm::vec3*)((uint8_t*)ptr_ + offset);
-    //v = *(glm::vec3*)what;
-    //std::swap(v.y, v.z);
   }
 
   void* Read(size_t offset) {

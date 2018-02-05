@@ -44,13 +44,12 @@ struct Instancing : public Action {
 
     if (auto mf = GetActor().GetComponent<MeshFilter>()) {
       using Layout = AttributeLayout<glm::vec3, Color>;
-      Layout my_layout;
 
       // Slots 0-7 reserved for per-vertex attributes
       // Slots 8-15 reserved for pre-instance attributes
       // We start from slot 8 here and using 2 attribute layout, 
       // so slot 8 for vec3 and slot 9 for Color.
-      auto buf = mf->Map(8, my_layout, n_instances);
+      auto buf = mf->Map<Layout>(8, n_instances);
 
       for (int i = 0; i < n_instances; ++i) {
         float c = 1. *i/n_instances;
@@ -58,8 +57,8 @@ struct Instancing : public Action {
         float a = 10.*i/2;
         float g = Math::Random();
 
-        my_layout.Set<0>(i, vec3  {x, cos(a)/2, sin(a)/2}, buf);
-        my_layout.Set<1>(i, Color {c, g, 1-c, 1},          buf);
+        Layout::Set<0>(buf, i, vec3  {x, cos(a)/2, sin(a)/2});
+        Layout::Set<1>(buf, i, Color {c, g, 1-c, 1});
       }
 
       mf->Unmap(8);
@@ -77,13 +76,13 @@ int main(int argc, char* argv[]) {
   int height = AppContext::Instance().display.GetHeight();
 
   // Setup main and shadowmap rendertargets
-  Cfg<RenderTarget>(scene, "rt.screen")
+  Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
     . Clear(.8, .8, .8, 1)
     . Done();
   
   // Main camera
-  auto camera = Cfg<Camera>(scene, "camera.main")
+  Cfg<Camera>(scene, "camera.main")
     . Perspective(60, (float)width/height, .1, 100)
     . Position(0, 1, 25)
     . Action<FlyingCameraController>(5)

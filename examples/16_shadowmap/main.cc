@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     . Action<FlyingCameraController>(5)
     . Done();
 
-  auto sun = Cfg<Light>(scene, "light.sun")
+  auto sun = Cfg<Light>(scene, "light.sun", Light::kDirectional)
     . EulerAngles(40, -225, 0)
     . Color(1, 1, 1, 1) 
     . Action<SpecialRotator>(vec3(5, 2, 0))

@@ -27,53 +27,40 @@
 
 #include "renderqueue.h"
 #include "actor.h"
+#include "batch_actor.h"
 #include "camera.h"
 #include "light.h"
 #include "material/material.h"
 #include "material/pass.h"
 #include "rendertarget.h"
+#include "util.h"
 #include <memory>
 #include <map>
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////
-// C++ is cumbersome 
-////////////////////////////////////////////////////////////////////////////
-class Scene;
-namespace Scene_CppSugar {
-  template <class TEntity>
-  std::shared_ptr<TEntity> Add(const std::string& name, Scene& to);
-
-  template <class TEntity>
-  std::shared_ptr<TEntity> Get(const std::string& name, Scene& to);
-}
-
-////////////////////////////////////////////////////////////////////////////
 // The scene for our actors...
-// TODO: Combine Update and Draw into a single methid for the client code
+//
+// TODO: 
+// Break frame building down logically to B-PS-S-PV-V-E steps, which stands 
+// for: Begin, Pre-Simulation, Simulation, Pre-Visualisation, Visualisation, 
+// End. 
+// In multithreading mode B, PS, E can be use as sync points maybe.
+// https://www.youtube.com/watch?v=8AjRD6mU96s @32:00
 ////////////////////////////////////////////////////////////////////////////
 class Scene {
  public:
-  ////////////////////////////////////////////////////////////////////////////
-  // Adds/modifies the actor
-  ////////////////////////////////////////////////////////////////////////////
-  void SubmitActor(std::shared_ptr<Actor> actor);
-  void SubmitLight(std::shared_ptr<Light> light);
-  void SubmitCamera(std::shared_ptr<Camera> camera);
-
   void Update();
   void Draw();
 
-  template <class TEntity>
-  std::shared_ptr<TEntity> Add(const std::string& name) {
-    return Scene_CppSugar::Add<TEntity>(name, *this);
-  }
+  template <typename TComponent, typename... TArgs>
+  auto Add(const std::string& name, TArgs&&... args);
 
-  template <class TEntity>
-  std::shared_ptr<TEntity> Get(const std::string& name) {
-    return Scene_CppSugar::Get<TEntity>(name, *this);
-  }
+  template <typename TComponent, typename... TArgs>
+  auto Get(TArgs&&... args);
 
+  // TODO submit render target
+  /*
   std::shared_ptr<RenderTarget> AddRenderTarget(const std::string& name, int order = 0) {
     auto it = render_targets_.lower_bound(order);
 
@@ -89,76 +76,23 @@ class Scene {
         order, 
         std::make_shared<RenderTarget>(name)
         )->second;
-  }
+  }*/
   
   void SetSceneUniforms(Pass& pass, const Camera& camera);
 
- public:
+ private:
   std::map<std::string, std::shared_ptr<Camera>> cameras_;
   std::map<std::string, std::shared_ptr<Actor>>  actors_;
   std::map<std::string, std::shared_ptr<Light>>  lights_;
- private:
+
+  // TODO this is a dynamic batch which updates every frame
+  // add a static batch which updates once, or from time to
+  // time...
+  StdBatch::Storage std_batch_;
+
   std::map<int, std::shared_ptr<RenderTarget>>   render_targets_;
 };
 
-namespace Scene_CppSugar {
-  template <>
-  inline
-  std::shared_ptr<Actor> Add(const std::string& name, Scene& to) {
-    auto actor = std::shared_ptr<Actor>(new Actor(name));
-    to.SubmitActor(actor);
-    return actor;
-  }
-  
-  template <>
-  inline 
-  std::shared_ptr<Camera> Add(const std::string& name, Scene& to) {
-    auto camera = std::shared_ptr<Camera>(new Camera(name));
-    to.SubmitCamera(camera);
-    return camera;
-  }
-
-  template <>
-  inline
-  std::shared_ptr<Light> Add(const std::string& name, Scene& to) {
-    auto light = std::shared_ptr<Light>(new Light(name, Light::kDirectional));
-    to.SubmitLight(light);
-    return light;
-  }
-
-  template <>
-  inline
-  std::shared_ptr<Actor> Get(const std::string& name, Scene& to) {
-    std::shared_ptr<Actor> result;
-    auto it = to.actors_.find(name);
-    if (it != to.actors_.end()) {
-      result = it->second;
-    }
-    return result;
-  }
-  
-  template <>
-  inline
-  std::shared_ptr<Light> Get(const std::string& name, Scene& to) {
-    std::shared_ptr<Light> result;
-    auto it = to.lights_.find(name);
-    if (it != to.lights_.end()) {
-      result = it->second;
-    }
-    return result;
-  }
-  
-  template <>
-  inline
-  std::shared_ptr<Camera> Get(const std::string& name, Scene& to) {
-    std::shared_ptr<Camera> result;
-    auto it = to.cameras_.find(name);
-    if (it != to.cameras_.end()) {
-      result = it->second;
-    }
-    return result;
-  }
-
-}
+#include "scene.inl"
 
 #endif // _SCENE_H_AE8DC1BD_C8C7_48C5_8A09_CB588DCD2575_

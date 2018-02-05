@@ -34,7 +34,7 @@ class Cfg<RenderTarget> {
 
   template <typename... TArgs>
   Cfg(Scene& scene, TArgs&&... args) {
-    client_ = scene.AddRenderTarget(std::forward<TArgs>(args)...);
+    client_ = scene.Add<RenderTarget>(std::forward<TArgs>(args)...);
   }
 
   explicit Cfg(std::shared_ptr<RenderTarget> client)

@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
   int height = AppContext::Instance().display.GetHeight();
   
   // Step 2. Setup RenderTarget and FrameBuffer.
-  Cfg<RenderTarget>(scene, "rt.screen")
+  Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
     . Clear(.4, .4, .4, 1)
     . Done();
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   SpawnActor("Assets/sphere.dsm", "Assets/skydome.mat");
   
   // Step 4. Add 'sun' light source and its debug visualisation. 
-  std::shared_ptr<Light> sun = scene.Add<Light>("light.sun");
+  std::shared_ptr<Light> sun = scene.Add<Light>("light.sun", Light::kDirectional);
   sun->transform->SetLocalPosition(0, 5, 5);
   sun->transform->SetLocalEulerAngles(210, 90, 0);
   sun->AddAction<Rotator>()->rotation_speed = glm::vec3(5, 0, 0);

@@ -25,41 +25,11 @@
 #include "scene.h"
 #include <exception>
 
-
-void Scene::SubmitActor(std::shared_ptr<Actor> actor) {
-  if (!actor) {
-    throw std::logic_error("Scene::SubmitActor() - dont even try to submit \
-                            nullptr instead of an actor!");
-  }
-  actors_[actor->GetName()] = actor;
-}
-
-void Scene::SubmitLight(std::shared_ptr<Light> light) {
-  if (!light) {
-    throw std::logic_error("Scene::SubmitLight() - dont even try to submit \
-                            nullptr instead of a light!");
-  }
-  lights_[light->GetName()] = light;
-}
-
-void Scene::SubmitCamera(std::shared_ptr<Camera> camera) {
-  if (!camera) {
-    throw std::logic_error("Scene::SubmitCamera() - dont even try to submit \
-                            nullptr instead of a camera!");
-  }
-  cameras_[camera->GetName()] = camera;
-}
-
 void Scene::Update() {
-  //render_queue_.Clear();
   for (auto& rt: render_targets_) {
     rt.second->StartNewFrame();
   }
 
-  //if (camera_) {
-  //  camera_->Update();
-  //}
-  
   for (auto& kv: cameras_) {
     kv.second->Update();
   }
@@ -68,8 +38,27 @@ void Scene::Update() {
     kv.second->Update();
   }
 
+  // Regular actors
   for (auto& kv: actors_) {
     kv.second->Update();
+    for (auto& rt: render_targets_) {
+      rt.second->AddActor(kv.second);
+    }
+  }
+
+  // Update all batched actors
+  for (auto& kv: std_batch_.actors_) {
+    kv.second->Update();
+  }
+
+  // Update all batches
+  for (auto& kv: std_batch_.batches_) {
+    if (kv.second->BatchSize() == 0) 
+      continue;
+
+    kv.second->Update();
+    kv.second->UploadInstances();
+
     for (auto& rt: render_targets_) {
       rt.second->AddActor(kv.second);
     }
@@ -80,6 +69,8 @@ void Scene::Draw() {
   //if (!camera_) {
   //  throw std::logic_error("Scene::Draw() - camera not set!");
   //}
+
+  // here update the batches to move stuff to video memory
 
   for (auto& rt: render_targets_) {
     rt.second->Draw(*this);
@@ -107,6 +98,8 @@ void Scene::SetSceneUniforms(Pass& pass, const Camera& camera) {
   }
 
   // Set lights
+  // TODO refactor this, get rid of unused, precompile uniform names to 
+  // avoid building strings many times each frame (once per draw call actually)
   for (auto& kv: lights_) {
     Light& light = *kv.second;
     switch (light.GetType()) {

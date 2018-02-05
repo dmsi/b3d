@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     . Action<FlyingCameraController>(150)
     . Done();
   
-  Cfg<Light>(scene, "light.sun")
+  Cfg<Light>(scene, "light.sun", Light::kDirectional)
     . Position(0, 5, 0)
     . EulerAngles(70, -30, -20)
     . Color(1, 1, 1, 1) 

@@ -1,0 +1,63 @@
+name: instance_batch
+
+pass:
+  name: pass0 
+  tags: [onscreen]
+  cull: ccw 
+
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0)  in vec3 INv_position; // per-vertex position
+          
+          //Can be use as the whole matrix, but as the .w colount (col-major) 
+          //is always (0, 0, 0, 1) for the model matrix, we can use this for
+          //uploading some additional per-instance information, like: visibility, 
+          //color, etc...
+          //layout(location = 8)  in mat4 INi_m_matrix; // per-instance world matrix
+          layout(location = 8)  in vec4 INi_m0;       // per-instance world matrix row
+          layout(location = 9)  in vec4 INi_m1;       // per-instance world matrix row
+          layout(location = 10) in vec4 INi_m2;       // per-instance world matrix row
+          layout(location = 11) in vec4 INi_m3;       // per-instance world matrix row
+
+          //uniform mat4 SU_PVM_MATRIX;
+          uniform mat4 SU_V_MATRIX;
+          uniform mat4 SU_P_MATRIX;
+
+          out InOut {
+            vec4 color;
+          } OUT;
+
+          // Per-instance matrix
+          mat4 EncodeModelMatrix() {
+            return mat4( vec4(INi_m0.xyz, 0),
+                         vec4(INi_m1.xyz, 0),
+                         vec4(INi_m2.xyz, 0),
+                         vec4(INi_m3.xyz, 1) );
+          }
+
+          // Per-instance extra info
+          vec4 EncodeExtraInfo() {
+            return vec4(INi_m0.w, INi_m1.w, INi_m2.w, INi_m3.w);
+          }
+
+          void main() {
+            vec4 pos = vec4(INv_position, 1);
+            mat4 m_matrix = EncodeModelMatrix();
+            gl_Position = SU_P_MATRIX * SU_V_MATRIX * m_matrix * pos; 
+            OUT.color = vec4(EncodeExtraInfo().xyz, 1);
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in InOut {
+            vec4 color;
+          } IN;
+
+          out vec4 OUT_color;
+
+          void main () {
+            OUT_color = vec4(.8, .8, .8, 1) * IN.color;
+          }
+

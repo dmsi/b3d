@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
   camera->transform->SetLocalEulerAngles(-30, 0, 0);
   
   // Step 4. Setup RenderTarget and FrameBuffer.
-  Cfg<RenderTarget>(scene, "rt.screen")
+  Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
     . Clear(.4, .4, .4, 1)
     . Done();

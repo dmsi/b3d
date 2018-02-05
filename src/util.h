@@ -46,5 +46,60 @@ inline std::string ReadFile(const std::string& filename) {
     throw std::runtime_error("ReadFile() - cant read file " + filename);
   }
 }
+  
+namespace cppness { 
+  template<class T> struct dependent_false : std::false_type {};
+
+  // is_shared_ptr trait
+  template<typename T> struct is_shared_ptr : std::false_type {};
+  template<typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // Common operations with map, where value is shared_ptr
+  ///////////////////////////////////////////////////////////////////////////////
+  template <typename TMap>
+  struct MapForSharedPtr {
+    using TKey      = typename TMap::key_type;
+    using TValuePtr = typename TMap::mapped_type;
+    using TIterator = typename TMap::iterator;
+
+    static_assert(is_shared_ptr<TValuePtr>::value,
+        "TValuePtr must be std::shared_ptr!");
+
+    static inline
+    TIterator GetHint(const TKey& key, TMap& map) {
+      auto it = map.lower_bound(key);
+      if (it != map.end() && it->first == key) {
+        throw std::logic_error(
+            "MapManip::GetHint() - component already added!");
+      }
+      return it;
+    }
+
+    static inline
+    TValuePtr AddToMap(const TKey& key, TValuePtr value, TIterator hint, 
+                       TMap& map) {
+      return map.emplace_hint(hint, key, value)->second;
+    }
+
+    static inline
+    TValuePtr JustPutToMap(const TKey& key, TValuePtr value, TMap& map) {
+      auto hint = GetHint(key, map);
+      return AddToMap(key, value, hint, map);
+    }
+
+    // Return TValuePtr or nullptr
+    static inline
+    TValuePtr JustGetFromMap(const TKey& key, TMap& map) {
+      auto it = map.find(key);
+      if (it != map.end()) {
+        assert(it->second);
+        return it->second;
+      }
+      // TODO put warning here
+      return TValuePtr();
+    }
+  };
+}
 
 #endif // _UTIL_H_B32DF744_3672_4AE3_A5FB_9CB1F681FFA0_

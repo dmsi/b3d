@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
   scene.Add<Actor>("actor.terrain")->AddAction<TerrainLoader>();
   
   // Step 3. Set directional light (the sun).
-  scene.Add<Light>("light.sun")
+  scene.Add<Light>("light.sun", Light::kDirectional)
     ->transform->SetLocalEulerAngles(-210, 0, 0);
   
   // Step 4. Set main camera. 
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
   scene.Add<Actor>("actor.fps_meter")->AddAction<FpsMeter>();
   
   // Step 6. Setup RenderTarget and FrameBuffer.
-  Cfg<RenderTarget>(scene, "rt.screen")
+  Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
     . Clear(.4, .4, .4, 1)
     . Done();

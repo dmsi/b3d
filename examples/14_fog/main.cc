@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
   int height = AppContext::Instance().display.GetHeight();
   
   // Step 2. Setup RenderTarget.
-  Cfg<RenderTarget>(scene.AddRenderTarget("rt.screen"))
+  Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
     . Clear(.4, .4, .4, 1)
     . Done();
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     . Action<FlyingCameraController>(150)
     . Done();
   
-  Cfg<Light>(scene, "light.sun")
+  Cfg<Light>(scene, "light.sun", Light::kDirectional)
     . Position(0, 5, 0)
     . EulerAngles(70, -30, -20)
     . Color(1, 1, 1, 1) 

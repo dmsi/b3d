@@ -44,7 +44,7 @@ struct Instancing : public Action {
     // makes z = -y, y = z (90 degrees)... check the world matrix we set when create the actor!
 
     if (auto mf = GetActor().GetComponent<MeshFilter>()) {
-      using Layout = TAttributeLayout<glm::vec3, Color>;
+      using Layout = AttributeLayout<glm::vec3, Color>;
       Layout my_layout;
 
       auto buf = mf->Map(8, my_layout, n_instances);

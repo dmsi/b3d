@@ -24,60 +24,63 @@
 
 class Material;
 
-// GetComponent
-namespace Actor_cppness {
-  template <class TComponent>
-  inline 
-  auto GetComponent(Actor& actor) {
-    std::cerr << "GetComponent GENERIC!" << std::endl;
-    return std::shared_ptr<TComponent>();
-  }
-  
-  template <>
-  inline
-  auto GetComponent<MeshRenderer>(Actor& actor) {
-    return std::shared_ptr<MeshRenderer>(actor.mesh_renderer_);
-  }
-
-  template <>
-  inline
-  auto GetComponent<MeshFilter>(Actor& actor) {
-    return std::shared_ptr<MeshFilter>(actor.mesh_filter_);
-  }
-
-  template <>
-  inline
-  auto GetComponent<Material>(Actor& actor) {
-    if (auto mr = GetComponent<MeshRenderer>(actor)) {
-      return mr->GetMaterial();
-    } else {
-      return std::shared_ptr<Material>();
-    }
+template <class TComponent, typename... TArgs>
+inline auto Actor::AddComponent(TArgs&&... args) {
+  // C++17 constexpr dispatching
+  if constexpr (std::is_same<TComponent, MeshRenderer>::value) {
+    // 
+    // MeshRenderer
+    //
+    mesh_renderer_ = std::make_shared<MeshRenderer>(
+        std::forward<TArgs>(args)...);
+    //LOG_F(INFO, "[actor %s] MeshRenderer added", name_.c_str());
+    return mesh_renderer_;
+  } else 
+  if constexpr (std::is_same<TComponent, MeshFilter>::value) {
+    //
+    // MeshFilter
+    //
+    mesh_filter_ = std::make_shared<MeshFilter>(
+        std::forward<TArgs>(args)...);
+    //LOG_F(INFO, "[actor %s] MeshFilter added", name_.c_str());
+    return mesh_filter_;
+  } else {
+    //
+    // None of above 
+    // 
+    static_assert(cppness::dependent_false<TComponent>::value, 
+        "TComponent not recognized");
   }
 }
 
-// AddComponent 
-namespace Actor_cppness { 
-  template <class TComponent> 
-  inline
-  auto AddComponent(Actor& actor) {
-    std::cerr << "AddComponent GENERIC!" << std::endl;
-  }
-
-  template <>
-  inline
-  auto AddComponent<MeshRenderer>(Actor& actor) {
-    std::cerr << "[actor " << actor.GetName() << "] Mesh Renderer added!" << std::endl;
-    actor.mesh_renderer_ = std::shared_ptr<MeshRenderer>(new MeshRenderer());
-    return actor.mesh_renderer_; 
-  }
-  
-  template <>
-  inline
-  auto AddComponent<MeshFilter>(Actor& actor) {
-    std::cerr << "[actor " << actor.GetName() << "] Mesh Filter added!" << std::endl;
-    actor.mesh_filter_ = std::shared_ptr<MeshFilter>(new MeshFilter());
-    return actor.mesh_filter_;
+////////////////////////////////////////////////////////////////////////////
+// Returns std::shared_ptr<TComponent>
+////////////////////////////////////////////////////////////////////////////
+template <class TComponent>
+inline auto Actor::GetComponent() {
+  if constexpr (std::is_same<TComponent, MeshRenderer>::value) {
+    //
+    // MeshRenderer
+    //
+    return mesh_renderer_;
+  } else
+  if constexpr (std::is_same<TComponent, MeshFilter>::value) {
+    //
+    // MeshFilter
+    //
+    return mesh_filter_;
+  } else
+  if constexpr (std::is_same<TComponent, Material>::value) {
+    //
+    // Material (neat accessor)
+    //
+    if (mesh_renderer_) return mesh_renderer_->GetMaterial();
+    else                return std::shared_ptr<Material>();
+  } else {
+    //
+    // None of above
+    //
+    static_assert(cppness::dependent_false<TComponent>::value,
+        "TComponent not recognized");
   }
 }
-

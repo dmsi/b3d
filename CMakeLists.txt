@@ -27,7 +27,7 @@ set(ALL_LIBS
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 #set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # Debug
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -O0 -g")
@@ -81,6 +81,7 @@ set(EXAMPLES
   18_omni_shadowmap_multi
   20_multiple_color_attachments
   25_instancing_raw
+  26_instancing_batch
   30_postprocess_gauss_blur
   31_postprocess_bloom
 )
@@ -99,7 +100,7 @@ set(SANDBOX
   #glm_rotations
   #pointlight
   #multilights
-  #instances
+  #instances_batch
 )
 
 foreach(EX ${EXAMPLES})

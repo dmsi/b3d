@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
     . Perspective(90, 1, .1, 100)
     . Done();
 
-  auto lamp = Cfg<Light>(scene, "light.pt.lamp")
+  auto lamp = Cfg<Light>(scene, "light.pt.lamp", Light::kPoint)
     . Position(0, 3, 0)
     . Color(.8, .8, 1, 1) // overwriten in Shading 
     . Attenuation(.8, .1, 0)

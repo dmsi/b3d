@@ -24,42 +24,8 @@
 
 #include "b3d.h"
 #include "my/all.h"
-#include "gl_main.h"
 
-struct Instancing : public Action {
-  Instancing(std::shared_ptr<Transformation> t)
-    : Action(t) {}
-
-  void Start() override {
-    std::cerr << "Hello!" << std::endl;
-
-    const size_t n_instances = 5;
-
-    if (auto mr = GetActor().GetComponent<MeshRenderer>()) {
-      mr->n_instances = n_instances;
-    }
-
-    // xyz => xzy -> because we specify translations in object's local coordinate system!!!
-    // and then apply the world space transformation on top on our local offset which basically
-    // makes z = -y, y = z (90 degrees)... check the world matrix we set when create the actor!
-
-    if (auto mf = GetActor().GetComponent<MeshFilter>()) {
-      using Layout = TAttributeLayout<glm::vec3, Color>;
-      Layout my_layout;
-
-      auto buf = mf->Map(8, my_layout, n_instances);
-
-      for (int i = 0; i < n_instances; ++i) {
-        float c = 1.*i/n_instances;
-        std::cerr << c << std::endl;
-        my_layout.Set<0>(i, glm::vec3(i-(int)n_instances/2, 0, 0), buf);
-        my_layout.Set<1>(i, Color(c, 1-c, 1-c, 1), buf);
-      }
-
-      mf->Unmap(8);
-    }
-  }
-};
+#include "batch_actor.h"
 
 int main(int argc, char* argv[]) {
   Scene scene;
@@ -70,9 +36,56 @@ int main(int argc, char* argv[]) {
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
 
-  int n;
-  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &n);
-  std::cerr << "*** " << n << std::endl;
+  // 
+  // First batch
+  //
+  auto batch = scene.Add<StdBatch::Batch>("a*.batch", 6);
+  batch->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load("Assets/knight.dsm"));
+  batch->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/instance_test.mat"));
+  auto k1 = scene.Add<StdBatch::Actor>("a*.k1", batch);
+  auto k2 = scene.Add<StdBatch::Actor>("a*.k2", batch);
+  auto k3 = scene.Add<StdBatch::Actor>("a*.k3", batch);
+
+  k2->transform->SetLocalPosition(2, 0, 0);
+  k3->transform->SetLocalPosition(-2, 0, 0);
+  k1->AddAction<Rotator>(glm::vec3(0, 45, 0));
+
+  //
+  // Second batch
+  //
+  //batch = scene.Add<StdBatch::Batch>("a*.batch1", 6);
+  //batch->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load("Assets/arrow.dsm"));
+  //batch->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/instance_test.mat"));
+  //scene.Add<StdBatch::Actor>("a*.z1", batch)->transform->SetLocalPosition(0, 2.2, 0);
+  //scene.Add<StdBatch::Actor>("a*.z2", batch)->transform->SetLocalPosition(1, 2.2, 0);
+  //scene.Add<StdBatch::Actor>("a*.z3", batch)->transform->SetLocalPosition(-1, 2.2, 0);
+  //scene.Get<StdBatch::Actor>("a*.z3")->AddAction<Rotator>(glm::vec3(30, 90, 10));
+  //struct Foo {};
+  //scene.Add<Foo>("helo blyat!");
+  batch = Cfg<StdBatch::Batch>(scene, "a*.batch1", 6)
+    . Model("Assets/arrow.dsm", "Assets/instance_test.mat")
+    . Done();
+
+  Cfg<StdBatch::Actor>(scene, "a*.z1", batch)
+    . Position(0, 2.2, 0)
+    . Done();
+
+  Cfg<StdBatch::Actor>(scene, "a*.z2", batch)
+    . Position(1, 2.2, 0)
+    . Done();
+
+  Cfg<StdBatch::Actor>(scene, "a*.z3", batch)
+    . Position(-1, 2.2, 0)
+    . Action<Rotator>(glm::vec3(30, 90, 10))
+    . Done();
+
+  //
+  // Not in the batch, regular actor
+  //
+  // does it make sense to make AddComponent<Mesh> / <Material> which automatically adds MeshFilter and MeshRenderer?
+  auto a = scene.Add<Actor>("a=.floor");
+  a->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load("Assets/plane.dsm"));
+  a->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/texture.mat"));
   
   // Setup main and shadowmap rendertargets
   Cfg<RenderTarget>(scene, "rt.screen", 2000)
@@ -87,12 +100,6 @@ int main(int argc, char* argv[]) {
     . Action<FlyingCameraController>(5)
     . Done();
   
-  auto a = Cfg<Actor>(scene, "actor.arrow")
-    . Model("Assets/arrow.dsm", "Assets/instance_test.mat")
-    . EulerAngles(-90, 0, 0)
-    . Action<Instancing>()
-    . Done();
-
   // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()

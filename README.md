@@ -27,6 +27,7 @@ MIT
 ![](screenshots/omni_shadowmap.png)
 
 ## Build
+C++17 compiler support is required.
 There is master makefile which automatically triggers cmake. Following targets are available:
 ```bash
 make release   # builds b3d static lib and all examples in release mode
@@ -139,7 +140,7 @@ int main(int argc, char* argv[]) {
   scene.Add<Camera>("camera.main");
   
   // Step 4. Setup RenderTarget and FrameBuffer
-  Cfg<RenderTarget>(scene, "rt.screen")
+  Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
     . Clear(.4, .4, .4, 1)
     . Done();

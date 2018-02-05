@@ -33,11 +33,11 @@
 template <typename TActor, typename Ret>
 class CfgActorBase {
  public:
-  using TexturePtr = std::shared_ptr<::Texture>;
-  using TextureMap = std::map<int, TexturePtr>;
+  using TexturePtr  = std::shared_ptr<::Texture>;
+  using TextureMap  = std::map<int, TexturePtr>;
   using MaterialPtr = std::shared_ptr<::Material>;
-  using MeshPtr = std::shared_ptr<::Mesh>;
-  using TagsMap = std::map<int, std::vector<std::string>>;
+  using MeshPtr     = std::shared_ptr<::Mesh>;
+  using TagsMap     = std::map<int, std::vector<std::string>>;
 
   template <typename... TArgs>
   CfgActorBase(Scene& scene, TArgs&&... args) {
@@ -126,6 +126,12 @@ class CfgActorBase {
     return Scale(glm::vec3(std::get<0>(xyz), std::get<1>(xyz), std::get<2>(xyz)));
   }
 
+  Ret& Extra(float x, float y, float z, float w) {
+    assert(client_);
+    client_->SetExtra(x, y, z, w);
+    return CastSelf();
+  }
+
   Ret& Texture(int slot, std::shared_ptr<Texture> tex) {
     texture_map_.emplace(slot, tex);
     return CastSelf(); 
@@ -151,7 +157,7 @@ class CfgActorBase {
   auto Done() {
     assert(client_);
     // TODO once protection...
-
+    
     if (!material_ && !material_name_.empty()) {
       material_ = MaterialLoader::Load(material_name_);
     }
@@ -232,6 +238,34 @@ class Cfg<Actor> : public CfgActorBase<Actor, Cfg<Actor>> {
 
   template <typename... TArgs>
   Cfg(TArgs&&... args) : Base(std::forward<TArgs>(args)...) {}
+};
+
+template <>
+class Cfg<StdBatch::Batch> : public CfgActorBase<StdBatch::Batch, Cfg<StdBatch::Batch>> {
+ public:
+  using Self = Cfg<StdBatch::Batch>;
+  using Base = CfgActorBase<StdBatch::Batch, Self>;
+
+  template <typename... TArgs>
+  Cfg(TArgs&&... args) : Base(std::forward<TArgs>(args)...) {}
+};
+
+template <>
+class Cfg<StdBatch::Actor> : public CfgActorBase<StdBatch::Actor, Cfg<StdBatch::Actor>> {
+ public:
+  using Self = Cfg<StdBatch::Actor>;
+  using Base = CfgActorBase<StdBatch::Actor, Self>;
+
+  template <typename... TArgs>
+  Cfg(TArgs&&... args) : Base(std::forward<TArgs>(args)...) {}
+  
+  auto& Done() {
+    assert(client_);
+    client_->transform->SetLocalPosition(position_);
+    client_->transform->SetLocalEulerAngles(euler_);
+    client_->transform->SetLocalScale(scale_);
+    return *this;
+  }
 };
 
 template <>
