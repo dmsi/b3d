@@ -27,9 +27,9 @@ MIT
 ![](screenshots/omni_shadowmap.png)
 
 ## Build and run
-<aside class="notice">
+```
 C++17 compiler support is required.
-</aside>  
+```  
 
 Build system is cmake with master makefile on top of it, following targets available:
 ```bash
@@ -49,7 +49,6 @@ I.e. from shell:
 ```bash
 ./build/01_helloworld
 ```
-In order to execute from file explorer Assets can be copied (or symlink-ed) to build directory.
 
 ### Dependencies
  - GLM: https://glm.g-truc.net
