@@ -42,9 +42,7 @@ int BlendFactor::ToOpenGL(BlendFactor::Value v) {
     case BlendFactor::kOneMinusSrcAlpha  : return GL_ONE_MINUS_SRC_ALPHA;
     case BlendFactor::kDstAlpha          : return GL_DST_ALPHA;
     case BlendFactor::kOneMinusDstAlpha  : return GL_ONE_MINUS_DST_ALPHA;
-    default: 
-      throw std::runtime_error(
-          "BlendFactor::ToOpenGL() - invalid blend factor " + std::to_string(v));
+    default: ABORT_F("Invalid blend factor %d", v);
   }
 }
 
@@ -53,9 +51,7 @@ int BlendOp::ToOpenGL(BlendOp::Value v) {
     case BlendOp::kAdd                   : return GL_FUNC_ADD;
     case BlendOp::kSub                   : return GL_FUNC_SUBTRACT;
     case BlendOp::kRevSub                : return GL_FUNC_REVERSE_SUBTRACT;
-    default: 
-      throw std::runtime_error(
-          "BlendOp::ToOpenGL() - invalid blend op " + std::to_string(v));
+    default: ABORT_F("Invalid blend op %d", v);
   }
 }
 
@@ -63,9 +59,7 @@ int CullMode::ToOpenGL(CullMode::Value v) {
   switch (v) {
     case CullMode::kCw                   : return GL_CW;
     case CullMode::kCcw                  : return GL_CCW;
-    default: throw 
-      std::runtime_error(
-          "CullMode::ToOpenGL() - invalid mode " + std::to_string(v));
+    default: ABORT_F("Invalid mode %d", v);
   }
 }
 
@@ -141,7 +135,7 @@ void PassOptions::Unbind() {
 //////////////////////////////////////////////////////////////////////////////
 void Pass::Bind() {
   if (!shader_) {
-    throw std::logic_error("Pass::Bind() - shader not set!");
+    ABORT_F("Shader not set");
   }
   shader_->Bind();
   options.Bind();
@@ -149,7 +143,7 @@ void Pass::Bind() {
 
 void Pass::Unbind() {
   if (!shader_) {
-    throw std::logic_error("Pass::Unbind() - shader not set!");
+    ABORT_F("Shader not set");
   }
   shader_->Unbind();
   options.Unbind();

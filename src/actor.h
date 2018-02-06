@@ -37,7 +37,8 @@
 #include "action.h"
 #include "meshfilter.h"
 #include "meshrenderer.h"
-#include "util.h"
+#include "common/util.h"
+#include "common/logging.h"
 
 class Actor;
 
@@ -51,11 +52,11 @@ class Actor {
    std::shared_ptr<Transformation> transform;
 
   explicit Actor(const std::string& name) : transform(new Transformation(*this)), name_(name) {
-    std::cerr << "[actor " << GetName() << "] added!" << std::endl;
+    LOG_F(INFO, "Actor added: %s", GetName().c_str());
   }
 
   virtual ~Actor() {
-    std::cerr << "[actor " << GetName() << "] deleted!" << std::endl;
+    LOG_F(INFO, "Actor deleted: %s", GetName().c_str());
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -131,12 +132,11 @@ class Actor {
       //ActionPtr action = ActionPtr(new TAction(transform, args...));
       actions_[id] = action; 
       actions_start_queue_[id] = action;
-      std::cerr << "[actor " << GetName() << "] " << "Action " << ti.name() << " added!" << std::endl;
+      LOG_F(INFO, "Action added: %s   %s", GetName().c_str(), ti.name());
       //return std::shared_ptr<TAction>(std::dynamic_pointer_cast<TAction>(actions_[id]));
       return std::dynamic_pointer_cast<TAction>(action);
     } else {
-      throw std::logic_error("Actor::AddAction() - action is already added " + 
-                             std::string(ti.name()));
+      ABORT_F("Action already added %s", ti.name());
     }
   }
 
@@ -145,7 +145,6 @@ class Actor {
   ////////////////////////////////////////////////////////////////////////////
   template <class TAction>
   auto GetAction() {
-    std::cerr << "Looking for action..." << std::endl;
     auto it = actions_.find(typeid(TAction).hash_code());
     if (it != actions_.end()) {
       return it->second;

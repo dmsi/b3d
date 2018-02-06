@@ -25,7 +25,7 @@
 #ifndef _COLORMAP_H_58E91C6F_11CB_46DE_9BB8_646EFC33A1B9_
 #define _COLORMAP_H_58E91C6F_11CB_46DE_9BB8_646EFC33A1B9_ 
 
-#include "array2d.h"
+#include "common/array2d.h"
 #include "glm_main.h"
 #include "math_main.h"
 #include <memory>

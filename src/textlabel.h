@@ -29,6 +29,7 @@
 #include "material/material.h"
 #include "meshrenderer.h"
 #include "meshfilter.h"
+#include "common/logging.h"
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -68,16 +69,17 @@ struct GlyphInfo {
   }
 
   void Print() const {
-    std::cerr << "id         | " << id << std::endl;
-    std::cerr << "x          | " << x << std::endl;
-    std::cerr << "y          | " << y << std::endl;
-    std::cerr << "width      | " << width << std::endl;
-    std::cerr << "height     | " << height << std::endl;
-    std::cerr << "xoffset    | " << xoffset << std::endl;
-    std::cerr << "yoffset    | " << yoffset << std::endl;
-    std::cerr << "xadvance   | " << xadvance << std::endl;
-    std::cerr << "page       | " << page << std::endl;
-    std::cerr << "chnl       | " << chnl << std::endl;
+    LOG_SCOPE_F(INFO, "FontInfo"); 
+    LOG_F(INFO, "id         : %d", id);
+    LOG_F(INFO, "x          : %d", x);
+    LOG_F(INFO, "y          : %d", y);
+    LOG_F(INFO, "width      : %d", width);
+    LOG_F(INFO, "height     : %d", height);
+    LOG_F(INFO, "xoffset    : %d", xoffset);
+    LOG_F(INFO, "yoffset    : %d", yoffset);
+    LOG_F(INFO, "xadvance   : %d", xadvance);
+    LOG_F(INFO, "page       : %d", page);
+    LOG_F(INFO, "chnl       : %d", chnl);
   }
 };
 
@@ -95,15 +97,14 @@ class BitmapFont {
         ParseLine(line);
       }
     } else {
-      throw std::runtime_error("BitmapFont() - cant read file " + filename);
+      ABORT_F("Cant read file %s", filename.c_str());
     }
   }
 
   const GlyphInfo& GetGlyph(int id) const {
     const auto& it = glyph_map_.find(id);
     if (it == glyph_map_.end()) {
-      throw std::runtime_error("BitmapFont::GetGlyph() - character not found " + 
-                               std::to_string(id));
+      ABORT_F("Character not found %d", id); 
     }
     return it->second;
   }
@@ -120,8 +121,7 @@ class BitmapFont {
     if (pos != std::string::npos && pos+1 < token.length()) {
       return std::stoi(token.substr(pos+1));
     } else {
-      throw std::runtime_error("BitmapFont::IntFromToken() - invalid token " + 
-                               token);
+      ABORT_F("Invalid token %s", token.c_str());
     }
   }
 
@@ -133,8 +133,7 @@ class BitmapFont {
     if (pos != std::string::npos && pos+1 < token.length()) {
       return token.substr(pos+1);
     } else {
-      throw std::runtime_error("BitmapFont::StringFromToken() - invalid token " + 
-                               token);
+      ABORT_F("Invalid token %s", token.c_str());
     }
   }
 
@@ -182,7 +181,7 @@ class BitmapFont {
   void ParseLineCommon(const std::string& line, 
                        const std::vector<std::string>& tokens) {
     if (tokens.size() <= 5) {
-      throw std::runtime_error("BitmapFont::Parse() - invalid line " + line);
+      ABORT_F("Invalid line %s", line.c_str());
     }
     bitmap_width_ = IntFromToken(tokens[3]);
     bitmap_height_ = IntFromToken(tokens[4]);
@@ -193,7 +192,7 @@ class BitmapFont {
   void ParseLinePage(const std::string& line,
                      const std::vector<std::string>& tokens) {
     if (tokens.size() != 3) {
-      throw std::runtime_error("BitmapFont::Parse() - invalid line " + line);
+      ABORT_F("Invalid line %s", line.c_str());
     }
     bitmap_filename_ = StringFromToken(tokens[2]);
   }
@@ -204,7 +203,7 @@ class BitmapFont {
                      const std::vector<std::string>& tokens) {
     if (tokens[0] == "char") {
       if (tokens.size() != 11) {
-        throw std::runtime_error("BitmapFont() - invalid line " + line);
+        ABORT_F("Invalid line %s", line.c_str());
       }
       GlyphInfo g(
           IntFromToken(tokens[1]),                          // id
@@ -268,8 +267,7 @@ class TextLabel {
 
   void SetText(const BitmapFont& font, const std::string& text) {
     if (!mesh_ || !mesh_filter_ || !mesh_renderer_) {
-      throw std::logic_error("TextLabel::SetText() - something went terribly wrong! \
-                              the internal mesh data is not allocated!");
+      ABORT_F("Mesh and material not configured");
     }
 
     mesh_->Clear();

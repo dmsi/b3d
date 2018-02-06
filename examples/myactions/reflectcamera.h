@@ -44,10 +44,11 @@
 //////////////////////////////////////////////////////////////////////////////
 struct ReflectCamera: public Action {
   std::shared_ptr<Camera> camera;
-  float                   water_level = 0;
+  float                   water_level;
 
-  ReflectCamera(std::shared_ptr<Transformation> transform) 
-    : Action(transform) {}
+  ReflectCamera(std::shared_ptr<Transformation> t, 
+                std::shared_ptr<Camera> c, float wl) 
+    : Action(t), camera(c), water_level(wl) {}
 
   void Start() override {
     Camera* c = dynamic_cast<Camera*>(&transform->GetActor());
@@ -70,11 +71,6 @@ struct ReflectCamera: public Action {
     rot.x = -rot.x;
     transform->SetLocalPosition(pos);
     transform->SetLocalEulerAngles(rot);
-  }
-
-  void Setup(const std::shared_ptr<Camera> camera, float water_level) {
-    this->camera = camera;
-    this->water_level = water_level;
   }
 };
 

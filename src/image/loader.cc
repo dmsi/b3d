@@ -24,6 +24,7 @@
 
 #include "image/loader.h"
 #include "image/portablepixmap.h"
+#include "common/logging.h"
 #include <stdexcept>
 
 namespace Image {
@@ -33,8 +34,7 @@ std::shared_ptr<ColorMap> Load(const std::string& filename) {
   if (ext == "ppm" || ext == "pgm" || ext == "pam") {
     return PortablePixMap::Read(filename);
   } else {
-    throw std::runtime_error("Image::Load() - Cant load image. " + filename + 
-                             ". Format not supported");
+    ABORT_F("Cant load image %s. Format not supported", filename.c_str());
   }
 }
 

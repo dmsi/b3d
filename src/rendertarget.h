@@ -30,6 +30,7 @@
 #include "actor.h"
 #include "camera.h"
 #include "common/tags.h"
+#include "common/logging.h"
 #include <memory>
 #include <string>
 #include <stdexcept>
@@ -54,8 +55,7 @@ class RenderTarget {
   SetFrameBuffer(FrameBuffer::Type type, int width = 0, int height = 0) {
     if (framebuffer_) {
       // Dont allow to change the framebuffer
-      throw std::logic_error("RenderTarget::SetFrameBuffer() - " \
-                             "framebuffer has already been set!");
+      ABORT_F("Framebuffer already set");
     }
     if (type == FrameBuffer::kCubeMap) {
       if (!cubemap_mask_.any()) {
@@ -100,7 +100,7 @@ class RenderTarget {
   void SetCubemapSides(const std::string& sides) {
     // ugly, not optimal... but hey! optimize later. 
     if (framebuffer_) {
-      throw std::logic_error("RenderTarget::SetCubemapSides() - Render target is already initialized!");
+      ABORT_F("Render targer already initialized");
     }
     cubemap_mask_ = std::bitset<6>(sides);
   }

@@ -47,8 +47,7 @@ class CfgActorBase {
   explicit CfgActorBase(std::shared_ptr<TActor> client)
     : client_(client) {
     if (!client_) {
-      throw std::invalid_argument("Cfg<TActor>::Cfg() - " \
-          "TActor is nullptr!");
+      ABORT_F("TActor is nullptr");
     }
   }
 
@@ -204,10 +203,8 @@ class CfgActorBase {
         // I can introduce special internal action for this. 
         // which will try to apply material in Update() several
         // times and then removes itself.
-        std::cerr << "WARNING!!! Cant assign textures for " 
-                  << client_->GetName() << " "
-                  << "Material component has not been added!" 
-                  << std::endl;
+        LOG_F(WARNING, "Cant assign textures for %s Material component not added", 
+              client_->GetName().c_str());
       }
     }
 

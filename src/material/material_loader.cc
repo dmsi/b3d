@@ -27,7 +27,8 @@
 #include "texture.h"
 #include "texture2d.h"
 #include "texture_cube.h"
-#include "util.h"
+#include "common/util.h"
+#include "common/logging.h"
 #include "yaml_main.h"
 #include "image/loader.h"
 #include <exception>
@@ -64,7 +65,7 @@ static bool StringToBool(const std::string& s) {
   if      (s == "on")  return true;
   else if (s == "off") return false;
 
-  throw std::runtime_error("StringToBool() - bad value " + s);
+  ABORT_F("Bad value %s", s.c_str());
 }
 
 static std::string ReadShaderSourceCode(YAML::Node node) {
@@ -80,7 +81,7 @@ static CullMode::Value StringToCullMode(const std::string& s) {
   else if (s == "ccw") return CullMode::kCcw;
   else if (s == "off") return CullMode::kOff;
 
-  throw std::runtime_error("StringToCullMode() - bad value " + s); 
+  ABORT_F("Bad value %s", s.c_str());
 }
 
 static BlendFactor::Value StringToBlendFactor(const std::string& s) {
@@ -95,7 +96,7 @@ static BlendFactor::Value StringToBlendFactor(const std::string& s) {
   else if (s == "one_minus_dst_color") return BlendFactor::kOneMinusDstColor;
   else if (s == "one_minus_dst_alpha") return BlendFactor::kOneMinusDstAlpha;
 
-  throw std::runtime_error("StringToBlendFactor() - bad value" + s);
+  ABORT_F("Bad value %s", s.c_str());
 }
 
 static BlendOp::Value StringToBlendOp(const std::string& s) {
@@ -103,7 +104,7 @@ static BlendOp::Value StringToBlendOp(const std::string& s) {
   else if (s == "sub")      return BlendOp::kSub;
   else if (s == "rev_sub")  return BlendOp::kRevSub;
 
-  throw std::runtime_error("StringToBlendOp() - bad value" + s);
+  ABORT_F("Bad value %s", s.c_str());
 }
 
 
@@ -163,7 +164,8 @@ static std::shared_ptr<Pass> LoadPass(YAML::Node node) {
   }
 
   shader->Link();
-  std::cerr << "Pass: " << pass->GetName() << " Queue=" << pass->GetQueue() << std::endl;
+  LOG_SCOPE_F(INFO, "Pass: %s", pass->GetName().c_str());
+  LOG_F(INFO, "Queue: %d", pass->GetQueue());
   shader->PrintInfo();
   pass->SetShader(shader);
   return pass;
@@ -194,8 +196,7 @@ std::shared_ptr<Material> MaterialLoader::Load(const std::string& filename) {
   }
 
   if (!has_pass) {
-    throw std::runtime_error("MaterialLoader::Load() - material must have \
-                             at least one pass " + filename);
+    ABORT_F("Material must have at least one pass %s", filename.c_str()); 
   }
 
   return material;

@@ -82,7 +82,7 @@ struct TerrainGenerator: public Action {
     };
     auto mesh = Generate(sample_alt, sample_col, noise_map_->GetWidth(), noise_map_->GetHeight(), xz_scale, xz_scale);
     actor.AddComponent<MeshFilter>()->SetMesh(mesh);
-    std::cerr << "Terrain generated: vertices=" << mesh->vertices.size() << " triangles=" << mesh->indices.size()/3 << std::endl;
+    LOG_F(INFO, "Terrain generated   vert=%ld   triangles=%ld", mesh->vertices.size(), mesh->indices.size()/3);
   }
 
  private: 

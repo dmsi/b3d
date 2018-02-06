@@ -29,6 +29,7 @@
 #include "display.h"
 #include "input.h"
 #include "timer.h"
+#include "common/logging.h"
 #include <string>
 #include <exception>
 
@@ -44,14 +45,14 @@ class AppContext {
 
   static AppContext& Instance() {
     if (!instance) {
-      throw std::logic_error("Call AppContext::Init() once before AppContext::Instance()");
+      ABORT_F("AppContext not initialized");
     }
     return *instance;
   }
 
   static void Init(int width, int height, std::string caption, const Profile& profile) {
     if (instance) {
-      throw std::logic_error("AppContext is already initialized. Call AppContext::Close() first.");
+      ABORT_F("AppContext already initialized");
     }
     instance = new AppContext(width, height, std::move(caption), profile);
     instance->input.Init();

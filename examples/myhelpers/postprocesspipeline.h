@@ -91,8 +91,7 @@ class PostprocessPipeline {
   auto& Stage(std::string tag, int w, int h, std::string mtrl) { 
     auto it = alltags_.find(tag);
     if (it != alltags_.end()) {
-      throw std::logic_error("PostprocessPipeline::Stage() - Stage " + tag +
-                             "already exist!");
+      ABORT_F("Tag %s already exists!", tag.c_str());
     }
     alltags_.emplace(tag);
     auto idx = start_idx_ + stage_ls_.size();
@@ -178,7 +177,7 @@ class PostprocessPipeline {
         stage_ls_.begin(), 
         stage_ls_.end(),
         [this,&tag](const StageInfo& s) {return s.tag == tag;});
-    assert(it != stage_ls_.end()); // throw better
+    assert(it != stage_ls_.end()); 
     return *it;
   }
 

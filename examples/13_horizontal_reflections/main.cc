@@ -26,14 +26,15 @@
 #include "my/all.h"
 
 struct SetClipPlaneUniform: public Action {
-  std::shared_ptr<Transformation> plane;
+  std::shared_ptr<Actor> plane;
 
-  SetClipPlaneUniform(std::shared_ptr<Transformation> transform) 
-    : Action(transform) {}
+  SetClipPlaneUniform(std::shared_ptr<Transformation> t, 
+                      std::shared_ptr<Actor> p) 
+    : Action(t), plane(p) {}
 
   void PreDraw() override {
     if (auto mtrl = transform->GetActor().GetComponent<Material>()) {
-      auto pos = plane->GetLocalPosition();
+      auto pos = plane->transform->GetLocalPosition();
       float clip_bias = .01;
       glm::vec4 clip_plane(0, 1, 0, -pos.y + clip_bias);
       mtrl->SetUniform("clip_plane", clip_plane);
@@ -42,6 +43,7 @@ struct SetClipPlaneUniform: public Action {
 };
 
 int main(int argc, char* argv[]) {
+  using glm::vec3;
   Scene scene;
   float water_level = 0.5;
   
@@ -71,55 +73,55 @@ int main(int argc, char* argv[]) {
     ->GetLayerAsTexture(0, Layer::kColor);
   
   // Step 3. Setup the reflections destination 
-  auto water = scene.Add<Actor>("actor.water")
-    ->AddAction<LoadModel>()
-    ->Setup(&scene, "Assets/plane.dsm", "Assets/reflection_dst.mat")
-    ->Position(0, water_level,  0)
-    ->Texture(0, reflection_texture)
-    ->GetTransform();
+  auto mirror = Cfg<Actor>(scene, "actor.mirror")
+    . Model("Assets/plane.dsm", "Assets/reflection_dst.mat")
+    . Position(0, water_level, 0)
+    . Texture(0, reflection_texture)
+    . Done();
 
   // Step 3.2. Setup the reflections sources
-  auto k1 = scene.Add<Actor>("actor.knight1")
-    ->AddAction<LoadModel>()
-    ->Setup(&scene, "Assets/knight.dsm", "Assets/reflection_src.mat")
-    ->Position(-2.5, .5,  -2.5)
-    ->Done();
-  k1->AddAction<SetClipPlaneUniform>()->plane = water;
-  k1->AddAction<Rotator>()->rotation_speed = glm::vec3(0, -90, 0);
-  
-  auto k2 = scene.Add<Actor>("actor.knight2")
-    ->AddAction<LoadModel>()
-    ->Setup(&scene, "Assets/knight.dsm", "Assets/reflection_src.mat")
-    ->Position(+2.5, .5,  +2.5)
-    ->Done();
-  k2->AddAction<SetClipPlaneUniform>()->plane = water;
-  k2->AddAction<Rotator>()->rotation_speed = glm::vec3(0, 90, 0);
-  
-  auto c4 = scene.Add<Actor>("actor.cube4")
-    ->AddAction<LoadModel>()
-    ->Setup(&scene, "Assets/unity_cube.dsm", "Assets/reflection_src.mat")
-    ->Position(0, .5, 0)
-    ->Done();
-  c4->AddAction<SetClipPlaneUniform>()->plane = water;
-  c4->AddAction<Rotator>()->rotation_speed = glm::vec3(90, 90, 90);
+  Cfg<Actor>(scene, "actor.knight1")
+    . Model("Assets/knight.dsm", "Assets/reflection_src.mat")
+    . Position(-2.5, .5,  -2.5)
+    . Action<SetClipPlaneUniform>(mirror)
+    . Action<Rotator>(vec3(0, -90, 0))
+    . Done();
+
+  Cfg<Actor>(scene, "actor.knight2")
+    . Model("Assets/knight.dsm", "Assets/reflection_src.mat")
+    . Position(2.5,  .5,  2.5)
+    . Action<SetClipPlaneUniform>(mirror)
+    . Action<Rotator>(vec3(0, 90, 0))
+    . Done();
+
+  Cfg<Actor>(scene, "actor.cube")
+    . Model("Assets/unity_cube.dsm", "Assets/reflection_src.mat")
+    . Position(0,  .5,  0)
+    . Action<SetClipPlaneUniform>(mirror)
+    . Action<Rotator>(vec3(90, 90, 90))
+    . Done();
   
   // Step 4. The FPS meter
-  scene.Add<Actor>("actor.fps_meter")->AddAction<FpsMeter>();
+  Cfg<Actor>(scene, "actor.fps_meter")
+    . Action<FpsMeter>()
+    . Done();
   
   // Step 4.1. Add overlay screen with reflection texture.
-  scene.Add<Actor>("action.overlay1")
-    ->AddAction<MakeOverlayArea>(reflection_texture, MakeOverlayArea::kBottom0, true);
+  Cfg<Actor>(scene, "actor.overlay")
+    . Action<MakeOverlayArea>(reflection_texture, MakeOverlayArea::kBottom0, true)
+    . Done();
   
   // Step 5. Configure the main camera. 
-  auto camera = scene.Add<Camera>("camera.main");
-  camera->SetPerspective(60, 1.0f*width/height, .1, 100);
-  camera->transform->SetLocalPosition(-5, 2, 5);
-  camera->transform->SetLocalEulerAngles(-15, -45, 0);
+  auto camera = Cfg<Camera>(scene, "camera.main")
+    . Perspective(60, (float)width/height, .1, 100)
+    . Position(-5,  2,  5)
+    . EulerAngles(-15, -45, 0)
+    . Done();
 
   // Step 5.1. Configure the reflection camera
-  scene.Add<Camera>("camera.main.reflection")
-    ->AddAction<ReflectCamera>()
-    ->Setup(camera, water_level);
+  Cfg<Camera>(scene, "camera.main.reflection")
+    . Action<ReflectCamera>(camera, water_level)
+    . Done();
 
   // Step 6. Main loop. Press ESC to exit.
   do {

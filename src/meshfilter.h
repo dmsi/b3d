@@ -26,6 +26,7 @@
 #define _MESHFILTER_H_B169C760_F9D6_42B9_81B7_91955A69A250_ 
 
 #include "vertexarrayobject.h"
+#include "common/logging.h"
 
 #include <cstdint>
 #include <memory>
@@ -216,15 +217,16 @@ class MeshFilter {
   // Some debug-output 
   ////////////////////////////////////////////////////////////////////////////
   void PrintSlotMap() {
-    std::cerr << "kPositions | " << GetSlot(kPositions) << std::endl;
-    std::cerr << "kNormals   | " << GetSlot(kNormals)   << std::endl;
-    std::cerr << "kColors    | " << GetSlot(kColors)    << std::endl;
-    std::cerr << "kUv        | " << GetSlot(kUv)        << std::endl;
-    std::cerr << "kUv1       | " << GetSlot(kUv1)       << std::endl;
-    std::cerr << "kUv2       | " << GetSlot(kUv2)       << std::endl;
-    std::cerr << "kUv3       | " << GetSlot(kUv3)       << std::endl;
-    std::cerr << "kIndices   | " << GetSlot(kIndices)   << std::endl;
-    std::cerr << "kNone      | " << GetSlot(kNone)      << std::endl;
+    LOG_SCOPE_F(INFO, "MeshFilter slots"); 
+    LOG_F(INFO, "kPositions : %d", GetSlot(kPositions));
+    LOG_F(INFO, "kNormals   : %d", GetSlot(kNormals));
+    LOG_F(INFO, "kColors    : %d", GetSlot(kColors));
+    LOG_F(INFO, "kUv        : %d", GetSlot(kUv));
+    LOG_F(INFO, "kUv1       : %d", GetSlot(kUv1));
+    LOG_F(INFO, "kUv2       : %d", GetSlot(kUv2)); 
+    LOG_F(INFO, "kUv3       : %d", GetSlot(kUv3));
+    LOG_F(INFO, "kIndices   : %d", GetSlot(kIndices));
+    LOG_F(INFO, "kNone      : %d", GetSlot(kNone));
   }
 
  private:
@@ -233,11 +235,11 @@ class MeshFilter {
   ////////////////////////////////////////////////////////////////////////////
   void Bake() {
     if (!mesh_) {
-      throw std::logic_error("MeshFilter::Bake() the mesh has not been set, or deleted. Use MeshFilter::SetMesh()");
+      ABORT_F("Mesh not set");
     }
 
     if (!mesh_->IsValid()) {
-      throw std::logic_error("MeshFilter::Bake() the mesh is not valid. Please use a valid mesh.");
+      ABORT_F("Mesh is not valid");
     }
 
     AdjustSlots();

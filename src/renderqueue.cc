@@ -29,14 +29,13 @@
 // RenderPassSubQueue 
 ////////////////////////////////////////////////////////////////////////////
 void RenderPassSubQueue::AddActor(std::shared_ptr<Actor> actor) {
-  //std::cerr << "Actor " << actor->GetName() << " Adding..." << std::endl;
   auto mesh_renderer = actor->GetComponent<MeshRenderer>();
   if (mesh_renderer) {
     auto material = mesh_renderer->GetMaterial();
     if (!material_) {
       material_ = material;
     } else if (material != material_) {
-      throw std::runtime_error("RenderPassSubQueue::AddActor() - material mistmatch!");
+      ABORT_F("Material mistmatch");
     }
     actors_.push_back(actor);
   }
@@ -72,9 +71,7 @@ void RenderPassSubQueue::Draw(Scene& scene, Camera& camera) {
       mesh_renderer->DrawCall(*mesh_filter);
 
       actor->PostDraw();
-    } else {
-      //std::cerr << "Actor " << actor->GetName() << " NOT Drawing..." << std::endl;
-    }
+    } 
   }
   pass_->Unbind();
   material_->Unbind();
@@ -120,7 +117,7 @@ RenderPassSubQueue& RenderQueue::GetRenderPassSubQueue(std::shared_ptr<Pass> pas
   if (it == pass_q.end()) {
     auto result = pass_q.emplace(pass, RenderPassSubQueue(pass));
     if (!result.second) {
-      throw std::runtime_error("RenderQueue::GetRenderPassSubQueue() - cant emplace RQ!");
+      ABORT_F("Cant emplace RenderQueue");
     }
     return result.first->second;
   }

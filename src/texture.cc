@@ -24,6 +24,7 @@
 
 #include "texture.h"
 #include "image/portablepixmap.h"
+#include "common/logging.h"
 
 #include <exception>
 #include <iostream>
@@ -37,9 +38,7 @@ int Texture::ToOpenGL(Texture::FilterMode v) {
     case Texture::kFilterPoint     : return GL_NEAREST;
     case Texture::kFilterBilinear  : return GL_LINEAR;
     case Texture::kFilterTrilinear : return GL_LINEAR_MIPMAP_LINEAR;
-    default: 
-      throw std::runtime_error(
-          "Texture::ToOpenGL() - invalid filter mode " + std::to_string(v));
+    default: ABORT_F("Invalid filter mode %d", v);
   }
 }
 
@@ -49,11 +48,7 @@ int Texture::ToOpenGL(Texture::WrapMode v) {
     case Texture::kWrapClamp      : return GL_CLAMP_TO_EDGE;
     case Texture::kWrapMirror     : return GL_MIRRORED_REPEAT;
     case Texture::kWrapMirrorOnce : 
-      throw std::runtime_error(
-          "Texture::ToOpenGL() - not implemented" + std::to_string(v));
-    default: 
-      throw std::runtime_error(
-          "Texture::ToOpenGL() - invalid wrap mode " + std::to_string(v));
+    default: ABORT_F("Not implemented %d", v);
   }
 }
 

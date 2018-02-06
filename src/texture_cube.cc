@@ -23,6 +23,7 @@
 //
 
 #include "texture_cube.h"
+#include "common/logging.h"
 
 TextureCube::TextureCube() : Texture(), texture_id_(0) {
   wrap_u_mode = Texture::kWrapClamp;
@@ -51,8 +52,7 @@ void TextureCube::SetPixels(std::shared_ptr<Image::ColorMap> pixels[6]) {
   for (int i = 0; i < 6; ++i) {
     if (pixels[0]->GetWidth() != pixels[i]->GetWidth() ||
         pixels[0]->GetHeight() != pixels[0]->GetHeight()) {
-      throw std::logic_error("TextureCube::SetPixels() - All faces should have "\
-                             "the same size!");
+      ABORT_F("All faces should have the same size");
     }
     pixels_[i] = pixels[i];
   }
@@ -90,7 +90,7 @@ void TextureCube::Apply() {
 }
 
 void TextureCube::Compress() {
-  throw std::runtime_error("Texture::Compress() - not implemented!");
+  ABORT_F("Not implemented");
 }
 
 void TextureCube::Bind(int slot) { 

@@ -34,6 +34,7 @@
 #include <functional>
 #include "shader.h"
 #include "common/tags.h"
+#include "common/logging.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -142,10 +143,8 @@ class PassOptions {
     clipping_planes_.clear();
     for (const auto& i: clipping_planes) {
       if (i > kMaximumClippingPlanes-1) {
-        throw std::logic_error("PassOptions::SetClippingPlanes() - "
-                               "maximum allowed clipping plane " +
-                               std::to_string(kMaximumClippingPlanes-1) +
-                               " while you're trying " + std::to_string(i));
+        ABORT_F("Max allowed clipping plane %d, you're setting %d",
+                kMaximumClippingPlanes-1, i);
       }
       clipping_planes_.insert(i);
     }

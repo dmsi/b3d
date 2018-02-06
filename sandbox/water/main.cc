@@ -22,14 +22,8 @@
 // THE SOFTWARE.
 //
 
-#include <iostream>
-#include <memory>
-#include <limits>
-
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
-
+#include "my/all.h"
 #include "terraingenerator_custom.h"
 
 struct SetOverlayUniform: public Action {
@@ -56,7 +50,9 @@ struct SetOverlayUniform: public Action {
 class SetClipPlaneUniform: public Action {
  public:
   std::shared_ptr<Actor> plane;
-  SetClipPlaneUniform(std::shared_ptr<Transformation> transform) : Action(transform) {}
+  SetClipPlaneUniform(std::shared_ptr<Transformation> t, 
+                      std::shared_ptr<Actor> p) 
+   : Action(t), plane(p) {}
 
   void PreDraw() override {
     if (auto mtrl = transform->GetActor().GetComponent<Material>()) {
@@ -92,78 +88,20 @@ struct SetWaterSurfaceUniform: public Action {
 
 int main(int argc, char* argv[]) {
   Scene scene;
-  int   counter = 0;
   
-  // Helper function for spawning 3D actors
-  auto SpawnActor = [&scene, &counter] (const std::string& obj, const std::string& mat) {
-    auto actor = scene.Add<Actor>("actor." + obj + "#" + std::to_string(counter));
-    actor->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load(mat));
-    actor->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load(obj));
-
-    counter++;
-    return actor;
-  };
-
   // Step 1. Initialize application.
   AppContext::Init(1280, 720, "Water [b3d]", Profile("3 3 core"));
   AppContext::Instance().display.ShowCursor(false);
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
   
-
-  auto water = SpawnActor("Assets/plane.dsm", "Assets/water_surf.mat");
-  water->transform->SetLocalPosition(0, 20, 0);
-  water->transform->SetLocalScale(200, 0, 200);
-  water->AddAction<SetWaterSurfaceUniform>();
-
-  // Step 3. Add the terrain and skydome.
-  auto terrain = scene.Add<Actor>("actor.terrain");
-  auto gen = terrain->AddAction<TerrainGeneratorCustom>();
-  gen->material = "Assets/terrain_flatshading_water_env.mat";
-  terrain->AddAction<SetClipPlaneUniform>()->plane = water;
-  SpawnActor("Assets/sphere.dsm", "Assets/skydome_water_env.mat");
-
-  // Step 4. Add 'sun' light source and its debug visualisation. 
-  std::shared_ptr<Light> sun = scene.Add<Light>("light.sun");
-  sun->transform->SetLocalPosition(0, 5, 5);
-  sun->transform->SetLocalEulerAngles(-210, 90, 0);
-  
-  // Make it a child of the sun to inherit the transformations 
-  auto debug_light = SpawnActor("Assets/arrow.dsm", "Assets/lamp.mat");
-  debug_light->transform->SetLocalScale(3, 3, 3);
-  Transformation::SetParent(sun->transform, debug_light->transform);
-  
-  scene.Add<Actor>("actor.fps_meter")->AddAction<FpsMeter>();
-  
-  // Step 5. Configure the main camera. 
-  auto camera = scene.Add<Camera>("camera.main");
-  camera->SetPerspective(60, 1.0f*width/height, 1, 1500.0);
-  camera->transform->SetLocalPosition(0, 200, 20);
-  //camera->transform->SetLocalEulerAngles(-30, 0, 0);
-  //camera->AddAction<Rotator>()->rotation_speed = glm::vec3(10, 0, 0);
-  camera->AddAction<FlyingCameraController>()->moving_speed = 150;
-  //camera->AddAction<FlyingCameraController>()->moving_speed = 5;
-  //
-  //camera->transform->SetLocalPosition(0, .1, 5);
-  //glm::vec3 dir = camera->transform->GetForward(); 
-  //camera->transform->LookAt(dir, glm::vec3(1,1,0));
-  //camera->transform->LookAt(glm::vec3(0, 0, 0), glm::vec3(0,1,0));
-
-  auto reflected_camera = scene.Add<Camera>("camera.main.reflection");
-  reflected_camera->AddAction<ReflectCamera>()
-    ->Setup(camera, water->transform->GetLocalPosition().y);
-  reflected_camera->CopyProjection(camera);
-  
-  // Step 2. Setup RenderTarget and FrameBuffer.
-  // Range from 100 - to inf
-  // Reserving 0 - 99 for reflections and refractions
+  // Setup render targets 
   Cfg<RenderTarget>(scene, "rt.screen", 1000)
     . Tags("onscreen")
     . Clear(.4, .4, .4, 1)
     . Done();
   
-  int w = width/2;
-  int h = height/2;
+  int w = width/2, h = height/2;
   auto reflection_tex = Cfg<RenderTarget>(scene, "rt.reflection", 100)
     . Camera("camera.main.reflection")
     . Tags("reflection")
@@ -186,20 +124,48 @@ int main(int argc, char* argv[]) {
     . Done();
   auto refraction_tex = refraction->GetLayerAsTexture(0, Layer::kColor);
   auto refraction_depth = refraction->GetLayerAsTexture(0, Layer::kDepth);
-
-  // Add overlay screen with reflection texture
-  //scene.Add<Actor>("action.overlay1")
-  //  ->AddAction<MakeOverlayArea>()
-  //  ->Setup(&scene, reflection_tex, MakeOverlayArea::kTop2, true);
   
-  //scene.Add<Actor>("action.overlay2")
-  //  ->AddAction<MakeOverlayArea>()
-  //  ->Setup(&scene, refraction_tex, MakeOverlayArea::kTop3, false);
+  // Water surface
+  auto water = Cfg<Actor>(scene, "actor.seasurface")
+    . Model("Assets/plane.dsm", "Assets/water_surf.mat")
+    . Position(0,  20, 0)
+    . Scale   (200, 0, 200)
+    . Action<SetWaterSurfaceUniform>()
+    . Texture(0, reflection_tex)
+    . Texture(1, refraction_tex)
+    . Texture(2, refraction_depth)
+    . Done();
 
-  // Apply reflection rendered texture to the water material
-  water->GetComponent<MeshRenderer>()->GetMaterial()->SetTexture(0, reflection_tex);
-  water->GetComponent<MeshRenderer>()->GetMaterial()->SetTexture(1, refraction_tex);
-  water->GetComponent<MeshRenderer>()->GetMaterial()->SetTexture(2, refraction_depth);
+  // Add the terrain and skydome.
+  auto terrain = Cfg<Actor>(scene, "actor.terrain")
+    . Action<TerrainGeneratorCustom>("Assets/terrain_flatshading_water_env.mat")
+    . Action<SetClipPlaneUniform>(water)
+    . Done();
+
+  Cfg<Actor>(scene, "actor.skydome")
+    . Model("Assets/sphere.dsm", "Assets/skydome_water_env.mat")
+    . Done();
+
+  // Add 'sun' light source and its debug visualisation. 
+  auto sun = Cfg<Light>(scene, "actor.sun", Light::kDirectional)
+    . EulerAngles(-210, 90, 0)
+    . Done();
+  
+  
+  // Configure the main camera. 
+  auto main_camera = Cfg<Camera>(scene, "camera.main")
+    . Perspective(60, (float)width/height, 1, 1500)
+    . Position(0, 200, 20)
+    . Action<FlyingCameraController>(150)
+    . Done();
+
+  Cfg<Camera>(scene, "camera.main.reflection")
+    . Action<ReflectCamera>(main_camera, water->transform->GetLocalPosition().y)
+    . Done();
+  
+  Cfg<Actor>(scene, "actor.fps_meter")
+    . Action<FpsMeter>()
+    . Done();
   
   // Step 6. Main loop. Press ESC to exit.
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

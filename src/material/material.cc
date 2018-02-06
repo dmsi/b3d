@@ -23,7 +23,7 @@
 //
 
 #include "material/material.h"
-#include "gl_main.h" // remove ater bind added to texture
+#include "common/logging.h"
 #include <algorithm>
   
 //////////////////////////////////////////////////////////////////////////////
@@ -52,8 +52,7 @@ void Material::AddPass(std::shared_ptr<Pass> pass) {
 
 void Material::SetTexture(int slot, std::shared_ptr<Texture> texture) {
   if (slot < 0 || slot > (int)textures_.size()) {
-    throw std::logic_error("Material::SetTexture() - invalid texture slot" + 
-                           std::to_string(slot));
+    ABORT_F("Invalid texture slot %d", slot);
   }
   textures_[slot] = texture;
 }
@@ -67,8 +66,7 @@ std::shared_ptr<Pass> Material::GetPass(const std::string& name) const {
       });
 
   if (it == pass_.end()) {
-    throw std::logic_error("Material::GetPass() - pass " + name +
-                           " not found!");
+    ABORT_F("Pass %s not found", name.c_str());
   }
 
   return *it;

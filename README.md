@@ -51,10 +51,11 @@ I.e. from shell:
 In order to execute from file explorer Assets can be copied (or symlink-ed) to build directory.
 
 ### Dependencies
- - GLM: https://glm.g-truc.net
- - yaml-cpp: https://github.com/jbeder/yaml-cpp
  - glfw: http://www.glfw.org 
  - glew: http://glew.sourceforge.net
+ - yaml-cpp: https://github.com/jbeder/yaml-cpp
+ - GLM: https://glm.g-truc.net (*headers only*)
+ - loguru: https://github.com/emilk/loguru (*headers only*)
 
 GLM and yaml-cpp are included as submodules, the rest is installed the usual way.
 ```bash

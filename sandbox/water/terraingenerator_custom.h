@@ -41,10 +41,12 @@ struct TerrainGeneratorCustom: public Action {
   //Color       hi_color  = Rgb(139,69,19); 
   //Color       hi_color  = Rgb(155,255,155); 
 
-  TerrainGeneratorCustom(std::shared_ptr<Transformation> transform) 
-    : Action(transform) {}
+  TerrainGeneratorCustom(std::shared_ptr<Transformation> transform, const std::string & mtrl) 
+    : Action(transform), material(mtrl) {
+    Build();
+  }
 
-  void Start() override {
+  void Build() {
     noise_map_ = GenerateNoiseMap(241, 241, 5, 1.9, .5, 40, 0, 0);
     for (size_t ix = 0; ix < noise_map_->GetWidth(); ++ix) {
       for (size_t iz = 0; iz < noise_map_->GetHeight(); ++iz) {

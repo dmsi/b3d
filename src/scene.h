@@ -33,7 +33,7 @@
 #include "material/material.h"
 #include "material/pass.h"
 #include "rendertarget.h"
-#include "util.h"
+#include "common/util.h"
 #include <memory>
 #include <map>
 #include <string>
@@ -47,6 +47,24 @@
 // End. 
 // In multithreading mode B, PS, E can be use as sync points maybe.
 // https://www.youtube.com/watch?v=8AjRD6mU96s @32:00
+//
+// TODO:
+// Start working on physics simulation and collision detection. Thinking of
+// split simulation and rendering to their own threads with sync point on 
+// when all actions called (post update?).
+//  - Rendering thread - rendering current frame
+//  - Simulation thread - simulating next frame
+//    -> Is that possible to quickly evaluate pieces of the simulation step
+//       which 100% (or most probably) wont interact with each other and 
+//       simulate such pieces in paralel?
+//  - Far-far away objects simulation thread
+//  Can use two transformations copies for that, one for simulation and
+//  another for rendering. At the sync point, they swap, or smth like that.
+//
+// TODO:
+// This about sector based scene management, such as octree, portals, etc.
+// In order to cut off big chunks of world from processing. Integration with
+// batching and simulation required.
 ////////////////////////////////////////////////////////////////////////////
 class Scene {
  public:
@@ -58,25 +76,6 @@ class Scene {
 
   template <typename TComponent, typename... TArgs>
   auto Get(TArgs&&... args);
-
-  // TODO submit render target
-  /*
-  std::shared_ptr<RenderTarget> AddRenderTarget(const std::string& name, int order = 0) {
-    auto it = render_targets_.lower_bound(order);
-
-    if (it != render_targets_.end() && it->first == order) {
-      // RenderTarget with the same order has been added before 
-      throw std::logic_error("Scene::AddRenderTarget() - order " +
-                             std::to_string(order) + 
-                             " already added!");
-    } 
-
-    return render_targets_.emplace_hint(
-        it, 
-        order, 
-        std::make_shared<RenderTarget>(name)
-        )->second;
-  }*/
   
   void SetSceneUniforms(Pass& pass, const Camera& camera);
 

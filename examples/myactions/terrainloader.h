@@ -49,8 +49,6 @@ struct TerrainLoader: public Action {
   }
 
   void Start() override {
-    std::cerr << "TerrainLoader::Start()" << std::endl;
-
     // NOTE: auto actor = ... will destroy the actor => disable copy constructor!!!!!
     // use auto& actor !!!
     auto& actor = transform->GetActor();
@@ -135,7 +133,7 @@ struct TerrainLoader: public Action {
   std::shared_ptr<NoiseMap> ReadNoiseMap(const std::string& filename) {
     std::ifstream in(filename, std::ios::in);
     if (!in.is_open()) {
-      throw std::runtime_error("TerrainLoader::ReadNoiseMap() - Cant open file " + filename);
+      ABORT_F("Cant open file %s", filename.c_str());
     }
     std::string line;
     std::getline(in, line);
@@ -157,7 +155,7 @@ struct TerrainLoader: public Action {
   std::shared_ptr<Image::ColorMap> ReadColorMap(const std::string& filename) {
     std::ifstream in(filename, std::ios::in);
     if (!in.is_open()) {
-      throw std::runtime_error("TerrainLoader::ReadColorMap() - Cant open file " + filename);
+      ABORT_F("Cant open file %s", filename.c_str());
     }
     std::string line;
     std::getline(in, line);

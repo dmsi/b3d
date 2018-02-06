@@ -28,6 +28,7 @@
 #include "gl_main.h"
 #include "glm_main.h"
 #include "attributelayout.h"
+#include "common/logging.h"
 #include <bitset>
 #include <cstdint>
 #include <vector>
@@ -115,7 +116,7 @@ class VertexArrayObject {
   //////////////////////////////////////////////////////////////////////////////
   void Upload(int attrib_slot, PackedData data) {
     if (attrib_slot < 0 || attrib_slot >= kVboSlots1a) { 
-      throw std::logic_error("VertexArrayObject::Upload() bad attrib_slot=" + std::to_string(attrib_slot));
+      ABORT_F("Bad attribute slot %d", attrib_slot);
     }
 
     auto& vbo = vbo_[attrib_slot];
@@ -193,9 +194,6 @@ class VertexArrayObject {
   BufferView Map(int start, size_t n_elements) {
     assert(start >= kVboSlots1a && start < kVboSlotsNa);
     
-    // TODO needed only for allocation
-    //glBindVertexArray(vao_);
-
     constexpr auto total = TLayout::Attributes();
 
     auto& vbo = GetVbo(start, total); 
@@ -214,7 +212,6 @@ class VertexArrayObject {
   void Unmap(int attrib_slot) {
     glUnmapBuffer(GL_ARRAY_BUFFER);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    //glBindVertexArray(0);
   }
 
   //////////////////////////////////////////////////////////////////////////////

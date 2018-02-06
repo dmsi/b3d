@@ -7,6 +7,7 @@ find_package(GLFW3 REQUIRED)
 
 include_directories (
   ${PROJECT_SOURCE_DIR}/submodules/glm
+  ${PROJECT_SOURCE_DIR}/submodules/loguru
   ${PROJECT_SOURCE_DIR}/submodules/yaml-cpp/include
   ${PROJECT_SOURCE_DIR}/src
   ${PROJECT_SOURCE_DIR}/examples
@@ -21,6 +22,7 @@ set(ALL_LIBS
   ${GLEW_LIBRARY}
   glfw 
   yaml-cpp
+  pthread 
 )
 
 # gprof support
@@ -71,10 +73,10 @@ set(EXAMPLES
   08_dudv_distortion
   09_render_to_cubemap
   10_flatshading_terrain
-  11_terrain_sky
-  12_horizontal_reflections
-  13_water
-  14_fog
+  11_directional_light
+  12_deferred_rendering
+  13_horizontal_reflections
+  14_water
   15_skyfog
   16_shadowmap
   17_omni_shadowmap
@@ -88,19 +90,8 @@ set(EXAMPLES
 
 set(SANDBOX
   #water
-  #showaxis
-  #fisheye
-  #skyfog
-  #cubemap_rr
-  #cubemap_render
-  #multiple_color_attachment
-  #postprocessing_blur
-  #postprocess_bloom
-  #shadowmap
-  #glm_rotations
-  #pointlight
-  #multilights
-  #instances_batch
+  #skyfog_bloom
+  #sandbox
 )
 
 foreach(EX ${EXAMPLES})

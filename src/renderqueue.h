@@ -29,6 +29,7 @@
 #include "material/material.h"
 #include "material/pass.h"
 #include "common/tags.h"
+#include "common/logging.h"
 #include <memory>
 #include <map>
 
@@ -47,7 +48,7 @@ class RenderPassSubQueue {
 
   int GetPriority() const {
     if (!pass_) {
-      throw std::runtime_error("RenderPassSubQueue::GetPriority() - render pass is invalid!");
+      ABORT_F("Render pass is nullptr");
     }
     return pass_->GetQueue();
   }

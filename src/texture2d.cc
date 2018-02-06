@@ -23,6 +23,7 @@
 //
 
 #include "texture2d.h"
+#include "common/logging.h"
 
 Texture2D::Texture2D() : Texture(), texture_id_(0) {
 }
@@ -74,7 +75,7 @@ void Texture2D::Apply() {
 }
 
 void Texture2D::Compress() {
-  throw std::runtime_error("Texture::Compress() - not implemented!");
+  ABORT_F("Not implemented");
 }
 
 void Texture2D::Bind(int slot) { 

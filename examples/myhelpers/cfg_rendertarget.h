@@ -40,8 +40,7 @@ class Cfg<RenderTarget> {
   explicit Cfg(std::shared_ptr<RenderTarget> client)
     : client_(client) {
     if (!client_) {
-      throw std::invalid_argument("Cfg<RenderTarget>::Cfg() - " \
-          "RenderTarget is nullptr!");
+      ABORT_F("RenderTarget is nullptr"); 
     }
   }
 
@@ -68,8 +67,7 @@ class Cfg<RenderTarget> {
 
   Ret Resolution(int width, int height) {
     if (width < 0 || height < 0) {
-      throw std::invalid_argument("Cfg<RenderTarget>::Resolution() - " \
-          "width/height is invalid!");
+      ABORT_F("Resolution %d x %d is invalid", width, height);
     }
     width_ = width;
     height_ = height;

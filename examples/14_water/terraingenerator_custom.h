@@ -28,16 +28,17 @@
 #include "b3d.h"
   
 struct TerrainGeneratorCustom: public Action {
-  std::string material;
   float       max_altitude = 160;
   float       xz_scale     = 1070; 
   Color       low_color    = Rgb(46,255,87) ;
   Color       hi_color     = Rgb(139,69,19); 
 
   TerrainGeneratorCustom(std::shared_ptr<Transformation> transform) 
-    : Action(transform) {}
+    : Action(transform) {
+    Build();
+  }
 
-  void Start() override {
+  void Build() {
     noise_map_ = GenerateNoiseMap(241, 241, 5, 1.9, .5, 40, 0, 0);
     for (size_t ix = 0; ix < noise_map_->GetWidth(); ++ix) {
       for (size_t iz = 0; iz < noise_map_->GetHeight(); ++iz) {
@@ -56,7 +57,6 @@ struct TerrainGeneratorCustom: public Action {
     }
 
     auto& actor = transform->GetActor();
-    actor.AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load(material));
 
     std::function<float(int, int)>     sample_alt = [this](int x, int z) {
       return noise_map_->At(x % noise_map_->GetWidth(), z % noise_map_->GetHeight()) * max_altitude;
@@ -73,7 +73,7 @@ struct TerrainGeneratorCustom: public Action {
     };
     auto mesh = Generate(sample_alt, sample_col, noise_map_->GetWidth(), noise_map_->GetHeight(), xz_scale, xz_scale);
     actor.AddComponent<MeshFilter>()->SetMesh(mesh);
-    std::cerr << "Terrain generated: vertices=" << mesh->vertices.size() << " triangles=" << mesh->indices.size()/3 << std::endl;
+    LOG_F(INFO, "Terrain generated   vert=%ld  triangles=%ld", mesh->vertices.size(), mesh->indices.size()/3);
   }
 
  private: 

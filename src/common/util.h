@@ -25,6 +25,7 @@
 #ifndef _UTIL_H_B32DF744_3672_4AE3_A5FB_9CB1F681FFA0_
 #define _UTIL_H_B32DF744_3672_4AE3_A5FB_9CB1F681FFA0_ 
 
+#include "common/logging.h"
 #include <string>
 #include <fstream> 
 #include <exception>
@@ -43,7 +44,7 @@ inline std::string ReadFile(const std::string& filename) {
     in.close();
     return content;
   } else {
-    throw std::runtime_error("ReadFile() - cant read file " + filename);
+    throw std::runtime_error("Cant read file " + filename);
   }
 }
   
@@ -70,8 +71,7 @@ namespace cppness {
     TIterator GetHint(const TKey& key, TMap& map) {
       auto it = map.lower_bound(key);
       if (it != map.end() && it->first == key) {
-        throw std::logic_error(
-            "MapManip::GetHint() - component already added!");
+        ABORT_F("Component already added");
       }
       return it;
     }

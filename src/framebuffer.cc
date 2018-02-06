@@ -25,6 +25,7 @@
 #include "gl_main.h"
 #include "appcontext.h"
 #include "framebuffer.h"
+#include "common/logging.h"
 #include <string>
 #include <stdexcept>
 #include <iostream>
@@ -64,7 +65,7 @@ void Layer::Init(int layer_number, int width, int height) {
     } else if (hint_ == kHintCubeMap) {
       InitTextureCube(layer_number, width, height);
     } else {
-      throw std::logic_error("Layer::Init() - Invalid hint!");
+      ABORT_F("Invalid layer hint");
     }
   }
 }
@@ -109,7 +110,7 @@ void Layer::InitTexture2D(int layer_number, int width, int height) {
 
   GLint internal_format = GetLayerFormat();
   GLenum format = GL_RGBA;
-  GLenum data_type = GL_UNSIGNED_BYTE;
+  GLenum data_type = GL_FLOAT;
 
   if (type_ == kDepth) {
     format = GL_DEPTH_COMPONENT;
@@ -263,8 +264,7 @@ void FrameBuffer::AddLayer(Layer::Type layer_type, Layer::Permission permission,
     case kScreen    : hint = Layer::kHintTexture2D; break;
     case kTexture2D : hint = Layer::kHintTexture2D; break;
     case kCubeMap   : hint = Layer::kHintCubeMap;   break;
-    default         :
-      throw std::logic_error("FrameBuffer::AddLayer() - Invalid framebuffer type!");
+    default         : ABORT_F("Invalid framebuffer type");
   };
   if (layer_type == Layer::kDepth && permission != Layer::kReadWrite) {
     hint = Layer::kHintTexture2D;
@@ -286,9 +286,7 @@ void FrameBuffer::AddLayer(Layer::Type layer_type, Layer::Permission permission,
       break;
 
     default:
-      throw std::logic_error(
-          "FrameBuffer::AddLayer() - Layer type " + 
-          std::to_string(layer_type) + " not implemented");
+      ABORT_F("Layer type %d not implemented", layer_type);
       break;
   }
 }
@@ -328,8 +326,7 @@ void FrameBuffer::Init() {
 	// Always check that our framebuffer is ok
   auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   if (status != GL_FRAMEBUFFER_COMPLETE) {
-    throw std::runtime_error("FrameBuffer::Init() - OpenGL error. Error="
-        + std::to_string(status));
+    ABORT_F("OpenGL error = %d", status);
   }
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

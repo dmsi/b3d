@@ -27,6 +27,7 @@
 
 #include "gl_main.h"
 #include "glm_main.h"
+#include "common/logging.h"
 
 #include <exception>
 #include <memory>
@@ -52,7 +53,7 @@ namespace Shader_cppness {
   void SetUniform<float>(GLint location, const float& value, GLenum expected_type) {
     // This is how the validation can be added
     if (expected_type != GL_FLOAT) {
-      throw std::runtime_error("Bad type");
+      ABORT_F("Bad type");
     }
     glUniform1f(location, value);
   }
@@ -155,8 +156,7 @@ class Shader {
   ////////////////////////////////////////////////////////////////////////////
   void Bind() const {
     if (program_id_ == 0) {
-      throw std::logic_error("Shader::Bind() - shader must be compiled and \
-                              linked before!");
+      ABORT_F("Shader is not compiled and linked");
     }
     glUseProgram(program_id_);
   }

@@ -28,11 +28,11 @@
 RenderTarget::RenderTarget(const std::string& name) :
     name_(name),
     camera_name_("camera.main") {
-  std::cerr << "[rendertarget " << name_ << "] added!" << std::endl;
+  LOG_F(INFO, "RenderTarget added: %s", name_.c_str());
 }
 
 RenderTarget::~RenderTarget() {
-  std::cerr << "[rendertarget " << name_ << "] deleted!" << std::endl;
+  LOG_F(INFO, "RenderTarget deleted: %s", name_.c_str());
 }
 
 // Moving camera in order to capture each face of the cube
@@ -45,19 +45,18 @@ inline glm::vec3 GetCubeCameraRotation(int face) {
     case 3: return vec3(-90,   0,   0);  // -y
     case 4: return vec3(  0, 180, 180);  // +z
     case 5: return vec3(  0,   0, 180);  // -z
-    default: 
-      throw std::logic_error("Invalid cubemap face!");
+    default: ABORT_F("Invalid cubemap face");
   }
 }
 
 void RenderTarget::Draw(Scene& scene) {
   auto camera = scene.Get<Camera>(camera_name_);
   if (!camera) {
-    throw std::logic_error("RenderTarget::Draw() - camera " + camera_name_ + " not set!");
+    ABORT_F("Camera %s not found", camera_name_.c_str());
   }
 
   if (!framebuffer_) {
-    throw std::logic_error("RenderTarget::Draw() - framebuffer not set!");
+    ABORT_F("Framebuffer not configured");
   }
 
 

@@ -23,6 +23,7 @@
 //
 
 #include "meshloader.h"
+#include "common/logging.h"
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -31,7 +32,7 @@
 std::shared_ptr<Mesh> MeshLoader::LoadDsm(const std::string& filename) {
   std::ifstream in(filename, std::ios::in);
   if (!in.is_open()) {
-    throw std::runtime_error("MeshLoader::LoadDsm() - Cant open file " + filename);
+    ABORT_F("Cant open file %s", filename.c_str());
   }
 
   std::string line;
@@ -57,7 +58,7 @@ std::shared_ptr<Mesh> MeshLoader::LoadDsm(const std::string& filename) {
 void MeshLoader::ExportDsm(std::shared_ptr<Mesh> mesh, const std::string& filename) {
   std::ofstream out(filename, std::ios::out);
   if (!out.is_open()) {
-    throw std::runtime_error("MeshLoader::ExportDsm() - Cant open file " + filename);
+    ABORT_F("Cant open file %s", filename.c_str());
   }
 
   out << mesh->vertices.size() << std::endl << mesh->indices.size() << std::endl;

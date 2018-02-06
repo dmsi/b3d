@@ -64,8 +64,7 @@ struct MakeOverlayArea : public Action {
       invert_uv(ainvert_uv),
       color(std::move(acolor)) {
     if (!texture) {
-      throw std::invalid_argument(
-          "MakeOverlayArea::MakeOverlayArea() - Invalid texture!");
+      ABORT_F("Invalid texture");
     }
 
     glm::vec3 offset( -.25,  -.25,  0);

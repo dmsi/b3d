@@ -33,6 +33,7 @@
 #include <iostream>
 
 #include "gl_main.h"
+#include "common/logging.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // OpenGL context 
@@ -53,7 +54,7 @@ struct Profile {
     // and there are no one-two line solutions for this - the profile is 
     // required to be in lower case for now.
     if (tokens.size() != 3) {
-      throw std::invalid_argument("Invalid profile" + ctxt_as_str);
+      ABORT_F("Invalid profile %s", ctxt_as_str.c_str());
     }
 
     major_version = std::stoi(tokens[0]);
@@ -65,7 +66,7 @@ struct Profile {
     } else if (tokens[2] == "any") {
       profile = GLFW_OPENGL_ANY_PROFILE;
     } else {
-      throw std::invalid_argument("Invalid profile in " + ctxt_as_str);
+      ABORT_F("Invalid profile in %s", ctxt_as_str.c_str());
     }
   }
 };
@@ -85,15 +86,15 @@ class Display {
 
   void Init() {
     if (width_ <= 0 || height_ <= 0) {
-      throw std::invalid_argument("Display resolution is not valid!");
+      ABORT_F("Display resolution is not valid!");
     }
 
     if (glfw_window_) {
-      throw std::logic_error("Display is already initialized. Call Display::Close() first.");
+      ABORT_F("Display is already initialized. Call Display::Close() first.");
     }
 
     if (!glfwInit()) {
-      throw std::runtime_error("Failed to initialize GLFW");
+      ABORT_F("Failed to initialize GLFW");
     }
 
     glfwWindowHint(GLFW_SAMPLES,               4); 
@@ -107,14 +108,14 @@ class Display {
                                     caption_.c_str(), nullptr, nullptr);
     if (!glfw_window_) {
       glfwTerminate();
-      throw std::runtime_error("Failed to create GLFW window");
+      ABORT_F("Failed to create GLFW window");
     }
 
     glfwMakeContextCurrent(glfw_window_); 
     glewExperimental = true; // Needed in core profile
 
     if (glewInit() != GLEW_OK) {
-      throw std::runtime_error("Failed to initialize GLEW");
+      ABORT_F("Failed to initialize GLEW");
     }
   
     // For MAC retina display
@@ -123,9 +124,9 @@ class Display {
     //////////////////////////////////////////////////////////////////////////
     // Print GL version for reference (hardcoded stuff)
     //////////////////////////////////////////////////////////////////////////
-    std::cerr << "Version    | " << glGetString(GL_VERSION) << std::endl;
-    std::cerr << "Vendor     | " << glGetString(GL_VENDOR) << std::endl;
-    std::cerr << "Renderer   | " << glGetString(GL_RENDERER) << std::endl;
+    LOG_F(INFO, "Version     %s", glGetString(GL_VERSION));  
+    LOG_F(INFO, "Vendor      %s", glGetString(GL_VENDOR));  
+    LOG_F(INFO, "Renderer    %s", glGetString(GL_RENDERER));  
   
     glfwSetInputMode(glfw_window_, GLFW_STICKY_KEYS, GL_TRUE);
     
@@ -158,7 +159,7 @@ class Display {
 
   GLFWwindow*       GetWindow() { 
     if (!glfw_window_) {
-      throw std::logic_error("Display::Init() must be called once before Display::GetWindow()");
+      ABORT_F("Display::Init() must be called once before Display::GetWindow()");
     }
     return glfw_window_; 
   }

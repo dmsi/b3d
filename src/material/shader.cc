@@ -23,6 +23,7 @@
 //
 
 #include "shader.h"
+#include "common/logging.h"
 
 #include <typeinfo>
 
@@ -59,7 +60,7 @@ ShaderCompiler::ShaderCompiler(ShaderCompiler::ShaderType type,
     std::string error = GetProgramInfoLog(shader_id_);
     glDeleteShader(shader_id_);
     shader_id_ = 0;
-    throw std::runtime_error("ShaderCompiler() cant compile shader!\n" + error);
+    ABORT_F("Cant compile shader %s", error.c_str());
   } 
 }
 
@@ -90,7 +91,7 @@ void Shader::Compile(ShaderCompiler::ShaderType type, const std::string& code) {
 
 void Shader::Link() {
   if (shader_compilers_.empty()) {
-    throw std::logic_error("Shader::Link() - shader must be compiled first!");
+    ABORT_F("Shader is not compiled");
   }
 
   if (program_id_) {
@@ -111,15 +112,13 @@ void Shader::Link() {
   if (result == GL_FALSE) {
 
     std::string error = GetProgramInfoLog(program_id_, true);
-    //std::cerr << "**FUCK FUCK FUCK**" << std::endl;
-    //std::cerr << "**WTF: " << GetProgramInfoLog(program_id_) << std::endl;
 
     for (auto& kv : shader_compilers_) {
       glDetachShader(program_id_, kv.second->GetShaderId());
     }
     glDeleteProgram(program_id_);
     program_id_ = 0;
-    throw std::runtime_error("Shader::Link() cant link shader!\n" + error);
+    ABORT_F("Cant link shader %s", error.c_str());
   } 
 
   // Detach shader pieces.
@@ -134,17 +133,16 @@ void Shader::Link() {
 }
 
 void Shader::PrintInfo() const {
-  std::cerr << "Shader program | " << program_id_ << std::endl;
+  LOG_SCOPE_F(INFO, "Shader program id=%d", program_id_);
   for (auto& kv : uniforms_) {
     const UniformInfo& u = kv.second;
-    std::cerr << "             " << u.location << " | " << u.name << " " 
-              << VariableTypeToString(u.type) << std::endl;
+    LOG_F(INFO, "%d: %s", u.location, u.name.c_str());
   }
 }
   
 void Shader::RebuildUniforms() {
   if (program_id_ == 0) {
-    throw std::logic_error("Shader::RebuildUniforms() - shader must be compiled first!");
+    ABORT_F("Shader is not compiled");
   }
 
   uniforms_.clear();
@@ -169,7 +167,7 @@ void Shader::RebuildUniforms() {
         );
     if (uniform_array_length != 1) {
       uniforms_.clear();
-      throw std::logic_error("Shader::RebuildUniforms() array uniforms are not supported!");
+      ABORT_F("Array uniforms are not supported");
     }
     GLint location = glGetUniformLocation(program_id_, uniform_name);
     // what if uniform_name is the same in VS and FS?

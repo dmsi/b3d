@@ -25,6 +25,8 @@
 #ifndef _B3D_H_589B0D03_59D8_45D2_8E36_FB6A6DCA1F46_
 #define _B3D_H_589B0D03_59D8_45D2_8E36_FB6A6DCA1F46_ 
 
+#define LOGURU_IMPLEMENTATION 1
+#include "common/logging.h"
 #include "glm_main.h"
 #include "appcontext.h"
 #include "scene.h"
@@ -34,5 +36,6 @@
 #include "image/loader.h"
 #include "meshloader.h"
 #include "common/debug.h"
+
 
 #endif // _B3D_H_589B0D03_59D8_45D2_8E36_FB6A6DCA1F46_

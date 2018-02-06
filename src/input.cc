@@ -26,6 +26,7 @@
 
 #include "input.h"
 #include "appcontext.h"
+#include "common/logging.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // Configurable in the future
@@ -71,12 +72,12 @@ bool Input::GetKey(int key) const {
 }
 
 bool Input::GetKeyDown(int key) const {
-  throw std::logic_error("Input::GetKeyDown() is not implemented");
+  ABORT_F("Not implemented");
   return false;
 }
 
 bool Input::GetKeyUp(int key) const {
-  throw std::logic_error("Input::GetKeyUp() is not implemented");
+  ABORT_F("Not implemented");
   return false;
 }
 

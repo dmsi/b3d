@@ -24,6 +24,7 @@
 
 #include "portablepixmap.h"
 #include "math_main.h"
+#include "common/logging.h"
 #include <stdexcept>
 #include <fstream>
 #include <sstream>
@@ -68,7 +69,7 @@ static std::shared_ptr<ColorMap> ReadP6(std::ifstream& in, const PpmHeader& head
 }
 
 static std::shared_ptr<ColorMap> ReadP3(std::ifstream& in, const PpmHeader& header) {
-  throw std::logic_error("PortablePixMap::Read() - P3 format is not implemented!");
+  ABORT_F("P3 format is not implemented"); 
   return std::shared_ptr<ColorMap>();
 }
 
@@ -105,8 +106,7 @@ static std::shared_ptr<ColorMap> ReadP7(std::ifstream& in, const PamHeader& head
       in.read((char*)&c, 4);
       c32 = {c[0], c[1], c[2], c[3]};
     } else {
-      throw std::runtime_error("PortablePixMap::ReadP7() - Unsupported depth " + 
-                               std::to_string(header.depth));
+      ABORT_F("Unsupported depth %zu", header.depth);
     }
     img->At(i) = Color(c32.r/maxval, c32.g/maxval, c32.b/maxval, c32.a/maxval);
   }
@@ -117,7 +117,7 @@ static std::shared_ptr<ColorMap> ReadP7(std::ifstream& in, const PamHeader& head
 std::shared_ptr<ColorMap> PortablePixMap::Read(const std::string& filename) {
   std::ifstream in(filename, std::ios::in | std::ios::binary);
   if (!in.is_open()) {
-    throw std::runtime_error("PortablePixMap::Read() - Cant open file " + filename);
+    ABORT_F("Cant open file %s", filename.c_str());
   }
 
   std::string line;
@@ -168,8 +168,8 @@ std::shared_ptr<ColorMap> PortablePixMap::Read(const std::string& filename) {
   }
 
   if (header.maxval > 255) {
-    throw std::runtime_error("PortablePixMap::Read() - Cant load " + filename + 
-                             ", version " + header.version + ". Maximum 255 colors per channel!");
+    ABORT_F("Cant load %s, version %s. Max 255 colors per channel", 
+            filename.c_str(), header.version.c_str());
   }
 
   if (header.version == "P6") {
@@ -181,15 +181,15 @@ std::shared_ptr<ColorMap> PortablePixMap::Read(const std::string& filename) {
   } else if (header.version == "P7") {
     return ReadP7(in, pam_header);
   } else {
-    throw std::runtime_error("PortablePixMap::Read() - Cant load " + filename + 
-                             ", version " + header.version + " not supported!");
+    ABORT_F("Can load %s, version %s not supported",
+            filename.c_str(), header.version.c_str());
   }
 }
 
 void PortablePixMap::Write(const std::string& filename, const ColorMap& img) {
   std::ofstream out(filename, std::ios::out | std::ios::binary);
   if (!out.is_open()) {
-    throw std::runtime_error("PortablePixMap::Write() - Cant open file " + filename);
+    ABORT_F("Cant open file %s", filename.c_str());
   }
 
   out << "P6\n";

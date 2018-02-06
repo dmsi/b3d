@@ -1,7 +1,7 @@
 //
-// This source file is a part of borsch.3d
+// This source file is a part of $PROJECT_NAME$
 //
-// Copyright (C) borsch.3d team 2017-2018
+// Copyright (C) $COPYRIGHT$
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,9 @@
 // THE SOFTWARE.
 //
 
-#ifndef _ALL_H_2394564A_90F0_4E9B_A81B_9A4B6572BA42_
-#define _ALL_H_2394564A_90F0_4E9B_A81B_9A4B6572BA42_ 
+#ifndef _LOGGING_H_79F3FBC9_31A1_4373_98D5_D250A794F1D6_
+#define _LOGGING_H_79F3FBC9_31A1_4373_98D5_D250A794F1D6_ 
 
-#include "flyingcameracontroller.h"
-#include "fpsmeter.h"
-#include "lightingshaderuniform.h"
-#include "makeoverlay.h"
-#include "reflectcamera.h"
-#include "rotator.h"
-#include "terrainloader.h"
-#include "terraingenerator.h"
-#include "fliptriangles.h"
-#include "coordinateaxes.h"
+#include <loguru.hpp>
 
-#endif // _ALL_H_2394564A_90F0_4E9B_A81B_9A4B6572BA42_
+#endif // _LOGGING_H_79F3FBC9_31A1_4373_98D5_D250A794F1D6_

@@ -26,6 +26,7 @@
 #define _TRANSFORMATION_H_27675F58_68A1_48A1_9EB9_645D29D21C8D_ 
 
 #include "glm_main.h"
+#include "common/logging.h"
 #include <memory>
 #include <functional>
 #include <stdexcept>
@@ -158,7 +159,7 @@ class Transformation {
   }
 
   glm::vec3 GetGlobalScale() const {
-    throw std::logic_error("Transformation::GetGlobalScale() - Not implemented");
+    ABORT_F("Not implemented");
     return GetLocalScale();
   }
 
@@ -202,13 +203,11 @@ class Transformation {
     local_euler_angles_.y = (yaw);
     local_euler_angles_.z = (pitch);
     local_euler_angles_.x = (roll);
-    
 
     //almost working but suddenly flips
     //auto q = quatLookAt(glm::normalize(target - local_position_), up); 
     //local_euler_angles_ = glm::vec3(pitch(q), yaw(q), roll(q));
     //auto d = glm::normalize(target - local_position_);
-    //std::cerr << d.x << " " << d.y << " " << d.z << std::endl;
 
     dirty_ = true;
   }

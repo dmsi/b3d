@@ -94,9 +94,6 @@ class BatchMemoryHeap {
 //    template <typename TActor>
 //    void Update(TActor*, DataType*);
 //  };
-//
-//  TODO
-//   - Prohibit adding components such as MeshFilter and MeshRenderer
 ///////////////////////////////////////////////////////////////////////////////
 template <typename TLayout, typename THeapStruct>
 class ActorInBatch : public Actor {
@@ -215,12 +212,8 @@ class BatchRoot : public Actor {
     assert(res);
   }
 
-  // TODO add class for pool, keep it as shared pointer 
-  // and keep copy of the pointer in the actor which belong 
-  // to that pool..
-  //std::vector<uint8_t> heap_;
   std::shared_ptr<Heap> heap_;
-  ActorMap             actor_map_;
+  ActorMap              actor_map_;
 };
 
 #endif // _BATCH_POOL_H_E2C5F652_4D75_486D_8349_9A871FA00BFE_

@@ -47,6 +47,11 @@ class Action {
     return transform->GetActor();
   }
 
+  //template <typename T, typename... TArgs>
+  //auto GetComponent(TArgs&&... args) {
+  //  return GetActor().GetComponent<T>(std::forward<TArgs>(args)...);
+  //}
+
   const Timer& GetTimer() const {
     return AppContext::Instance().timer;
   }

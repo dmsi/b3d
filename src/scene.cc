@@ -66,16 +66,9 @@ void Scene::Update() {
 }
 
 void Scene::Draw() {
-  //if (!camera_) {
-  //  throw std::logic_error("Scene::Draw() - camera not set!");
-  //}
-
-  // here update the batches to move stuff to video memory
-
   for (auto& rt: render_targets_) {
     rt.second->Draw(*this);
   }
-  //render_queue_.Draw(*this, *camera_);
 }
 
 // TODO all that string manipulations are very expensive, 

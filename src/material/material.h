@@ -43,7 +43,7 @@ class Material;
 //////////////////////////////////////////////////////////////////////////////
 class Material {
  public:
-  // TODO(DS) Hardcoded!
+  // TODO Hardcoded!
   enum { kMaxTextureSlots = 32 };
   
   Material() : textures_ (kMaxTextureSlots), name_("Unnamed") {}

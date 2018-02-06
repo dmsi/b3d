@@ -24,35 +24,14 @@
 
 #include "b3d.h"
 #include "my/all.h"
-
 #include "terraingenerator_custom.h"
-
-struct SetOverlayUniform: public Action {
-  glm::vec4 color;
-  bool      invert_uv;
-
-  SetOverlayUniform(std::shared_ptr<Transformation> transform) 
-    : Action(transform), color(1, 1, 1, 1), invert_uv(false) {}
-
-  void PreDraw() override {
-    if (auto mtrl = transform->GetActor().GetComponent<Material>()) {
-      mtrl->SetUniform("Color", color);
-      int int_invert_uv = invert_uv;
-      mtrl->SetUniform("Invert_uv", int_invert_uv);
-    }
-  }
-
-  void Setup(const glm::vec4& color, bool invert_uv) {
-    this->color = color;
-    this->invert_uv = invert_uv;
-  }
-};
 
 struct SetTerrainUniform: public Action {
   std::shared_ptr<Actor> plane;
 
-  SetTerrainUniform(std::shared_ptr<Transformation> transform) 
-    : Action(transform) {}
+  SetTerrainUniform(std::shared_ptr<Transformation> t, 
+                    std::shared_ptr<Actor> p) 
+    : Action(t), plane(p) {}
 
   void PreDraw() override {
     if (auto mtrl = transform->GetActor().GetComponent<Material>()) {
@@ -127,60 +106,60 @@ int main(int argc, char* argv[]) {
   auto refraction_tex = refraction_rt->GetLayerAsTexture(0, Layer::kColor);
   auto refraction_depth = refraction_rt->GetLayerAsTexture(0, Layer::kDepth);
 
-  auto water = scene.Add<Actor>("actor.water_surface");
-  water->AddAction<SetWaterSurfaceUniform>();
-  water->AddAction<LoadModel>()
-    ->Setup(&scene, "Assets/plane.dsm", "Assets/water_surf.mat")
-    ->Position(0, 20, 0)
-    ->Scale(200, 1, 200)
-    ->Done();
-  if (auto m = water->GetComponent<MeshRenderer>()->GetMaterial()) {
-    m->SetTexture(0, reflection_tex);
-    m->SetTexture(1, refraction_tex);
-    m->SetTexture(2, refraction_depth);
-  }
+  // Step 3. Configuring water surface
+  auto water = Cfg<Actor>(scene, "actor.water_surface")
+    . Model("Assets/plane.dsm", "Assets/water_surf.mat")
+    . Position(0,  20,   0)
+    . Scale   (200, 1, 200)
+    . Texture (0, reflection_tex)
+    . Texture (1, refraction_tex)
+    . Texture (2, refraction_depth)
+    . Action<SetWaterSurfaceUniform>()
+    . Done();
 
-  // Step 3. Building terrain. 
-  auto terrain = scene.Add<Actor>("actor.terrain");
-  terrain->AddAction<TerrainGeneratorCustom>()
-    ->material = "Assets/terrain_flatshading_water_env.mat";
-  terrain->AddAction<SetTerrainUniform>()->plane = water;
+  // Step 3.1. Building terrain. 
+  Cfg<Actor>(scene, "actor.terrain")
+    . Material("Assets/terrain_flatshading_water_env.mat")
+    . Action<TerrainGeneratorCustom>()
+    . Action<SetTerrainUniform>(water)
+    . Done();
 
-  // Step 3.1. Adding skydome.
-  scene.Add<Actor>("actor.skydome")
-    ->AddAction<LoadModel>()
-    ->Setup(&scene, "Assets/sphere.dsm", "Assets/skydome_water_env.mat");
+  // Step 3.2. Adding skydome.
+  Cfg<Actor>(scene, "actor.skydome")
+    . Model("Assets/sphere.dsm", "Assets/skydome_water_env.mat")
+    . Done();
 
   // Step 4. Add 'sun' light source.
-  std::shared_ptr<Light> sun = scene.Add<Light>("light.sun", Light::kDirectional);
-  sun->transform->SetLocalPosition(0, 5, 5);
-  sun->transform->SetLocalEulerAngles(-210, 90, 0);
+  Cfg<Light>(scene, "light.sun", Light::kDirectional)
+    . EulerAngles(-210, 90, 0)
+    . Done();
   
   // Step 5. FPS meter
-  scene.Add<Actor>("actor.fps_meter")->AddAction<FpsMeter>();
+  Cfg<Actor>(scene, "actor.fps_meter")
+    . Action<FpsMeter>()
+    . Done();
   
   // Step 5.2. Add overlay screen with reflection texture.
-  scene.Add<Actor>("actor.overlay.reflections")
-    ->AddAction<MakeOverlayArea>(reflection_tex, 
-                                 MakeOverlayArea::kTop2,
-                                 true);
+  Cfg<Actor>(scene, "actor.overlay.reflections")
+    . Action<MakeOverlayArea>(reflection_tex, MakeOverlayArea::kTop2, true)
+    . Done();
   
   // Step 5.3. Add overlay screen with reflection texture.
-  scene.Add<Actor>("actor.overlay.refractions")
-    ->AddAction<MakeOverlayArea>(refraction_tex, 
-                                 MakeOverlayArea::kTop3,
-                                 false);
+  Cfg<Actor>(scene, "actor.overlay.refractions")
+    . Action<MakeOverlayArea>(refraction_tex, MakeOverlayArea::kTop3, false)
+    . Done();
   
   // Step 6. Configure the main camera. 
-  auto camera = scene.Add<Camera>("camera.main");
-  camera->SetPerspective(60, 1.0f*width/height, 1, 1500.0);
-  camera->transform->SetLocalPosition(0, 200, 20);
-  camera->AddAction<FlyingCameraController>()->moving_speed = 150;
+  auto camera = Cfg<Camera>(scene, "camera.main")
+    . Perspective(60, (float)width/height, 1, 1500)
+    . Position(0, 200, 20)
+    . Action<FlyingCameraController>(150)
+    . Done();
 
   // Step 6.1. Configure camera for reflections
-  scene.Add<Camera>("camera.main.reflection")
-    ->AddAction<ReflectCamera>()
-    ->Setup(camera, water->transform->GetLocalPosition().y);
+  Cfg<Camera>(scene, "camera.main.reflection")
+    . Action<ReflectCamera>(camera, water->transform->GetLocalPosition().y)
+    . Done();
   
   // Step 7. Main loop. Press ESC to exit.
   do {
