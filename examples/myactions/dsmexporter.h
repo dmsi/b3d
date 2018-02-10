@@ -35,18 +35,18 @@ struct DsmExporter : public Action {
     : Action(transform), filename(afilename) {}
 
   void Update() override {
-    if (!exported && auto f = transform->GetActor().GetComponent<MeshFilter>()) {
-      if (auto m = f->GetMesh()) {
+    if (!exported) {
+      if(auto m = GetActor().GetComponent<Mesh>()) {
         MeshLoader::ExportDsm(m, filename);
         exported = true;
-        transform->GetActor().RemoveAction<DsmExporter>();
+        GetActor().RemoveAction<DsmExporter>();
         return;
       }
     }
 
     num_attempts--;
     if (num_attempts < 0 && !exported) {
-      transform->GetActor().RemoveAction<DsmExporter>();
+      GetActor().RemoveAction<DsmExporter>();
     }
   }
 };

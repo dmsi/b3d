@@ -125,6 +125,8 @@ static std::shared_ptr<Pass> LoadPass(YAML::Node node) {
   static const std::string kVertexShaderKey   = "vertex";
   static const std::string kFragmentShaderKey = "fragment";
   static const std::string kGeometryShaderKey = "geometry";
+  static const std::string kTessControlShaderKey = "tess_control";
+  static const std::string kTessEvaluationShaderKey = "tess_evaluation";
 
   for (auto subnode: node) {
     std::string key = subnode.first.as<std::string>();
@@ -159,6 +161,12 @@ static std::shared_ptr<Pass> LoadPass(YAML::Node node) {
                       ReadShaderSourceCode(subnode.second));
     } else if (key == kGeometryShaderKey) {
       shader->Compile(ShaderCompiler::ShaderType::kGeometryShader, 
+                      ReadShaderSourceCode(subnode.second));
+    } else if (key == kTessControlShaderKey) {
+      shader->Compile(ShaderCompiler::ShaderType::kTessControlShader,
+                      ReadShaderSourceCode(subnode.second));
+    } else if (key == kTessEvaluationShaderKey) {
+      shader->Compile(ShaderCompiler::ShaderType::kTessEvaluationShader,
                       ReadShaderSourceCode(subnode.second));
     }
   }

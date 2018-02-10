@@ -84,6 +84,7 @@ set(EXAMPLES
   20_multiple_color_attachments
   25_instancing_raw
   26_instancing_batch
+  27_tri_tesselation
   30_postprocess_gauss_blur
   31_postprocess_bloom
 )
@@ -92,6 +93,9 @@ set(SANDBOX
   #water
   #skyfog_bloom
   #sandbox
+  #atmosphere
+  #simulation
+  #aabb_transform
 )
 
 foreach(EX ${EXAMPLES})

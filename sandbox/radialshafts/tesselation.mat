@@ -1,0 +1,155 @@
+name: tesselation
+
+.VS: &VS | 
+  #version 400 core
+
+  layout(location = 0) in vec3 In_Position;
+
+  out InOut {
+    vec3 vpos;
+  } Out;
+
+  void main() {
+      Out.vpos = In_Position.xyz; 
+  }
+
+.TC: &TC |
+  #version 400 core
+
+  layout(vertices = 3) out;
+
+  in InOut {
+    vec3 vpos;
+  } In[];
+
+  out InOut {
+    vec3 vpos;
+  } Out[];
+
+  const float TessLevelInner = 10;
+  const float TessLevelOuter = 1;
+
+  #define ID gl_InvocationID
+
+  void main() {
+    Out[ID].vpos = In[ID].vpos;
+    if (ID == 0) {
+      gl_TessLevelInner[0] = TessLevelInner;
+      gl_TessLevelOuter[0] = TessLevelOuter;
+      gl_TessLevelOuter[1] = TessLevelOuter;
+      gl_TessLevelOuter[2] = TessLevelOuter;
+    }
+  }
+
+.TE: &TE |
+  #version 400 core
+
+  layout(triangles, equal_spacing, ccw) in;
+  
+  in InOut {
+    vec3 vpos;
+  } In[];
+
+  out InOut {
+    vec3 vpos;
+    vec3 patch_distance;
+  } Out;
+
+  uniform mat4 SU_PVM_MATRIX;
+
+  void main() {
+    vec3 p0 = gl_TessCoord.x * In[0].vpos;
+    vec3 p1 = gl_TessCoord.y * In[1].vpos;
+    vec3 p2 = gl_TessCoord.z * In[2].vpos;
+    Out.vpos = normalize(p0 + p1 + p2);
+    Out.patch_distance = gl_TessCoord;
+    gl_Position = SU_PVM_MATRIX * vec4(Out.vpos, 1);
+  }
+
+.GS: &GS |
+  #version 400 core
+
+  layout(triangles) in;
+  layout(triangle_strip, max_vertices = 3) out;
+
+  in InOut {
+    vec3 vpos;
+    vec3 patch_distance;
+  } In[3];
+
+  out InOut {
+    vec3 wnormal;
+    vec3 patch_distance;
+    vec3 tri_distance;
+  } Out;
+
+  uniform mat4 SU_M_MATRIX;
+
+  void main() {
+    vec3 A = In[2].vpos - In[0].vpos;
+    vec3 B = In[1].vpos - In[0].vpos;
+    Out.wnormal = mat3(SU_M_MATRIX) * normalize(cross(A, B));
+
+    Out.patch_distance = In[0].patch_distance;
+    Out.tri_distance = vec3(1, 0, 0);
+    gl_Position = gl_in[0].gl_Position; EmitVertex();
+
+    Out.patch_distance = In[1].patch_distance;
+    Out.tri_distance = vec3(0, 1, 0);
+    gl_Position = gl_in[1].gl_Position; EmitVertex();
+
+    Out.patch_distance = In[2].patch_distance;
+    Out.tri_distance = vec3(0, 0, 1);
+    gl_Position = gl_in[2].gl_Position; EmitVertex();
+
+    EndPrimitive();
+  }
+
+
+.FS: &FS | 
+  #version 400 core
+
+  in InOut {
+    vec3 wnormal;
+    vec3 patch_distance;
+    vec3 tri_distance;
+  } In;
+
+  out vec4 Out_color;
+  
+  const vec3 LightPosition = vec3(0, 0, -1);
+  const vec3 DiffuseMaterial = vec3(.4, .6, .6);
+  const vec3 AmbientMaterial = vec3(.4, .5, .5);
+  
+  float amplify(float d, float scale, float offset) {
+    d = scale * d + offset;
+    d = clamp(d, 0, 1);
+    d = 1 - exp2(-2*d*d);
+    return d;
+  }
+
+  void main() {
+    vec3 N = normalize(In.wnormal);
+    vec3 L = LightPosition;
+    float df = abs(dot(N, L)); // lit backside too 
+    vec3 color = AmbientMaterial + df * DiffuseMaterial;
+
+    float d1 = min(min(In.tri_distance.x, In.tri_distance.y), In.tri_distance.z);
+    float d2 = min(min(In.patch_distance.x, In.patch_distance.y), In.patch_distance.z);
+    //color = amplify(d1, 40, -0.5) * amplify(d2, 60, -0.5) * color;
+    color = vec3(1,1,1) * (1-amplify(d2, 60, -1.5)) * color;
+
+    Out_color  = vec4(color, 1.0);
+  }
+
+pass:
+  name             : pass.normal
+  queue            : 110
+  tags             : [onscreen]
+  cull             : ccw
+  vertex           : *VS
+  tess_control     : *TC
+  tess_evaluation  : *TE
+  geometry         : *GS
+  fragment         : *FS
+

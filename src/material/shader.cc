@@ -60,7 +60,7 @@ ShaderCompiler::ShaderCompiler(ShaderCompiler::ShaderType type,
     std::string error = GetProgramInfoLog(shader_id_);
     glDeleteShader(shader_id_);
     shader_id_ = 0;
-    ABORT_F("Cant compile shader %s", error.c_str());
+    ABORT_F("Cant compile %s shader %s", Type2String().c_str(), error.c_str());
   } 
 }
 

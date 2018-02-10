@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
   LOG_SCOPE_F(INFO, "Helo blyat!");
 
   // Initialize application.
-  AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("3 3 core"));
+  AppContext::Init(1280, 720, "Atmosphere rendering [b3d]", Profile("3 3 core"));
   AppContext::Instance().display.ShowCursor(false);
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
@@ -43,17 +43,34 @@ int main(int argc, char* argv[]) {
     . Clear(.8, .8, .8, 1)
     . Done();
   
+  auto atmosphere_tex = Cfg<RenderTarget>(scene, "rt.atmosphere", 100)
+    . Tags("atmosphere")
+    . Type(FrameBuffer::kTexture2D)
+    . Resolution(width, height)
+    . Layer(Layer::kColor, Layer::kReadWrite)
+    . Done()
+    ->GetLayerAsTexture(0, Layer::kColor);
+  
   Cfg<Actor>(scene, "actor.terrain")
-    . Model("Assets/screen.dsm", "Assets/texture.mat")
+    . Material("Sandbox/atmosphere/terrain_atmosphere.mat")
+    . Texture(0, atmosphere_tex)
+    . Action<TerrainGenerator>()
     . Done();
 
-  //void SetOrtho(float left, float top, float right, float bottom, float near, float far) {
-  float ar = (float)width/height;
+  Cfg<Actor>(scene, "actor.skydome")
+    . Model("Assets/sphere.dsm", "Sandbox/atmosphere/skydome_perez.mat")
+    . Done();
+
+  Cfg<Light>(scene, "light.sun", Light::kDirectional)
+    . EulerAngles(20, 0, 0)
+    . Action<Rotator>(glm::vec3(5, 0, 0))
+    . Done();
+
   // Main camera
   Cfg<Camera>(scene, "camera.main")
-    . Ortho(-2, 2/ar, 2, -2/ar, 1, 10)
-    . Position(0, 0, 4)
-    . Action<FlyingCameraController>(5)
+    . Perspective(60, (float)width/height, 1, 2500)
+    . Position(0, 200, 4)
+    . Action<FlyingCameraController>(200)
     . Done();
   
   // Fps meter.

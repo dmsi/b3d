@@ -103,9 +103,11 @@ namespace Shader_cppness {
 class ShaderCompiler {
  public:
   enum ShaderType {
-    kVertexShader   = GL_VERTEX_SHADER, 
-    kGeometryShader = GL_GEOMETRY_SHADER, 
-    kFragmentShader = GL_FRAGMENT_SHADER,
+    kVertexShader         = GL_VERTEX_SHADER, 
+    kTessControlShader    = GL_TESS_CONTROL_SHADER,
+    kTessEvaluationShader = GL_TESS_EVALUATION_SHADER,
+    kGeometryShader       = GL_GEOMETRY_SHADER, 
+    kFragmentShader       = GL_FRAGMENT_SHADER,
     kEmpty
   };
  
@@ -114,6 +116,17 @@ class ShaderCompiler {
 
   ShaderType GetShaderType() const { return type_; }
   uint32_t   GetShaderId()   const { return shader_id_; }
+
+  std::string Type2String() const {
+    switch (type_) {
+      case kVertexShader: return "VS";
+      case kTessControlShader: return "TC";
+      case kTessEvaluationShader: return "TE";
+      case kGeometryShader: return "GS";
+      case kFragmentShader: return "FS";
+      default: return "??"; 
+    }
+  }
 
  private:
   ShaderType     type_;

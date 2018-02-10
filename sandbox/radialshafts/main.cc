@@ -25,14 +25,13 @@
 #include "b3d.h"
 #include "my/all.h"
 
+//http://prideout.net/blog/?p=48#shaders
 int main(int argc, char* argv[]) {
   using glm::vec3;
   Scene scene;
 
-  LOG_SCOPE_F(INFO, "Helo blyat!");
-
   // Initialize application.
-  AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("3 3 core"));
+  AppContext::Init(1280, 720, "Radial light shafts [b3d]", Profile("4 0 core"));
   AppContext::Instance().display.ShowCursor(false);
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
@@ -40,18 +39,20 @@ int main(int argc, char* argv[]) {
   // Setup main and shadowmap rendertargets
   Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
-    . Clear(.8, .8, .8, 1)
-    . Done();
-  
-  Cfg<Actor>(scene, "actor.terrain")
-    . Model("Assets/screen.dsm", "Assets/texture.mat")
+    . Clear(.0, .0, .0, 1)
     . Done();
 
-  //void SetOrtho(float left, float top, float right, float bottom, float near, float far) {
-  float ar = (float)width/height;
+  Cfg<Actor>(scene, "actor.knight")
+    . Model("Assets/icosahedron.dsm", "sandbox/radialshafts/tesselation.mat")
+    . Action<Rotator>(glm::vec3(0, 60, 0))
+    . Done()
+    ->GetComponent<MeshRenderer>()
+    ->primitive = MeshRenderer::kPtPatches;
+
+
   // Main camera
   Cfg<Camera>(scene, "camera.main")
-    . Ortho(-2, 2/ar, 2, -2/ar, 1, 10)
+    . Perspective(60, (float)width/height, .1, 100)
     . Position(0, 0, 4)
     . Action<FlyingCameraController>(5)
     . Done();
@@ -62,6 +63,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   // Main loop. Press ESC to exit.
+   //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   do {
     AppContext::BeginFrame();
     scene.Update();

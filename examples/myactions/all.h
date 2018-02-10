@@ -35,5 +35,6 @@
 #include "terraingenerator.h"
 #include "fliptriangles.h"
 #include "coordinateaxes.h"
+#include "dsmexporter.h"
 
 #endif // _ALL_H_2394564A_90F0_4E9B_A81B_9A4B6572BA42_

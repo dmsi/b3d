@@ -32,47 +32,35 @@
 #include "noise/perlin.h"
   
 struct TerrainGenerator: public Action {
-  std::string material;
   float       max_altitude = 80*2;
   float       xz_scale = 535 * 2;
-  //Color       low_color = Rgb(255, 248, 220);
-  //Color       hi_color  = Rgb(244, 164, 96);
-  Color       low_color = Rgb(46,255,87) ;
-  Color       hi_color  = Rgb(139,69,19); 
+  Color       low_color = Rgb(255, 248, 220);
+  Color       hi_color  = Rgb(244, 164, 96);
+  //Color       low_color = Rgb(46,255,87) ;
+  //Color       hi_color  = Rgb(139,69,19); 
 
   TerrainGenerator(std::shared_ptr<Transformation> transform) : Action(transform) {
-    //max_altitude = 80;
-    //xz_scale     = 535*2;
+    Build();
   }
 
-  void Start() override {
-    noise_map_ = GenerateNoiseMap(241, 241, 5, 1.9, .5, 40, 0, 0);
-    for (size_t ix = 0; ix < noise_map_->GetWidth(); ++ix) {
-      for (size_t iz = 0; iz < noise_map_->GetHeight(); ++iz) {
-        float n = Sigma(noise_map_->At(ix, iz));
-        float x = 2.0 * ix / noise_map_->GetWidth() - 1;
-        float z = 2.0 * iz / noise_map_->GetHeight() - 1;
-
-        // Some 'Nice' fall-ofs
-        //float falloff = Sigma(x) + Sigma(z);
-        float falloff = Sigma(std::abs(x) * std::abs(z));
-        //float falloff = Sigma((1-std::abs(x)) * (1-std::abs(z)));
-
-        //float falloff = Sigma((1-std::abs(x)) * (1-std::abs(z)));
-        //float falloff = 1;
-
-        noise_map_->At(ix, iz) = n * falloff;
-      }
-    }
-
-    auto& actor = transform->GetActor();
-    actor.AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load(material));
+  void Build() {
+    noise_map_ = GenerateNoiseMap(241, 241, 5, 1.9, .5, 50, 0, 0);
 
     std::function<float(int, int)>     sample_alt = [this](int x, int z) {
-      return noise_map_->At(x % noise_map_->GetWidth(), z % noise_map_->GetHeight()) * max_altitude;
+      int ix = x % noise_map_->GetWidth();
+      int iz = z % noise_map_->GetHeight();
+      float n = noise_map_->At(ix, iz);
+      
+      float fx = 2.0 * ix / noise_map_->GetWidth() - 1;
+      float fz = 2.0 * iz / noise_map_->GetHeight() - 1;
+        
+      //float falloff = Sigma((1-std::abs(fx/1.3)) * (1-std::abs(fz/1.3)));
+      float falloff = Sigma(std::abs(fx) * std::abs(fz));
+
+      return max_altitude * Sigma(n) * falloff;
     };
-    std::function<glm::vec4(int, int)> sample_col = [this](int x, int z) {
-      float n = noise_map_->At(x % noise_map_->GetWidth(), z % noise_map_->GetHeight());
+    std::function<glm::vec4(int, int)> sample_col = [this, sample_alt](int x, int z) {
+      float n = sample_alt(x, z) / max_altitude; 
 
       float elevation = .15;
       if (n < elevation) {
@@ -81,7 +69,7 @@ struct TerrainGenerator: public Action {
       return glm::mix(low_color, hi_color, n);
     };
     auto mesh = Generate(sample_alt, sample_col, noise_map_->GetWidth(), noise_map_->GetHeight(), xz_scale, xz_scale);
-    actor.AddComponent<MeshFilter>()->SetMesh(mesh);
+    GetActor().AddComponent<MeshFilter>()->SetMesh(mesh);
     LOG_F(INFO, "Terrain generated   vert=%ld   triangles=%ld", mesh->vertices.size(), mesh->indices.size()/3);
   }
 

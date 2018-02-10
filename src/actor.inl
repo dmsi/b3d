@@ -76,6 +76,15 @@ inline auto Actor::GetComponent() {
     //
     if (mesh_renderer_) return mesh_renderer_->GetMaterial();
     else                return std::shared_ptr<Material>();
+
+  } else
+  if constexpr (std::is_same<TComponent, Mesh>::value) {
+    //
+    // Mesh (neat accessor)
+    //
+    if (mesh_filter_) return mesh_filter_->GetMesh();
+    else              return std::shared_ptr<Mesh>();
+
   } else {
     //
     // None of above

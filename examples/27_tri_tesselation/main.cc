@@ -22,45 +22,91 @@
 // THE SOFTWARE.
 //
 
+// http://prideout.net/blog/?p=48
+
 #include "b3d.h"
 #include "my/all.h"
+
+// Changes tesselation levels with time
+struct TessShader : public Action {
+  float tess_level_inner = 1;
+  float tess_level_outer = 1;
+
+  float dt_inner; // tess level change speed levels/second
+  float dt_outer; // tess level change speed levels/second
+
+  TessShader(std::shared_ptr<Transformation> t, float dti, float dto)
+    :   Action(t), dt_inner(dti), dt_outer(dto)
+  {}
+
+  void Update() override {
+    tess_level_inner += dt_inner * GetTimer().GetTimeDelta();
+    tess_level_outer += dt_outer * GetTimer().GetTimeDelta();
+
+    if (tess_level_inner > 10) {
+      dt_inner = -abs(dt_inner);
+      tess_level_inner = 10;
+    } 
+    if (tess_level_inner < 0) {
+      dt_inner = abs(dt_inner);
+      tess_level_inner = 0;
+    }
+    
+    if (tess_level_outer > 10) {
+      dt_outer = -abs(dt_outer);
+      tess_level_outer = 10;
+    } 
+    if (tess_level_outer < 0) {
+      dt_outer = abs(dt_outer);
+      tess_level_outer = 0;
+    }
+  }
+
+  void PreDraw() override {
+    if (auto m = GetActor().GetComponent<Material>()) {
+      m->SetUniform("TessLevelInner", tess_level_inner);
+      m->SetUniform("TessLevelOuter", tess_level_outer);
+    }
+  }
+};
 
 int main(int argc, char* argv[]) {
   using glm::vec3;
   Scene scene;
 
-  LOG_SCOPE_F(INFO, "Helo blyat!");
-
   // Initialize application.
-  AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("3 3 core"));
+  AppContext::Init(1280, 720, "Triangle tesselation [b3d]", Profile("4 0 core"));
   AppContext::Instance().display.ShowCursor(false);
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
 
-  // Setup main and shadowmap rendertargets
+  // Configure render targets
   Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")
     . Clear(.8, .8, .8, 1)
     . Done();
-  
-  Cfg<Actor>(scene, "actor.terrain")
-    . Model("Assets/screen.dsm", "Assets/texture.mat")
-    . Done();
 
-  //void SetOrtho(float left, float top, float right, float bottom, float near, float far) {
-  float ar = (float)width/height;
+  // Spawn icosahedron and instruct MeshRenderer to use patch as
+  // the draw primitive.
+  Cfg<Actor>(scene, "actor.tess")
+    . Model("Assets/icosahedron.dsm", "Assets/tri_tesselation.mat")
+    . Action<TessShader>(1, 2)
+    . Done()
+    ->GetComponent<MeshRenderer>()
+    ->primitive = MeshRenderer::kPtPatches;
+
   // Main camera
   Cfg<Camera>(scene, "camera.main")
-    . Ortho(-2, 2/ar, 2, -2/ar, 1, 10)
+    . Perspective(60, (float)width/height, .1, 100)
     . Position(0, 0, 4)
     . Action<FlyingCameraController>(5)
     . Done();
-  
+
   // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()
     . Done();
-  
+
   // Main loop. Press ESC to exit.
   do {
     AppContext::BeginFrame();
