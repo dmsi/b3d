@@ -19,6 +19,7 @@ MIT
  
 ## Screenshots
 ![](screenshots/water.png)
+![](screenshots/terrain.png)
 ![](screenshots/flatshading_terrain.png)
 ![](screenshots/reflections.png)
 ![](screenshots/multiple_color_attachments.png)
