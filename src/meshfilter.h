@@ -89,7 +89,8 @@ class Mesh {
 
   void RecalculateNormals();
 
-  std::vector< uint16_t >       indices;
+  // TODO: indices16 and indices32
+  std::vector< uint32_t >       indices;
   std::vector< glm::vec3 >      vertices;
   std::vector< glm::vec3 >      normals;
   std::vector< glm::vec4 >      colors;

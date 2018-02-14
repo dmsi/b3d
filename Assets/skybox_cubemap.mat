@@ -38,7 +38,7 @@ pass:
             view[3][1] = 0;
             view[3][2] = 0;
             mat4 pvm = SU_P_MATRIX * view;
-            vec3 p = vertex_position * 10; // prevent from projection clipping
+            vec3 p = vertex_position * 100; // prevent from projection clipping
             OUT.cube_uv = vertex_position; 
             OUT.wpos = p; 
             gl_Position = (pvm * vec4(p, 1));

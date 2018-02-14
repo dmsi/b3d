@@ -27,12 +27,13 @@
 
 int main(int argc, char* argv[]) {
   using glm::vec3;
+  using glm::vec2;
   Scene scene;
 
   LOG_SCOPE_F(INFO, "Helo blyat!");
 
   // Initialize application.
-  AppContext::Init(1280, 720, "Atmosphere rendering [b3d]", Profile("3 3 core"));
+  AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("4 0 core"));
   AppContext::Instance().display.ShowCursor(false);
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
@@ -42,35 +43,28 @@ int main(int argc, char* argv[]) {
     . Tags("onscreen")
     . Clear(.8, .8, .8, 1)
     . Done();
+
+  // XY patch
+  auto mesh4 = std::make_shared<Mesh>(); 
+  mesh4->vertices = {
+    vec3(-1, 1, 0),
+    vec3(1, 1, 0),
+    vec3(-1, -1, 0),
+    vec3(1, -1, 0),
+  };
   
-  auto atmosphere_tex = Cfg<RenderTarget>(scene, "rt.atmosphere", 100)
-    . Tags("atmosphere")
-    . Type(FrameBuffer::kTexture2D)
-    . Resolution(width, height)
-    . Layer(Layer::kColor, Layer::kReadWrite)
+  Cfg<Actor>(scene, "actor.tess")
+    . Mesh(mesh4)
+    . Material("sandbox/quad_tesselation/tesselation.mat")
     . Done()
-    ->GetLayerAsTexture(0, Layer::kColor);
-  
-  Cfg<Actor>(scene, "actor.terrain")
-    . Material("sandbox/atmosphere/terrain_atmosphere.mat")
-    . Texture(0, atmosphere_tex)
-    . Action<TerrainGenerator>()
-    . Done();
-
-  Cfg<Actor>(scene, "actor.skydome")
-    . Model("Assets/sphere.dsm", "sandbox/atmosphere/skydome_perez.mat")
-    . Done();
-
-  Cfg<Light>(scene, "light.sun", Light::kDirectional)
-    . EulerAngles(20, 0, 0)
-    . Action<Rotator>(glm::vec3(5, 0, 0))
-    . Done();
+    ->GetComponent<MeshRenderer>()
+    ->primitive = MeshRenderer::kPtPatches;
 
   // Main camera
   Cfg<Camera>(scene, "camera.main")
-    . Perspective(60, (float)width/height, 1, 2500)
-    . Position(0, 200, 4)
-    . Action<FlyingCameraController>(200)
+    . Perspective(60, (float)width/height, .1, 100) 
+    . Position(0, 0, 4)
+    . Action<FlyingCameraController>(5)
     . Done();
   
   // Fps meter.
@@ -79,6 +73,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   // Main loop. Press ESC to exit.
+  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   do {
     AppContext::BeginFrame();
     scene.Update();

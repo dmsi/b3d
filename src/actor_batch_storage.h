@@ -25,7 +25,7 @@
 #ifndef _BATCH_ACTOR_H_4D4014F1_04C0_4D55_AD48_02F3579C23E7_
 #define _BATCH_ACTOR_H_4D4014F1_04C0_4D55_AD48_02F3579C23E7_ 
 
-#include "batch_pool.h"
+#include "actor_batch.h"
 #include "common/util.h"
 #include "common/debug.h"
 

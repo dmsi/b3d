@@ -1,43 +1,38 @@
-# No shading, just a texture 
-name: texture.mat 
-
-textures: 
-  0: Assets/tango-128.ppm
+name: arrow 
 
 pass:
   name: pass0 
-  queue: 100
   tags: [onscreen]
   cull: ccw 
   vertex: | 
           #version 330 core
 
           layout(location = 0) in vec3 In_position;
-          layout(location = 3) in vec2 In_uv;
-
-          out InOut {
-            vec2 uv;
-          } Out;
 
           uniform mat4 SU_PVM_MATRIX;
 
+          out InOut {
+            vec3 vpos;
+          } Out;
+
           void main() {
+            Out.vpos = In_position;
             gl_Position = SU_PVM_MATRIX * vec4(In_position, 1); 
-            Out.uv = vec2(In_uv.x, 1 - In_uv.y);
           }
 
   fragment: | 
           #version 330 core
 
           in InOut {
-            vec2 uv;
+            vec3 vpos;
           } In;
           
           out vec4 Out_color;
 
-          uniform sampler2D TEXTURE_0; 
+          const vec3 tint = vec3(1, 0, 1);
 
           void main () {
-            Out_color = texture(TEXTURE_0, In.uv); 
+            Out_color.rgb = clamp(length(In.vpos), 0, 1) * tint * 2; 
+            Out_color.a = 1;
           }
 

@@ -69,7 +69,11 @@ class VertexArrayObject {
     // glm::vecx is c++ standard type layout class (xyz order ?)
     static PackedData Pack(const std::vector<uint16_t>& data) {
       // 1 and GL_SHORT are just ignored now, 16 bit indices only 
-      return PackedData(&data.at(0), sizeof(uint16_t)*data.size(), 1, GL_SHORT);
+      return PackedData(&data.at(0), sizeof(uint16_t)*data.size(), 1, GL_UNSIGNED_SHORT);
+    }
+    static PackedData Pack(const std::vector<uint32_t>& data) {
+      // 1 and GL_SHORT are just ignored now, 16 bit indices only 
+      return PackedData(&data.at(0), sizeof(uint32_t)*data.size(), 1, GL_UNSIGNED_INT);
     }
     static PackedData Pack(const std::vector<glm::vec2>& data) {
       return PackedData(&data.at(0), sizeof(glm::vec2)*data.size(), 2, GL_FLOAT);

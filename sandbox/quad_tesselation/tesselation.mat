@@ -1,0 +1,124 @@
+name: tesselation
+
+.VS: &VS | 
+  #version 400 core
+  in vec4 Position;
+  out vec3 vPosition;
+
+  void main()
+  {
+      vPosition = Position.xyz;
+  }
+
+.TC: &TC |
+  #version 400 core
+  layout(vertices = 4) out;
+  in vec3 vPosition[];
+  out vec3 tcPosition[];
+  const float TessLevelInner = 10;
+  const float TessLevelOuter = 30;
+
+  #define ID gl_InvocationID
+
+  void main()
+  {
+      tcPosition[ID] = vPosition[ID];
+
+      if (ID == 0) {
+          gl_TessLevelInner[0] = TessLevelInner;
+          gl_TessLevelInner[1] = TessLevelInner;
+          gl_TessLevelOuter[0] = TessLevelOuter;
+          gl_TessLevelOuter[1] = TessLevelOuter;
+          gl_TessLevelOuter[2] = TessLevelOuter;
+          gl_TessLevelOuter[3] = TessLevelOuter;
+      }
+  }
+
+.TE: &TE |
+  #version 400 core
+  layout(quads) in;
+  in vec3 tcPosition[];
+  out vec3 tePosition;
+  out vec4 tePatchDistance;
+  uniform mat4 SU_PVM_MATRIX;
+
+  void main()
+  {
+      float u = gl_TessCoord.x, v = gl_TessCoord.y;
+      vec3 a = mix(tcPosition[0], tcPosition[1], u);
+      vec3 b = mix(tcPosition[2], tcPosition[3], u);
+      tePosition = mix(a, b, v);
+      tePatchDistance = vec4(u, v, 1-u, 1-v);
+      gl_Position = SU_PVM_MATRIX * vec4(tePosition, 1);
+  }
+
+.GS: &GS |
+  #version 400 core
+
+  layout(triangles) in;
+  layout(triangle_strip, max_vertices = 3) out;
+  in vec3 tePosition[3];
+  in vec4 tePatchDistance[3];
+  out vec4 gPatchDistance;
+  out vec3 gTriDistance;
+
+  void main()
+  {
+      vec3 A = tePosition[2] - tePosition[0];
+      vec3 B = tePosition[1] - tePosition[0];
+
+      gPatchDistance = tePatchDistance[0];
+      gTriDistance = vec3(1, 0, 0);
+      gl_Position = gl_in[0].gl_Position; EmitVertex();
+
+      gPatchDistance = tePatchDistance[1];
+      gTriDistance = vec3(0, 1, 0);
+      gl_Position = gl_in[1].gl_Position; EmitVertex();
+
+      gPatchDistance = tePatchDistance[2];
+      gTriDistance = vec3(0, 0, 1);
+      gl_Position = gl_in[2].gl_Position; EmitVertex();
+
+      EndPrimitive();
+  }
+
+.FS: &FS | 
+  #version 400 core
+
+  out vec4 FragColor;
+  in vec3 gTriDistance;
+  in vec4 gPatchDistance;
+
+  //uniform vec3 LightPosition;
+  //uniform vec3 DiffuseMaterial;
+  //uniform vec3 AmbientMaterial;
+  //uniform vec3 SpecularMaterial;
+  //uniform float Shininess;
+
+  const vec3 InnerLineColor = vec3(1, 1, 1);
+  const bool DrawLines = false;
+
+  float amplify(float d, float scale, float offset)
+  {
+      d = scale * d + offset;
+      d = clamp(d, 0, 1);
+      d = 1 - exp2(-2*d*d);
+      return d;
+  }
+
+  void main()
+  {
+    FragColor = vec4(0, 0, 0, 1);
+  }
+
+pass:
+  name             : pass.normal
+  queue            : 110
+  tags             : [onscreen]
+  cull             : cw
+  vertex           : *VS
+  tess_control     : *TC
+  tess_evaluation  : *TE
+  geometry         : *GS
+  fragment         : *FS
+

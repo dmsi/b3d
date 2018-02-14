@@ -166,11 +166,18 @@ class CfgActorBase {
     }
 
     if (material_) {
-      client_->template AddComponent<MeshRenderer>()->SetMaterial(material_);
+      // Do not overwrite MeshRenderer 
+      auto mr = client_->template GetComponent<MeshRenderer>();
+      if (!mr)
+        mr = client_->template AddComponent<MeshRenderer>();
+      mr->SetMaterial(material_);
     }
 
     if (mesh_) {
-      client_->template AddComponent<MeshFilter>()->SetMesh(mesh_);
+      auto mf = client_->template GetComponent<MeshFilter>();
+      if (!mf) 
+        mf = client_->template AddComponent<MeshFilter>();
+      mf->SetMesh(mesh_);
     }
 
     client_->transform->SetLocalPosition(position_);
@@ -263,6 +270,16 @@ class Cfg<StdBatch::Actor> : public CfgActorBase<StdBatch::Actor, Cfg<StdBatch::
     client_->transform->SetLocalScale(scale_);
     return *this;
   }
+};
+
+template <>
+class Cfg<ActorPool> : public CfgActorBase<ActorPool, Cfg<ActorPool>> {
+ public:
+  using Self = Cfg<ActorPool>;
+  using Base = CfgActorBase<ActorPool, Self>;
+
+  template <typename... TArgs>
+  Cfg(TArgs&&... args) : Base(std::forward<TArgs>(args)...) {}
 };
 
 template <>

@@ -96,8 +96,13 @@ class MeshRenderer {
   
     if (use_indices) {
       glDrawElementsInstanced(ToOpenGL(primitive), mesh->indices.size(), 
-                              GL_UNSIGNED_SHORT, nullptr, n_instances);
+                              GL_UNSIGNED_INT, nullptr, n_instances);
+      //glDrawElementsInstanced(ToOpenGL(primitive), mesh->indices.size(), 
+      //                        GL_UNSIGNED_SHORT, nullptr, n_instances);
     } else {
+      // TODO!!! parametrize it
+      glPatchParameteri(GL_PATCH_VERTICES, mesh->vertices.size());
+      //glDrawArrays(ToOpenGL(primitive), 0, mesh->vertices.size());
       glDrawArraysInstanced(ToOpenGL(primitive), 0, mesh->vertices.size(), 
                             n_instances);
     }

@@ -82,6 +82,7 @@ set(EXAMPLES
   17_omni_shadowmap
   18_omni_shadowmap_multi
   20_multiple_color_attachments
+  21_multicam_frustum_test
   25_instancing_raw
   26_instancing_batch
   27_tri_tesselation
@@ -96,6 +97,12 @@ set(SANDBOX
   #atmosphere
   #simulation
   #aabb_transform
+  #radialshafts
+  #quad_tesselation
+  #profiling_nonbatch
+  #hmap
+  #qtree
+  #objectpool
 )
 
 foreach(EX ${EXAMPLES})

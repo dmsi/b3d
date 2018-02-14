@@ -25,6 +25,7 @@
 #include "scene.h"
 #include <exception>
 
+// TODO: it is growing bigger... Need to redesign.
 void Scene::Update() {
   for (auto& rt: render_targets_) {
     rt.second->StartNewFrame();
@@ -43,6 +44,18 @@ void Scene::Update() {
     kv.second->Update();
     for (auto& rt: render_targets_) {
       rt.second->AddActor(kv.second);
+    }
+  }
+
+  // Update and draw pools ...
+  for (auto& kv: actor_pools_) {
+    kv.second->Update();
+
+    for (auto& a: *kv.second) {
+      a->Update();
+      for (auto& rt: render_targets_) {
+        rt.second->AddActor(a);
+      }
     }
   }
 
@@ -71,61 +84,13 @@ void Scene::Draw() {
   }
 }
 
-// TODO all that string manipulations are very expensive, 
-// it's better to pre-build string names or use direct uniform locations
-// as ints...
 void Scene::SetSceneUniforms(Pass& pass, const Camera& camera) {
-  int n_point = 0;
-  int n_directional = 0;
-  int n_spot = 0;
+  pass.SuTextures();
 
-  std::string prefix;
-  auto set_uniform = [&prefix, &pass] (auto name, auto num, auto value) {
-    pass.SetUniform(prefix + name + "_" + std::to_string(num), value);
-  };
-
-  // Bind textures slots to shader uniforms as TEXTURE_0 = 0, TEXTURE_1 = 1, etc
-  for (int i = 0; i < Material::kMaxTextureSlots; ++i) {
-    prefix = "";
-    set_uniform("TEXTURE", i, i);
-  }
-
-  // Set lights
-  // TODO refactor this, get rid of unused, precompile uniform names to 
-  // avoid building strings many times each frame (once per draw call actually)
   for (auto& kv: lights_) {
     Light& light = *kv.second;
-    switch (light.GetType()) {
-      case Light::kDirectional: {
-        // Direction in camera space?
-        // http://www.lighthouse3d.com/tutorials/glsl-tutorial/directional-lights-per-pixel/
-        prefix = "SU_DIRECTIONAL_LIGHT_";
-        set_uniform("COLOR",     n_directional, light.GetColor());
-        set_uniform("DIRECTION", n_directional, light.GetDirection());
-        set_uniform("INTENSITY", n_directional, light.GetIntensity());
-        set_uniform("POSITION",  n_directional, light.GetPosition());
-        n_directional++;
-      } break;
-
-      case Light::kSpot: {
-        prefix = "SU_SPOT_LIGHT";
-        set_uniform("COLOR",     n_spot, light.GetColor());
-        set_uniform("DIRECTION", n_spot, light.GetDirection());
-        set_uniform("POSITION",  n_spot, light.GetPosition());
-        set_uniform("INTENSITY", n_spot, light.GetIntensity());
-        set_uniform("RANGE",     n_spot, light.GetRange());
-        set_uniform("ANGLE",     n_spot, light.GetSpotAngle());
-        n_spot++;
-      } break;
-
-      case Light::kPoint: {
-        prefix = "SU_POINT_LIGHT_";
-        set_uniform("COLOR",     n_point, light.GetColor());
-        set_uniform("POSITION",  n_point, light.GetPosition());
-        set_uniform("INTENSITY", n_point, light.GetIntensity());
-        set_uniform("RANGE",     n_point, light.GetRange());
-        n_point++;
-      } break;
+    if (light.GetType() == Light::kDirectional) {
+      pass.SuDirLight(light.GetDirection(), light.GetColor());
     }
   }
 }

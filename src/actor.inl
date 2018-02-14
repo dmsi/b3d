@@ -33,7 +33,7 @@ inline auto Actor::AddComponent(TArgs&&... args) {
     //
     mesh_renderer_ = std::make_shared<MeshRenderer>(
         std::forward<TArgs>(args)...);
-    //LOG_F(INFO, "[actor %s] MeshRenderer added", name_.c_str());
+
     return mesh_renderer_;
   } else 
   if constexpr (std::is_same<TComponent, MeshFilter>::value) {
@@ -42,7 +42,7 @@ inline auto Actor::AddComponent(TArgs&&... args) {
     //
     mesh_filter_ = std::make_shared<MeshFilter>(
         std::forward<TArgs>(args)...);
-    //LOG_F(INFO, "[actor %s] MeshFilter added", name_.c_str());
+
     return mesh_filter_;
   } else {
     //
@@ -93,3 +93,30 @@ inline auto Actor::GetComponent() {
         "TComponent not recognized");
   }
 }
+
+////////////////////////////////////////////////////////////////////////////
+// Replaces component
+////////////////////////////////////////////////////////////////////////////
+template <class TComponent>
+inline void Actor::SetComponent(std::shared_ptr<TComponent> component) {
+  // C++17 constexpr dispatching
+  if constexpr (std::is_same<TComponent, MeshRenderer>::value) {
+    // 
+    // MeshRenderer
+    //
+    mesh_renderer_ = component; 
+  } else 
+  if constexpr (std::is_same<TComponent, MeshFilter>::value) {
+    //
+    // MeshFilter
+    //
+    mesh_filter_ = component;
+  } else {
+    //
+    // None of above 
+    // 
+    static_assert(cppness::dependent_false<TComponent>::value, 
+        "TComponent not recognized");
+  }
+}
+

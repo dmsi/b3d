@@ -27,7 +27,8 @@
 
 #include "renderqueue.h"
 #include "actor.h"
-#include "batch_actor.h"
+#include "actor_batch_storage.h"
+#include "actor_pool.h"
 #include "camera.h"
 #include "light.h"
 #include "material/material.h"
@@ -83,6 +84,8 @@ class Scene {
   std::map<std::string, std::shared_ptr<Camera>> cameras_;
   std::map<std::string, std::shared_ptr<Actor>>  actors_;
   std::map<std::string, std::shared_ptr<Light>>  lights_;
+
+  std::map<std::string, std::shared_ptr<ActorPool>> actor_pools_;
 
   // TODO this is a dynamic batch which updates every frame
   // add a static batch which updates once, or from time to

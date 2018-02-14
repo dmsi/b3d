@@ -28,6 +28,97 @@
 #include "actor.h"
 #include "glm_main.h"
 
+///////////////////////////////////////////////////////////////////////////////
+//
+///////////////////////////////////////////////////////////////////////////////
+class Frustum {
+ public:
+  /////////////////////////////////////////////////////////////////////////////
+  // m - projection * view matrix
+  // view = glm::inverse(camera->transform->GetMatrix())
+  /////////////////////////////////////////////////////////////////////////////
+  void Calculate(const glm::mat4& pv_matrix) {
+    // http://gamedevs.org/uploads/fast-extraction-viewing-frustum-planes-from-world-view-projection-matrix.pdf
+    // had to transpose the matrix
+    //#define MTX(a, b) m[b-1][a-1]
+    auto MTX = [&pv_matrix](int a, int b) {
+      return pv_matrix[b-1][a-1];
+    };
+
+    // Left clipping plane
+    planes_[kLeft].x = MTX(4, 1) + MTX(1, 1);
+    planes_[kLeft].y = MTX(4, 2) + MTX(1, 2);
+    planes_[kLeft].z = MTX(4, 3) + MTX(1, 3);
+    planes_[kLeft].w = MTX(4, 4) + MTX(1, 4);
+    // Right clipping plane
+    planes_[kRight].x = MTX(4, 1) - MTX(1, 1);
+    planes_[kRight].y = MTX(4, 2) - MTX(1, 2);
+    planes_[kRight].z = MTX(4, 3) - MTX(1, 3);
+    planes_[kRight].w = MTX(4, 4) - MTX(1, 4);
+    // Top clipping plane
+    planes_[kTop].x = MTX(4, 1) - MTX(2, 1);
+    planes_[kTop].y = MTX(4, 2) - MTX(2, 2);
+    planes_[kTop].z = MTX(4, 3) - MTX(2, 3);
+    planes_[kTop].w = MTX(4, 4) - MTX(2, 4);
+    // Bottom clipping plane
+    planes_[kBottom].x = MTX(4, 1) + MTX(2, 1);
+    planes_[kBottom].y = MTX(4, 2) + MTX(2, 2);
+    planes_[kBottom].z = MTX(4, 3) + MTX(2, 3);
+    planes_[kBottom].w = MTX(4, 4) + MTX(2, 4);
+    // Near clipping plane
+    planes_[kNear].x = MTX(4, 1) + MTX(3, 1);
+    planes_[kNear].y = MTX(4, 2) + MTX(3, 2);
+    planes_[kNear].z = MTX(4, 3) + MTX(3, 3);
+    planes_[kNear].w = MTX(4, 4) + MTX(3, 4);
+    // Far clipping plane
+    planes_[kFar].x = MTX(4, 1) - MTX(3, 1);
+    planes_[kFar].y = MTX(4, 2) - MTX(3, 2);
+    planes_[kFar].z = MTX(4, 3) - MTX(3, 3);
+    planes_[kFar].w = MTX(4, 4) - MTX(3, 4);
+
+    for (int i = 0; i < 6; i++) {
+      planes_[i] = glm::normalize(planes_[i]);
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Returns true if point p is inside the frustum.
+  /////////////////////////////////////////////////////////////////////////////
+  bool CheckPoint(const glm::vec3& p) const {
+    for (int i = 0; i < 6; ++i) {
+      glm::vec3 n(planes_[i]);
+      // test half space
+      if (glm::dot(n, p) + planes_[i].w < 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Helper function that transforms NDC cube vertex to frustrum.
+  // Can be used for CPU-based frustum visualisation.
+  // inv_pv = glm::inverse(projection * view)
+  /////////////////////////////////////////////////////////////////////////////
+  glm::vec3 NdcToWorld(const glm::mat4& inv_pv, const glm::vec3& ndc) const {
+    glm::vec4 world = inv_pv * glm::vec4(ndc, 1); 
+    world = world / world.w;
+    return (glm::vec3)world;
+  }
+  
+ private:
+  enum {
+    kNear = 0,
+    kFar,
+    kTop,
+    kBottom,
+    kLeft,
+    kRight
+  };
+
+  glm::vec4 planes_[6];
+};
+
 class Camera : public Actor {
  public:
   enum Type {kPerspective, kOrtho};
@@ -95,6 +186,18 @@ class Camera : public Actor {
     return  far_;
   }
 
+  void Update() override {
+    Actor::Update();
+    glm::mat4 p, v;
+    GetProjectionMatrix(p);
+    GetViewMatrix(v);
+    frustum_.Calculate(p*v);
+  }
+
+  const Frustum& GetFrustum() const {
+    return frustum_;
+  }
+
  private:
   Type  type_;
 
@@ -113,6 +216,8 @@ class Camera : public Actor {
   float right_;
   float top_;
   float bottom_;
+
+  Frustum frustum_;
 };
 
 #endif // _CAMERA_H_7E6A64CD_EB55_4011_9E91_F26738B56FF9_

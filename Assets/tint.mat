@@ -1,8 +1,4 @@
-# No shading, just a texture 
-name: texture.mat 
-
-textures: 
-  0: Assets/tango-128.ppm
+name: tint 
 
 pass:
   name: pass0 
@@ -13,31 +9,21 @@ pass:
           #version 330 core
 
           layout(location = 0) in vec3 In_position;
-          layout(location = 3) in vec2 In_uv;
-
-          out InOut {
-            vec2 uv;
-          } Out;
 
           uniform mat4 SU_PVM_MATRIX;
 
           void main() {
             gl_Position = SU_PVM_MATRIX * vec4(In_position, 1); 
-            Out.uv = vec2(In_uv.x, 1 - In_uv.y);
           }
 
   fragment: | 
           #version 330 core
 
-          in InOut {
-            vec2 uv;
-          } In;
-          
           out vec4 Out_color;
 
-          uniform sampler2D TEXTURE_0; 
+          uniform vec4 tint; 
 
           void main () {
-            Out_color = texture(TEXTURE_0, In.uv); 
+            Out_color = tint; 
           }
 

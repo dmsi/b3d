@@ -63,6 +63,15 @@ int CullMode::ToOpenGL(CullMode::Value v) {
   }
 }
 
+int FillMode::ToOpenGL(FillMode::Value v) {
+  switch (v) {
+    case FillMode::kSolid                   : return GL_FILL;
+    case FillMode::kWireframe               : return GL_LINE;
+    case FillMode::kPoint                   : return GL_POINT;
+    default: ABORT_F("Invalid mode %d", v);
+  }
+}
+
 void PassOptions::Bind() {
   if (mask_.test(kZwrite)) {
     glDepthMask(zwrite_ ? GL_TRUE : GL_FALSE);
@@ -98,6 +107,10 @@ void PassOptions::Bind() {
       glEnable(GL_CLIP_DISTANCE0 + i);
     }
   }
+
+  if (mask_.test(kFill)) {
+    glPolygonMode(GL_FRONT_AND_BACK, FillMode::ToOpenGL(fill_)); 
+  }
 }
 
 void PassOptions::Unbind() {
@@ -118,7 +131,6 @@ void PassOptions::Unbind() {
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
   }
-
   if (mask_.test(kBlend)) {
     glDisable(GL_BLEND);
   }
@@ -127,6 +139,10 @@ void PassOptions::Unbind() {
     for (const auto& i: clipping_planes_) {
       glDisable(GL_CLIP_DISTANCE0 + i);
     }
+  }
+  
+  if (mask_.test(kFill)) {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
   }
 }
 
@@ -147,4 +163,45 @@ void Pass::Unbind() {
   }
   shader_->Unbind();
   options.Unbind();
+}
+
+void Pass::SetShader(std::shared_ptr<Shader> shader) {
+  shader_ = shader;
+
+  su_pvm_location_ = shader->GetUniformLocation("SU_PVM_MATRIX");
+  su_p_location_ = shader->GetUniformLocation("SU_P_MATRIX");
+  su_v_location_ = shader->GetUniformLocation("SU_V_MATRIX");
+  su_m_location_ = shader->GetUniformLocation("SU_M_MATRIX");
+  su_dirlight_dir_ = shader->GetUniformLocation("SU_DIRECTIONAL_LIGHT_DIRECTION_0");
+  su_dirlight_col_ = shader->GetUniformLocation("SU_DIRECTIONAL_LIGHT_COLOR_0");
+  for (int i = 0; i < sizeof(su_textures)/sizeof(int); ++i) {
+    su_textures[i] = shader->GetUniformLocation("TEXTURE_" + std::to_string(i));
+  }
+}
+  
+void Pass::SuPvmMatrix(const glm::mat4& pvm) {
+  shader_->SetUniform(su_pvm_location_, pvm);
+}
+
+void Pass::SuPMatrix(const glm::mat4& p) {
+  shader_->SetUniform(su_p_location_, p);
+}
+
+void Pass::SuVMatrix(const glm::mat4& v) {
+  shader_->SetUniform(su_v_location_, v);
+}
+
+void Pass::SuMMatrix(const glm::mat4& m) {
+  shader_->SetUniform(su_m_location_, m);
+}
+
+void Pass::SuDirLight(const glm::vec3& dir, const Color& col) {
+  shader_->SetUniform(su_dirlight_dir_, dir);
+  shader_->SetUniform(su_dirlight_col_, col);
+}
+
+void Pass::SuTextures() {
+  for (int i = 0; i < sizeof(su_textures)/sizeof(int); ++i) {
+    shader_->SetUniform(su_textures[i], i); 
+  }
 }

@@ -40,23 +40,55 @@
 #include "common/util.h"
 #include "common/logging.h"
 
-class Actor;
-
 //////////////////////////////////////////////////////////////////////////////
 // Unreal-Enine like Actor, or Unity3D GameObject ...
 //////////////////////////////////////////////////////////////////////////////
 class Actor {
  public:
-   // Turned it to shared ptr in order to implement child-parent relationship
-   // among the Transforms and not worry too much about the lifetime.
-   std::shared_ptr<Transformation> transform;
+  // Turned it to shared ptr in order to implement child-parent relationship
+  // among the Transforms and not worry too much about the lifetime.
+  std::shared_ptr<Transformation> transform;
 
-  explicit Actor(const std::string& name) : transform(new Transformation(*this)), name_(name) {
+  explicit Actor(const std::string& name) : 
+    transform(new Transformation(*this)), name_(name), alive_(true) {
     LOG_F(INFO, "Actor added: %s", GetName().c_str());
   }
 
   virtual ~Actor() {
     LOG_F(INFO, "Actor deleted: %s", GetName().c_str());
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Actor states
+  //  IsVisible() == false => being updated, but not drawn 
+  //  IsActive() == false => not being updated nor drawn
+  //  IsAlive() == false => not being updated nor drawn, shall be removed.
+  //
+  //  States are recursive inclusive, i.e. 
+  //   IsAlive() == false includes IsActive() == false
+  //   IsActive() == false means IsVisible() == false
+  //
+  //  IMPL
+  //   std::bitset<...> with states kUpdateFlag, kDrawFlag, etc.?
+  //
+  //  NOTE
+  //   Due to optimization reasons in gourps like batch object and object
+  //   pools this behaviour can be optimized. I.e. IsDead() might not lead to
+  //   physically removing the actor immidiately, but it guarantess no updates
+  //   and draws.
+  ////////////////////////////////////////////////////////////////////////////
+
+  bool IsVisible() const;
+  bool IsActive() const;
+  bool IsAlive() const {return alive_;}
+  bool IsStatic() const;
+  bool IsSuperStatic() const;
+
+  void Die() {
+    alive_ = false;
+  }
+  void Alive() {
+    alive_ = true;
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -82,6 +114,7 @@ class Actor {
       }
       actions_start_queue_.clear();
     }
+
     for (auto& kv: actions_) {
       kv.second->Update();
     }
@@ -160,6 +193,12 @@ class Actor {
     actions_remove_queue_.emplace(typeid(TAction).hash_code());
   }
 
+  void RemoveAllActions() {
+    actions_remove_queue_.clear();
+    actions_start_queue_.clear();
+    actions_.clear();
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   // Creates component and returns shared pointer to it, args bypassed to 
   // TComponent constructor.
@@ -172,6 +211,13 @@ class Actor {
   ////////////////////////////////////////////////////////////////////////////
   template <class TComponent>
   auto GetComponent();
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Replaces component
+  ////////////////////////////////////////////////////////////////////////////
+  template <class TComponent>
+  void SetComponent(std::shared_ptr<TComponent> component);
+
 
  private: 
   using ActionPtr = std::shared_ptr<Action>;
@@ -186,6 +232,8 @@ class Actor {
   std::shared_ptr<MeshRenderer>    mesh_renderer_;
 
   glm::vec4                        extra_;
+
+  bool                             alive_;
 };
 
 #include "actor.inl"

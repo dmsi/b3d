@@ -52,9 +52,9 @@ namespace Shader_cppness {
   inline
   void SetUniform<float>(GLint location, const float& value, GLenum expected_type) {
     // This is how the validation can be added
-    if (expected_type != GL_FLOAT) {
-      ABORT_F("Bad type");
-    }
+    //if (expected_type != GL_FLOAT) {
+    //  ABORT_F("Bad type");
+    //}
     glUniform1f(location, value);
   }
   
@@ -192,12 +192,29 @@ class Shader {
     }
   }
 
+  // shall we use uniform buffer instead???
   template <typename T>
   void SetUniformArray(const std::string& name, const T values[], size_t n_values) {
     auto uniform_iter = uniforms_.find(name);
     if (uniform_iter != uniforms_.end()) {
       const UniformInfo& u = uniform_iter->second;
       Shader_cppness::SetUniformArray(u.location, values, n_values, u.type);
+    }
+  }
+
+  // Directly
+  int GetUniformLocation(const std::string& name) const {
+    auto it = uniforms_.find(name);
+    if (it != uniforms_.end()) {
+      return it->second.location;
+    }
+    return -1;
+  }
+
+  template <typename T>
+  void SetUniform(int location, const T& value) {
+    if (location >= 0) {
+      Shader_cppness::SetUniform(location, value, 0);
     }
   }
 

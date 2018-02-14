@@ -25,6 +25,46 @@
 #include "b3d.h"
 #include "my/all.h"
 
+struct Lifetime : public Action {
+  float life;
+
+  Lifetime(std::shared_ptr<Transformation> t, float l)
+    : Action(t), life(l) {}
+
+  void Update() override {
+    life -= GetTimer().GetTimeDelta();
+    if (life <= 0) {
+      GetActor().Die();
+    }
+  }
+};
+
+struct Spawner : public Action {
+  float timeout;
+
+  Spawner(std::shared_ptr<Transformation> t)
+    : Action(t), timeout(Math::Random(1, 3)) {}
+
+  void Update() override {
+    timeout -= GetTimer().GetTimeDelta();
+      //std::cerr << timeout << std::endl;
+    if (timeout < 0) {
+      //std::cerr << "yay!" << std::endl;
+      //timeout = Math::Random(1/, .3);
+      timeout = 1/25.;
+
+      auto& self = *((ActorPool*)&GetActor());
+      auto a = self.Get();
+      if (!a) return;
+      a->AddAction<Lifetime>(Math::Random(5, 15));
+      a->transform->SetLocalPosition(Math::Random(-5, 5), 0, Math::Random(-5, 5));
+      if (Math::Random() < .3) {
+        a->AddAction<Rotator>(glm::vec3(0, 90, 0));
+      }
+    }
+  }
+};
+
 int main(int argc, char* argv[]) {
   using glm::vec3;
   Scene scene;
@@ -32,7 +72,7 @@ int main(int argc, char* argv[]) {
   LOG_SCOPE_F(INFO, "Helo blyat!");
 
   // Initialize application.
-  AppContext::Init(1280, 720, "Atmosphere rendering [b3d]", Profile("3 3 core"));
+  AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("3 3 core"));
   AppContext::Instance().display.ShowCursor(false);
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
@@ -43,34 +83,30 @@ int main(int argc, char* argv[]) {
     . Clear(.8, .8, .8, 1)
     . Done();
   
-  auto atmosphere_tex = Cfg<RenderTarget>(scene, "rt.atmosphere", 100)
-    . Tags("atmosphere")
-    . Type(FrameBuffer::kTexture2D)
-    . Resolution(width, height)
-    . Layer(Layer::kColor, Layer::kReadWrite)
-    . Done()
-    ->GetLayerAsTexture(0, Layer::kColor);
-  
-  Cfg<Actor>(scene, "actor.terrain")
-    . Material("sandbox/atmosphere/terrain_atmosphere.mat")
-    . Texture(0, atmosphere_tex)
-    . Action<TerrainGenerator>()
+  auto pool = Cfg<ActorPool>(scene, "actor.knight.pool", 100)
+    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Action<Spawner>()
     . Done();
 
-  Cfg<Actor>(scene, "actor.skydome")
-    . Model("Assets/sphere.dsm", "sandbox/atmosphere/skydome_perez.mat")
-    . Done();
+  //while (true) {
+  //  auto k1 = pool->Get(); 
+  //  if (!k1) break;
+  //  k1->transform->SetLocalPosition(Math::Random(-20, 20), 0, Math::Random(-20, 20));
+  //  if (Math::Random() < .3) {
+  //    k1->AddAction<Rotator>(glm::vec3(0, 90, 0));
+  //    k1->AddAction<Lifetime>(Math::Random(10, 20));
+  //  }
+  //}
 
-  Cfg<Light>(scene, "light.sun", Light::kDirectional)
-    . EulerAngles(20, 0, 0)
-    . Action<Rotator>(glm::vec3(5, 0, 0))
+  Cfg<Actor>(scene, "floor")
+    . Model("Assets/plane.dsm", "Assets/texture.mat")
     . Done();
 
   // Main camera
   Cfg<Camera>(scene, "camera.main")
-    . Perspective(60, (float)width/height, 1, 2500)
-    . Position(0, 200, 4)
-    . Action<FlyingCameraController>(200)
+    . Perspective(60, (float)width/height, 1, 8000) 
+    . Position(0, 1, 4)
+    . Action<FlyingCameraController>(5)
     . Done();
   
   // Fps meter.

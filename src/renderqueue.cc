@@ -63,10 +63,10 @@ void RenderPassSubQueue::Draw(Scene& scene, Camera& camera) {
       camera.GetProjectionMatrix(proj_matrix);
       actor->transform->GetMatrix(model_matrix);
       pvm_matrix = proj_matrix * view_matrix * model_matrix;
-      pass_->SetUniform("SU_PVM_MATRIX", pvm_matrix);
-      pass_->SetUniform("SU_M_MATRIX", model_matrix);
-      pass_->SetUniform("SU_V_MATRIX", view_matrix);
-      pass_->SetUniform("SU_P_MATRIX", proj_matrix);
+      pass_->SuPvmMatrix(pvm_matrix);
+      pass_->SuMMatrix(model_matrix);
+      pass_->SuVMatrix(view_matrix);
+      pass_->SuPMatrix(proj_matrix);
 
       mesh_renderer->DrawCall(*mesh_filter);
 

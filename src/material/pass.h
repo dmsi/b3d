@@ -35,6 +35,7 @@
 #include "shader.h"
 #include "common/tags.h"
 #include "common/logging.h"
+#include "image/colormap.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
@@ -81,6 +82,18 @@ struct CullMode {
   static int ToOpenGL(Value v);
 };
 
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+struct FillMode {
+  enum Value {
+    kSolid,
+    kWireframe,
+    kPoint
+  };
+
+  static int ToOpenGL(Value v);
+};
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Render options such as ztest, cull and blend.
@@ -93,6 +106,7 @@ class PassOptions {
     kCull,
     kBlend,
     kClipping,
+    kFill,
 
     kTotal
   };
@@ -107,7 +121,9 @@ class PassOptions {
     cull_              (CullMode::kCw),
     src_blend_factor_  (BlendFactor::kOne),
     dst_blend_factor_  (BlendFactor::kOne),
-    blend_op_          (BlendOp::kAdd) {}
+    blend_op_          (BlendOp::kAdd),
+    fill_              (FillMode::kSolid)
+  {}
 
   void SetZwrite(bool on) {
     zwrite_ = on;
@@ -122,6 +138,11 @@ class PassOptions {
   void SetCull(CullMode::Value cull) {
     cull_ = cull;
     mask_.set(kCull);
+  }
+
+  void SetFill(FillMode::Value fill) {
+    fill_ = fill;
+    mask_.set(kFill);
   }
 
   void SetSrcBlendFactor(BlendFactor::Value blend_factor) {
@@ -164,6 +185,7 @@ class PassOptions {
   BlendFactor::Value    dst_blend_factor_;
   BlendOp::Value        blend_op_;
   std::set<int>         clipping_planes_;
+  FillMode::Value       fill_;
 };
 
 
@@ -185,7 +207,7 @@ class Pass {
   void SetQueue(int queue) {queue_ = queue;}
   int  GetQueue() const {return queue_;}
 
-  void SetShader(std::shared_ptr<Shader> shader) { shader_ = shader; }
+  void SetShader(std::shared_ptr<Shader> shader);
   
   void SetTags(const std::vector<std::string>& tags) {
     tags_.Set(tags);
@@ -206,11 +228,38 @@ class Pass {
     shader_->SetUniformArray(name, values, n_values);
   }
 
+  int GetUniformLocation(const std::string& name) {
+    return shader_->GetUniformLocation(name);
+  }
+  template <typename T>
+  void SetUniform(int location, const T& value) {
+    shader_->SetUniform(location, value);
+  }
+
+  // STD uniforms - optimization, to avoid building strings 
+  // and lookup uniform map by name
+  // TODO uniform buffer?
+  void SuPvmMatrix(const glm::mat4& pvm);
+  void SuPMatrix(const glm::mat4& p);
+  void SuVMatrix(const glm::mat4& v);
+  void SuMMatrix(const glm::mat4& m);
+  void SuDirLight(const glm::vec3& dir, const Color& col);
+  void SuTextures();
+
  public:
   std::string             name_;
   int                     queue_;
   std::shared_ptr<Shader> shader_;
   Tags                    tags_;
+
+  // STD uniforms locations 
+  int su_pvm_location_ = -1;
+  int su_p_location_   = -1;
+  int su_v_location_   = -1;
+  int su_m_location_   = -1;
+  int su_dirlight_dir_ = -1;
+  int su_dirlight_col_ = -1;
+  int su_textures[32] = {-1};
 };
 
 

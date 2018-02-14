@@ -84,6 +84,14 @@ static CullMode::Value StringToCullMode(const std::string& s) {
   ABORT_F("Bad value %s", s.c_str());
 }
 
+static FillMode::Value StringToFillMode(const std::string& s) {
+  if      (s == "solid")  return FillMode::kSolid;
+  else if (s == "wireframe") return FillMode::kWireframe;
+  else if (s == "point") return FillMode::kPoint;
+
+  ABORT_F("Bad value %s", s.c_str());
+}
+
 static BlendFactor::Value StringToBlendFactor(const std::string& s) {
   if      (s == "one")                 return BlendFactor::kOne;
   else if (s == "zero")                return BlendFactor::kZero;
@@ -122,6 +130,7 @@ static std::shared_ptr<Pass> LoadPass(YAML::Node node) {
   static const std::string kBlendFactorsKey   = "factors";
   static const std::string kBlendOpKey        = "op";
   static const std::string kClippingKey       = "clipping";
+  static const std::string kFillKey           = "fill";
   static const std::string kVertexShaderKey   = "vertex";
   static const std::string kFragmentShaderKey = "fragment";
   static const std::string kGeometryShaderKey = "geometry";
@@ -143,6 +152,8 @@ static std::shared_ptr<Pass> LoadPass(YAML::Node node) {
       pass->options.SetCull(StringToCullMode(subnode.second.as<std::string>()));
     } else if (key == kClippingKey) {
       pass->options.SetClippingPlanes(subnode.second.as<std::vector<int>>());
+    } else if (key == kFillKey) {
+      pass->options.SetFill(StringToFillMode(subnode.second.as<std::string>()));
     } else if (key == kTagsKey) {
       pass->SetTags(subnode.second.as<std::vector<std::string>>());
     } else if (key == kBlendKey) {

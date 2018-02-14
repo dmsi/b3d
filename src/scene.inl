@@ -76,6 +76,16 @@ auto Scene::Add(const std::string& name, TArgs&&... args) {
     //
     auto thing = std_batch_.AddActor(name, std::forward<TArgs>(args)...);
     return thing;
+  } else
+  if constexpr (std::is_same<TComponent, ActorPool>::value) {
+    // 
+    // ActorPool 
+    //
+    auto thing = std::make_shared<TComponent>(name, std::forward<TArgs>(args)...);
+    return cppness
+      ::MapForSharedPtr<decltype(actor_pools_)>
+      ::JustPutToMap(name, thing, actor_pools_);
+    return thing;
   } else {
     // 
     // None of above 
@@ -143,6 +153,16 @@ auto Scene::Get(TArgs&&... args) {
     auto t = std::make_tuple(std::forward<TArgs>(args)...);
     auto key = std::get<0>(t);
     return std_batch_.GetActor(key);
+  } else
+  if constexpr (std::is_same<TComponent, ActorPool>::value) {
+    // 
+    // ActorPool 
+    //
+    auto t = std::make_tuple(std::forward<TArgs>(args)...);
+    auto key = std::get<0>(t);
+    return cppness
+      ::MapForSharedPtr<decltype(actor_pools_)>
+      ::JustGetFromMap(key, actor_pools_);
   } else {
     // 
     // None of above 
