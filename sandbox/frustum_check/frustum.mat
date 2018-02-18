@@ -1,0 +1,58 @@
+name: frustum 
+
+pass:
+  name: pass0 
+  queue: 100
+  tags: [onscreen]
+  cull: cw 
+  fill: solid 
+  vertex: | 
+          #version 330 core
+          
+          ///////////////////////////////////////////////////////////
+          // This shader is applied to NDC cube and transforms it 
+          // into frustrum.
+          // target_view and target_projection are view and projection
+          // matrices of visualised camera, i.e.:
+          // glm::mat4 target_view, target_projection;
+          // target_camera->GetViewMatrix(target_view);
+          // target_camera->GetProjectionMatrix(target_projection);
+          ///////////////////////////////////////////////////////////
+
+          layout(location = 0) in vec3 In_position;
+
+          out InOut {
+            vec3 vpos; // for color interpolation
+          } Out;
+
+          // current camera matrix
+          uniform mat4 SU_P_MATRIX; 
+          uniform mat4 SU_V_MATRIX;
+
+          // visualising camera
+          uniform mat4 target_view;
+          uniform mat4 target_projection;
+
+          void main() {
+            Out.vpos = In_position;
+
+            mat4 inv_pv = inverse(target_projection * target_view);
+            vec4 pos = inv_pv * vec4(In_position, 1);
+            pos.xyz /= pos.w;
+            gl_Position = SU_P_MATRIX * SU_V_MATRIX * vec4(pos.xyz, 1); 
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in InOut {
+            vec3 vpos; // for color interpolation
+          } In;
+
+          out vec4 Out_color;
+
+          void main () {
+            float t = clamp(In.vpos.z*0.5 + 0.5, 0, 1);
+            Out_color = mix(vec4(1, 1, 1, 1), vec4(1, 0, 0, 1), t);
+          }
+

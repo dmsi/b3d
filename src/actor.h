@@ -165,7 +165,7 @@ class Actor {
       //ActionPtr action = ActionPtr(new TAction(transform, args...));
       actions_[id] = action; 
       actions_start_queue_[id] = action;
-      LOG_F(INFO, "Action added: %s   %s", GetName().c_str(), ti.name());
+      //LOG_F(INFO, "Action added: %s   %s", GetName().c_str(), ti.name());
       //return std::shared_ptr<TAction>(std::dynamic_pointer_cast<TAction>(actions_[id]));
       return std::dynamic_pointer_cast<TAction>(action);
     } else {
@@ -180,9 +180,10 @@ class Actor {
   auto GetAction() {
     auto it = actions_.find(typeid(TAction).hash_code());
     if (it != actions_.end()) {
-      return it->second;
+      //return it->second;
+      return std::static_pointer_cast<TAction>(it->second);
     }
-    return ActionPtr();
+    return std::shared_ptr<TAction>(); 
   }
 
   // Need a better implementation of the whole thing - can

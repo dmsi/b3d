@@ -25,6 +25,27 @@
 #include "b3d.h"
 #include "my/all.h"
 
+struct Rot : public Action {
+  glm::vec3 dr;
+  Rot(std::shared_ptr<Transformation> t, float x, float y, float z)
+    : Action(t), dr(x, y, z) {}
+
+  void Update() override {
+    auto r = transform->GetLocalEulerAngles();
+    if (r.x < 20) {
+      //dr.x = 20;
+      dr.x = abs(dr.x);
+    }
+
+    if (r.x > 160) {
+      //dr.x = 160;
+      dr.x = -abs(dr.x);
+    }
+
+    transform->Rotate(dr * GetTimer().GetTimeDelta());
+  }
+};
+
 struct TerrainHmap: public Action {
   struct Params {
     float max_altitude;
@@ -43,6 +64,7 @@ struct TerrainHmap: public Action {
   void Build() {
     //hmap = Image::Load("Assets/sfo_8x8_hmap.pgm");
     hmap = Image::Load("Assets/geo_20x20.pgm");
+    //hmap = Image::Load("img.ppm");
     //hmap = Image::Load("Assets/mv_8x8.pgm");
     std::function<float(int, int)>     sample_alt = [this](int x, int z) {
       int ix = x % hmap->GetWidth();
@@ -184,11 +206,24 @@ int main(int argc, char* argv[]) {
   
   //TerrainHmap::Params p {700, 4000};
   TerrainHmap::Params p {1000, 8000};
-  Cfg<Actor>(scene, "actor.terrain")
+  auto t = Cfg<Actor>(scene, "actor.terrain")
     . Material("sandbox/hmap/terrain.mat")
     . Texture(0, atmosphere_tex)
     . Action<TerrainHmap>(p)
     . Done();
+
+  /*
+  if (auto m = t->GetComponent<Mesh>()) {
+    int size = sqrt(m->vertices.size());
+    auto nmap = std::make_shared<Image::ColorMap>(size, size);
+    for (size_t iz = 0; iz < size; ++iz) {
+      for (size_t ix = 0; ix < size; ++ix) {
+        auto n = m->normals[iz * size + ix];
+        nmap->At(ix, iz) = Color(glm::normalize(n) * 0.5f + 0.5f, 1);
+      }
+    }
+    Image::PortablePixMap::Write("nmap.ppm", *nmap);
+  }*/
 
   Cfg<Actor>(scene, "actor.skydome")
     . Model("Assets/sphere.dsm", "sandbox/hmap/skydome_perez.mat")
@@ -198,15 +233,21 @@ int main(int argc, char* argv[]) {
 
   Cfg<Light>(scene, "light.sun", Light::kDirectional)
     . EulerAngles(20, 180, 0)
-    //. Action<Rotator>(vec3(0, 30, 0))
+    //. Action<Rot>(10, 0, 0)
     . Done();
 
   // Main camera
-  Cfg<Camera>(scene, "camera.main")
-    . Perspective(60, (float)width/height, 5, 8000)
+  auto cam = Cfg<Camera>(scene, "camera.main")
+    . Perspective(60, (float)width/height, 5, 12000)
     . Position(0, 100, 4)
     . Action<FlyingCameraController>(200) 
     . Done();
+
+  //Cfg<Actor>(scene, "knight")
+  //  . Model("Assets/knight.dsm", "Assets/texture.mat")
+  //  . Position(0, 0, -6)
+  //  . Parent(cam)
+  //  . Done();
   
   // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")

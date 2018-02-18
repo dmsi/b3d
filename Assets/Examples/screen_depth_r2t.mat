@@ -34,8 +34,15 @@ pass:
           void main () {
             float brigthness = .2;
             float contrast = 9;
-            vec3 c = texture(TEXTURE_0, uv).rrr;
-            c.rgb = ((c.rgb - 0.5) * max(contrast, 0)) + 0.5;
-            c.rgb *= brigthness;
-            out_color = vec4(c, 1);
+            float frame_size = 0.01;
+            if (uv.x < frame_size || uv.x > 1-frame_size ||
+                uv.y < frame_size || uv.y > 1-frame_size) {
+              out_color = vec4(0, 0, 0, 1);
+            } else {
+              vec2 result_uv = uv;
+              vec3 c = texture(TEXTURE_0, uv).rrr;
+              c.rgb = ((c.rgb - 0.5) * max(contrast, 0)) + 0.5;
+              c.rgb *= brigthness;
+              out_color = vec4(c, 1);
+            }
           }

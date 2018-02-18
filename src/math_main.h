@@ -49,6 +49,7 @@ inline float Random(float fmin, float fmax) {
   return Lerp(fmin, fmax, t);
 }
 
+// TODO Clamp(what, min, max);
 template <typename T> T Clamp(T from, T to, T what) {
   if (what < from) what = from;
   if (what > to) what = to;

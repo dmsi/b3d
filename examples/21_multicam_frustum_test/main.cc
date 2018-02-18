@@ -42,8 +42,8 @@ struct FrustrumTest : public Action {
       auto pos = transform->GetGlobalPosition();
       auto& frustum1 = camera1->GetFrustum();
       auto& frustum2 = camera2->GetFrustum();
-      bool test1 = frustum1.CheckPoint(pos);
-      bool test2 = frustum2.CheckPoint(pos);
+      bool test1 = frustum1.TestPoint(pos);
+      bool test2 = frustum2.TestPoint(pos);
 
       Color c((float)test1, 0, (float)test2, 1);
       m->SetUniform("tint", c);

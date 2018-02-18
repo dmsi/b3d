@@ -37,6 +37,12 @@ struct Rotator: public Action {
     this->rotation_speed = rotation_speed;
   }
 
+  Rotator(std::shared_ptr<Transformation> transform, 
+          float x, float y, float z)
+    : Action(transform) {
+    this->rotation_speed = glm::vec3(x, y, z);
+  }
+
   void Update() override {
     transform->Rotate(rotation_speed * GetTimer().GetTimeDelta());
   }

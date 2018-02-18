@@ -213,6 +213,12 @@ class MeshFilter {
     assert(vao_);
     vao_->Upload<TLayout>(std::forward<TArgs>(args)...);
   }
+
+  template <typename TLayout, typename... TArgs>
+  void UploadStream(TArgs&&... args) {
+    assert(vao_);
+    vao_->UploadStream<TLayout>(std::forward<TArgs>(args)...);
+  }
   
   ////////////////////////////////////////////////////////////////////////////
   // Some debug-output 

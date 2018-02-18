@@ -1,0 +1,48 @@
+name: patch_visual 
+
+pass:
+  name: pass0 
+  queue: 100
+  tags: [onscreen]
+  cull: ccw 
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 In_position;
+
+          out InOut {
+            vec3 vpos;
+            float scale;
+          } Out;
+
+          uniform mat4 SU_PVM_MATRIX;
+          uniform mat4 SU_M_MATRIX;
+
+          void main() {
+            Out.vpos = In_position;
+            Out.scale = length(vec3(SU_M_MATRIX[0]));
+            gl_Position = SU_PVM_MATRIX * vec4(In_position, 1); 
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in InOut {
+            vec3 vpos; 
+            float scale;
+          } In;
+
+          out vec4 Out_color;
+
+          const vec4 tint = vec4(.3, .3, .3, 1);
+
+          void main () {
+            float border_width = .1 / In.scale;
+            if (In.vpos.x > 1-border_width || In.vpos.x < -1+border_width || 
+                In.vpos.z > 1-border_width || In.vpos.z < -1+border_width) 
+              Out_color = vec4(0);
+
+            else
+              Out_color = tint; 
+          }
+

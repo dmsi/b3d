@@ -39,7 +39,7 @@ class Frustum {
   /////////////////////////////////////////////////////////////////////////////
   void Calculate(const glm::mat4& pv_matrix) {
     // http://gamedevs.org/uploads/fast-extraction-viewing-frustum-planes-from-world-view-projection-matrix.pdf
-    // had to transpose the matrix
+    // had to "transpose" the matrix
     //#define MTX(a, b) m[b-1][a-1]
     auto MTX = [&pv_matrix](int a, int b) {
       return pv_matrix[b-1][a-1];
@@ -84,12 +84,12 @@ class Frustum {
   /////////////////////////////////////////////////////////////////////////////
   // Returns true if point p is inside the frustum.
   /////////////////////////////////////////////////////////////////////////////
-  bool CheckPoint(const glm::vec3& p) const {
+  bool TestPoint(const glm::vec3& p) const {
     for (int i = 0; i < 6; ++i) {
       glm::vec3 n(planes_[i]);
       // test half space
       if (glm::dot(n, p) + planes_[i].w < 0) {
-        return false;
+        return false; // outside
       }
     }
     return true;
@@ -105,7 +105,47 @@ class Frustum {
     world = world / world.w;
     return (glm::vec3)world;
   }
-  
+
+  // Returns: false - outside, true - inside or intersects
+  // https://www.gamedev.net/forums/topic/512123-fast--and-correct-frustum---aabb-intersection/
+  // had to invert plane normals
+  bool TestAabb(const glm::vec3 &mins, const glm::vec3 &maxs) const {
+    glm::vec3 vmin, vmax;
+
+    for(int i = 0; i < 6; ++i) {
+      const glm::vec4& plane = planes_[i];
+      glm::vec3 n(plane);
+      // X axis
+      if(n.x < 0) {
+         vmin.x = mins.x;
+         vmax.x = maxs.x;
+      } else {
+         vmin.x = maxs.x;
+         vmax.x = mins.x;
+      }
+      // Y axis
+      if(n.y < 0) {
+         vmin.y = mins.y;
+         vmax.y = maxs.y;
+      } else {
+         vmin.y = maxs.y;
+         vmax.y = mins.y;
+      }
+      // Z axis
+      if(n.z < 0) {
+         vmin.z = mins.z;
+         vmax.z = maxs.z;
+      } else {
+         vmin.z = maxs.z;
+         vmax.z = mins.z;
+      }
+      if (glm::dot(n, vmin) + plane.w < 0) {
+        return false; // outside
+      }
+    }
+    return true; // inside, or intersetcs
+  }
+
  private:
   enum {
     kNear = 0,

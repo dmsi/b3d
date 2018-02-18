@@ -88,21 +88,25 @@ set(EXAMPLES
   27_tri_tesselation
   30_postprocess_gauss_blur
   31_postprocess_bloom
+  32_postprocess_radialshafts
+  40_quadtree_visual
+  41_quadtree_tesselation
 )
 
 set(SANDBOX
-  #water
-  #skyfog_bloom
-  #sandbox
-  #atmosphere
-  #simulation
   #aabb_transform
-  #radialshafts
-  #quad_tesselation
-  #profiling_nonbatch
+  #atmosphere
+  #frustum_check
   #hmap
-  #qtree
   #objectpool
+  #profiling_nonbatch
+  #quad_tesselation
+  #radialshafts
+  #sandbox
+  #simulation
+  #skyfog_bloom
+  #sobel_normalmap
+  #water
 )
 
 foreach(EX ${EXAMPLES})

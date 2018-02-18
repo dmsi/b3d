@@ -59,6 +59,7 @@ class MeshRenderer {
   PrimitiveType primitive   = kPtTriangles;
   Indexing      indexing    = kIndexAuto;
   size_t        n_instances = 1;
+  size_t        patch_size = 4;
 
   void SetMaterial(std::shared_ptr<Material> material) {
     material_ = material;
@@ -72,14 +73,10 @@ class MeshRenderer {
   // TODO(DS) add support for other types that GL_TRIANGLES
   ////////////////////////////////////////////////////////////////////////////
   void DrawCall(MeshFilter& mesh_filter) {
+    if (n_instances == 0) return;
     if (auto mesh = mesh_filter.GetMesh()) {
       mesh_filter.Bind();
       DoDraw(mesh.get(), mesh_filter.GetSlot(MeshFilter::Slot::kIndices));
-      //if (mesh_filter.GetSlot(MeshFilter::Slot::kIndices)) {
-      //  glDrawElementsInstanced(GL_TRIANGLES, mesh->indices.size(), GL_UNSIGNED_SHORT, nullptr, 1);
-      //} else {
-      //  glDrawArrays(GL_TRIANGLES, 0, mesh->vertices.size());
-      //}
       mesh_filter.Unbind();
     }
   }
@@ -95,13 +92,14 @@ class MeshRenderer {
       (has_indices and indexing == kIndexAuto);
   
     if (use_indices) {
+      // TODO 32 bit indices?
       glDrawElementsInstanced(ToOpenGL(primitive), mesh->indices.size(), 
                               GL_UNSIGNED_INT, nullptr, n_instances);
       //glDrawElementsInstanced(ToOpenGL(primitive), mesh->indices.size(), 
       //                        GL_UNSIGNED_SHORT, nullptr, n_instances);
     } else {
       // TODO!!! parametrize it
-      glPatchParameteri(GL_PATCH_VERTICES, mesh->vertices.size());
+      glPatchParameteri(GL_PATCH_VERTICES, patch_size); 
       //glDrawArrays(ToOpenGL(primitive), 0, mesh->vertices.size());
       glDrawArraysInstanced(ToOpenGL(primitive), 0, mesh->vertices.size(), 
                             n_instances);

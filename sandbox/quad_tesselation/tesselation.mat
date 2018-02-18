@@ -15,8 +15,8 @@ name: tesselation
   layout(vertices = 4) out;
   in vec3 vPosition[];
   out vec3 tcPosition[];
-  const float TessLevelInner = 10;
-  const float TessLevelOuter = 30;
+  const float TessLevelInner = 64;
+  const float TessLevelOuter = 64;
 
   #define ID gl_InvocationID
 

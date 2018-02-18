@@ -5,6 +5,7 @@ pass:
   queue: 100
   tags: [onscreen]
   cull: ccw 
+  fill: solid
   vertex: | 
           #version 330 core
 
@@ -26,8 +27,8 @@ pass:
           uniform mat4 SU_V_MATRIX;
          
           // fog = e^-(distance * density)^gradient
-          const float fog_density = 0.0002; // less density => less fog
-          const float fog_gradient = 2.5;   // how smooth the transition, more gradient => sharper the transition
+          const float fog_density = 0.00015; // less density => less fog
+          const float fog_gradient = 3.5;   // how smooth the transition, more gradient => sharper the transition
 
           void main() {
             Out.wpos = (SU_M_MATRIX * vec4(In_position, 1)).xyz;
@@ -60,6 +61,7 @@ pass:
           uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
           uniform vec4 SU_DIRECTIONAL_LIGHT_COLOR_0;
           uniform sampler2D TEXTURE_0; // atmosphere
+          uniform sampler2D TEXTURE_1; // normalmap
 
           // Converts clip space position to UV coordinates
           vec2 ClipSpaceToUV(vec4 cspos) {
@@ -68,15 +70,24 @@ pass:
           }
 
           void main () {
+            vec2 uv = vec2(In.wpos.x / 4000, In.wpos.z / 4000);
+            uv = uv * 0.5 + 0.5;
+            vec3 normal = 2*texture(TEXTURE_1, uv).rbg - 1;
+            //normal.y *= 0;
+            //normal = normalize(normal);
             vec4 fog_color = vec4(texture(TEXTURE_0, ClipSpaceToUV(In.cspos)).rgb, 1);
 
+            //vec3 N = normalize(normal);
+            //vec3 N = normalize(normal);
             vec3 N = normalize(In.wnormal);
+            //vec3 N = normalize(normal + In.wnormal);
             vec3 L = normalize(-SU_DIRECTIONAL_LIGHT_DIRECTION_0);
             vec3 ambient = vec3(.3, .2, .2);
+            //vec3 ambient = vec3(0, 0, 0);
 
             float df = max(0, dot(N, L));
             vec3 tint = vec3(1); 
-            vec4 shading = vec4(df * In.vcol * tint  + ambient, 1);
+            vec4 shading = vec4(df * In.vcol * tint * 0.5 + ambient, 1);
             Out_color = mix(fog_color, shading, In.fog);
             Out_color.a = 1;
           }

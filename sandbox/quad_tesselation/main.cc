@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
   
   Cfg<Actor>(scene, "actor.tess")
     . Mesh(mesh4)
-    . Material("sandbox/quad_tesselation/tesselation.mat")
+    . Material("sandbox/quad_tesselation/fck.mat")
     . Done()
     ->GetComponent<MeshRenderer>()
     ->primitive = MeshRenderer::kPtPatches;

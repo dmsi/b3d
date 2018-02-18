@@ -1,0 +1,62 @@
+name: radial_blur 
+
+pass:
+  name   : pass0 
+  tags   : [onscreen]
+  queue  : 1000
+  ztest  : off
+  cull   : ccw 
+  vertex: | 
+          #version 330 core
+
+          layout(location = 0) in vec3 In_position;
+          layout(location = 3) in vec2 In_uv;
+
+          out InOut {
+            vec2 uv;
+          } Out;
+
+          uniform mat4 SU_M_MATRIX;
+
+          void main() {
+            gl_Position = SU_M_MATRIX * vec4(In_position, 1); 
+            Out.uv = In_uv;
+          }
+
+  fragment: | 
+          #version 330 core
+
+          in InOut {
+            vec2 uv;
+          } In;
+          
+          out vec4 Out_color;
+
+          uniform sampler2D TEXTURE_0; 
+
+          // http://fabiensanglard.net/lightScattering
+          const float exposure = 1.8;
+          const float decay    = 0.8;
+          const float density  = 1.3;
+          const float weight   = 0.5;
+          const vec2  lightPositionOnScreen = vec2(.5, .5);
+          const int   NUM_SAMPLES = 40;
+
+          void main() {
+            vec2 deltaTextCoord = vec2(In.uv - lightPositionOnScreen);
+            vec2 textCoo = In.uv;
+            deltaTextCoord *= 1.0 /  float(NUM_SAMPLES) * density;
+            float illuminationDecay = 1.0;
+
+            for(int i=0; i < NUM_SAMPLES ; i++) {
+              textCoo -= deltaTextCoord;
+              vec4 sample = texture(TEXTURE_0, textCoo );
+
+              sample *= illuminationDecay * weight;
+
+              Out_color += sample;
+
+              illuminationDecay *= decay;
+            }
+            Out_color *= exposure;
+          }

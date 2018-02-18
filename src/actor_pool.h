@@ -48,22 +48,30 @@ class TActorPool : public Actor {
     }
   }
 
-  auto Get() {
+  // TODO not optimized!
+  //  - operator new()
+  //  - shared_weak_count::release_shared()
+  //  - shared_weak_count::add_shared() 
+  //  - free()
+  //  A bit optimized. 
+  //  Consumes 3% for spawning / removing 1400 actors each frame (60fps, one thread)
+  auto Get(bool clear_actions) {
     if (!dead_.empty()) {
-      auto actor = dead_.back();
+      auto& actor = dead_.back();
       actor->SetComponent(GetComponent<MeshRenderer>());
       actor->SetComponent(GetComponent<MeshFilter>());
       glm::vec4 extra;
       GetExtra(extra.x, extra.y, extra.z, extra.w);
       actor->SetExtra(extra.x, extra.y, extra.z, extra.w);
-      actor->RemoveAllActions();
+      if (clear_actions) {
+        actor->RemoveAllActions();
+      }
       actor->transform->SetLocalPosition(0, 0, 0);
       actor->transform->SetLocalEulerAngles(0, 0, 0);
       actor->transform->SetLocalScale(1, 1, 1);
       actor->Alive();
 
-      dead_.pop_back();
-      alive_.emplace_back(actor);
+      alive_.splice(alive_.end(), dead_, --dead_.end());
       return actor;
     } 
     return std::shared_ptr<TActor>(); 
@@ -75,6 +83,10 @@ class TActorPool : public Actor {
 
   auto end() {
     return alive_.end();
+  }
+
+  void Clear() {
+    dead_.splice(dead_.end(), alive_);
   }
 
   void Update() override {

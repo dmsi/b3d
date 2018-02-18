@@ -193,6 +193,26 @@ class VertexArrayObject {
     }
   }
   
+  // Uploading per instance data in stream mode (simple buffer orphaning).
+  template <typename TLayout>
+  void UploadStream(int start, size_t n_elements, size_t max_elements, void* data) {
+    assert(start >= kVboSlots1a && start < kVboSlotsNa);
+    
+    constexpr auto total = TLayout::Attributes();
+
+    auto& vbo = GetVbo(start, total); 
+
+    if (vbo.IsEmpty()) {
+      Allocate<TLayout>(start, max_elements, data, kUsageStream);
+    } else {
+      size_t buff_sz = TLayout::Stride() * max_elements;
+      size_t buf_sub_sz = TLayout::Stride() * n_elements;
+      glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
+      glBufferData(GL_ARRAY_BUFFER, buff_sz, nullptr, GL_STREAM_DRAW); // Buffer orphaning,
+      glBufferSubData(GL_ARRAY_BUFFER, 0, buf_sub_sz, data);
+    }
+  }
+  
   // Per instance attribute memory map
   template <typename TLayout>
   BufferView Map(int start, size_t n_elements) {

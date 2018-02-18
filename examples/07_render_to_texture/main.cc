@@ -59,8 +59,10 @@ std::shared_ptr<Mesh> MakeQuadMesh(const glm::vec3& offset = glm::vec3(0,0,0)) {
     0, 1, 2, 0, 2, 3    // CCW
   };  
   
+  float margin = 0.05f;
   for (auto& v: mesh->vertices) {
-    v += offset;
+    v *= (1.0f - margin); 
+    v += (offset + glm::vec3(margin/2, margin/2, 0));
   }
 
   return mesh;

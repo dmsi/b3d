@@ -64,6 +64,7 @@ class RenderPassSubQueue {
 ////////////////////////////////////////////////////////////////////////////
 class RenderQueue {
  public:
+  // TODO need to be optimized!
   void AddActor(std::shared_ptr<Actor> actor, const Tags& tags);
   void Clear() {the_queue_.clear();}
   void Draw(Scene& scene, Camera& camera);

@@ -54,7 +54,7 @@ struct Spawner : public Action {
       timeout = 1/25.;
 
       auto& self = *((ActorPool*)&GetActor());
-      auto a = self.Get();
+      auto a = self.Get(true);
       if (!a) return;
       a->AddAction<Lifetime>(Math::Random(5, 15));
       a->transform->SetLocalPosition(Math::Random(-5, 5), 0, Math::Random(-5, 5));
