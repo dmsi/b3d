@@ -38,13 +38,13 @@ float Getf(float flt, float prec=0.001) {
 inline
 void PrintMat4(char n, const glm::mat4& m) {
   auto g = [&m](int x, int y) {return Getf(m[x][y]);};
-  #define p(x, y) std::setprecision(3) << std::setw(6) << std::setfill(' ') << g(x, y) 
+  #define PRNT(x, y) std::setprecision(3) << std::setw(6) << std::setfill(' ') << g(x, y) 
 
   // OpenGL/glm uses coloumn-major matrix indexation
-  std::cerr      << "    | " << p(0,0) << " " << p(1,0) << " " << p(2,0) << " " << p(3,0) << " |" << std::endl;
-  std::cerr << n <<  " = | " << p(0,1) << " " << p(1,1) << " " << p(2,1) << " " << p(3,1) << " |" << std::endl;
-  std::cerr      << "    | " << p(0,2) << " " << p(1,2) << " " << p(2,2) << " " << p(3,2) << " |" << std::endl;
-  std::cerr      << "    | " << p(0,3) << " " << p(1,3) << " " << p(2,3) << " " << p(3,3) << " |" << std::endl;
+  std::cerr      << "    | " << PRNT(0,0) << " " << PRNT(1,0) << " " << PRNT(2,0) << " " << PRNT(3,0) << " |" << std::endl;
+  std::cerr << n <<  " = | " << PRNT(0,1) << " " << PRNT(1,1) << " " << PRNT(2,1) << " " << PRNT(3,1) << " |" << std::endl;
+  std::cerr      << "    | " << PRNT(0,2) << " " << PRNT(1,2) << " " << PRNT(2,2) << " " << PRNT(3,2) << " |" << std::endl;
+  std::cerr      << "    | " << PRNT(0,3) << " " << PRNT(1,3) << " " << PRNT(2,3) << " " << PRNT(3,3) << " |" << std::endl;
 }
 
 }// namespace Debug

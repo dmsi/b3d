@@ -1,0 +1,21 @@
+all: yamlcpp gtest
+
+git:
+	@git submodule init
+	@git submodule update --recursive
+
+yamlcpp: git
+	@cd yaml-cpp
+	@cd yaml-cpp && mkdir -p build && cd build && cmake ..
+	$(MAKE) -C yaml-cpp/build
+
+gtest: git
+	@cd googletest
+	@cd googletest && mkdir -p build && cd build && cmake ..
+	$(MAKE) -C googletest/build
+
+
+clean:
+	@rm -rf yaml-cpp/build
+	@rm -rf googletest/build
+  

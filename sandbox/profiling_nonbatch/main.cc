@@ -67,6 +67,8 @@ int main(int argc, char* argv[]) {
   using glm::vec3;
   Scene scene;
 
+  bool use_lua = (argc > 1);
+
   LOG_SCOPE_F(INFO, "Helo blyat!");
 
   // Initialize application.
@@ -86,12 +88,17 @@ int main(int argc, char* argv[]) {
   constexpr size_t N_OBJECTS = 1000;
 
   for (size_t i = 0; i < N_OBJECTS; ++i) { 
-    Cfg<Actor>(scene, "actor.obj" + std::to_string(i))
-      . Model(mesh, mtrl)
+    auto a = Cfg<Actor>(scene, "actor.obj" + std::to_string(i));
+    a . Model(mesh, mtrl)
       . Position(Math::Random(-40, 40), 0 , Math::Random(-40, 40))
-      . Action<Rotator>(vec3(0, 10+Math::Random()*120, 0))
-      . Action<SomeHeavyActorOptimized>()
-      . Done();
+      . Action<SomeHeavyActorOptimized>();
+    if (!use_lua) {
+      a . Action<Rotator>(vec3(0, 10+Math::Random()*120, 0));
+    } else {
+      a . Action<LuaAction>(LuaAction::List{"scripts/rotator_y"});
+    }
+
+    a.Done();
   }
 
   // Main camera

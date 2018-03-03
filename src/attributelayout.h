@@ -49,8 +49,13 @@ namespace never_easy {
   }
 }
 
-template <typename... T>
+template <bool PerInstance, typename... T>
 struct AttributeLayout {
+
+  constexpr static bool IsPerInstance() {
+    return PerInstance;
+  }
+
   using TTuple = std::tuple<T...>;
 
   template <size_t N>
@@ -109,8 +114,11 @@ struct BufferView {
   size_t sz_;
 };
 
-//template <typename... T>
-//using Layout = AttributeLayout<T...>;
+template <typename... T>
+using AttributeLayoutPV = AttributeLayout<false, T...>;
+
+template <typename... T>
+using AttributeLayoutPI = AttributeLayout<true, T...>;
 
 template <typename T> struct AttributeTraits;
 template <> struct AttributeTraits<int> {

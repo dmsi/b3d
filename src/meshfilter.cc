@@ -27,45 +27,92 @@
 #include <vector>
 #include <list>
 #include <iostream>
+  
+MeshFilter::MeshFilter() 
+    : bake_mode_(kStatic),
+      index_type_(GL_UNSIGNED_INT) {
+  vao_.reset(new VertexArrayObject());
+  attrib_slots_.flip();
+}
 
-void Mesh::RecalculateNormals() {
-  size_t n_vertices = vertices.size();
-  size_t n_indices = indices.size();
-  size_t n_triangles = n_indices / 3;
-
-  if (indices.empty()) {
-    return;
+void MeshFilter::Bake() {
+  if (!mesh_) {
+    ABORT_F("Mesh not set");
   }
 
-  typedef std::list<glm::vec3> PerVertexNormalsList;
-  std::vector<PerVertexNormalsList> per_vertex_normals(n_vertices);
-  normals.clear();
-  normals.resize(n_vertices);
-
-  // 0 1 2 3 4 5  => n_indices = 6, n_triangles = 2
-  // t = 0 => 0 1 2
-  // t = 1 => 3 4 5
-  for (size_t t = 0; t < n_triangles; ++t) {
-    size_t i0 = indices[t * 3 + 0];
-    size_t i1 = indices[t * 3 + 1];
-    size_t i2 = indices[t * 3 + 2];
-    const glm::vec3& v0 = vertices.at(i0);
-    const glm::vec3& v1 = vertices.at(i1);
-    const glm::vec3& v2 = vertices.at(i2);
-
-    glm::vec3 n = glm::cross(v1 - v0, v2 - v0);
-    per_vertex_normals[i0].push_back(n);
-    per_vertex_normals[i1].push_back(n);
-    per_vertex_normals[i2].push_back(n);
+  if (!mesh_->IsValid()) {
+    ABORT_F("Mesh is not valid");
   }
 
-  for (size_t i = 0; i < n_vertices; ++i) {
-    glm::vec3& normal = normals[i];
-    PerVertexNormalsList& normals_list = per_vertex_normals[i];
-    for (auto& n: normals_list) {
-      normal += n;
+  AdjustSlots();
+  RecalculateIndexType();
+
+  auto usage = GetUsage();
+
+  vao_->Bind();
+  if (attrib_slots_[MeshFilterBase::kPosition]) {
+    vao_->Upload(0, VertexArrayObject::PackedData::Pack(mesh_->vertices), usage);
+  }
+
+  if (attrib_slots_[MeshFilterBase::kNormal] && !mesh_->normals.empty()) {
+    vao_->Upload(1, VertexArrayObject::PackedData::Pack(mesh_->normals), usage);
+  }
+  
+  if (attrib_slots_[MeshFilterBase::kColor] && !mesh_->colors.empty()) {
+    vao_->Upload(2, VertexArrayObject::PackedData::Pack(mesh_->colors), usage);
+  }
+
+  if (attrib_slots_[MeshFilterBase::kUv] && !mesh_->uv.empty()) {
+    vao_->Upload(3, VertexArrayObject::PackedData::Pack(mesh_->uv), usage);
+  }
+  
+  if (attrib_slots_[MeshFilterBase::kIndices] && !mesh_->indices.empty()) {
+    if (index_type_ == GL_UNSIGNED_SHORT) {
+      std::vector<uint16_t> indices(mesh_->indices.begin(), mesh_->indices.end());
+      vao_->UploadIndices(VertexArrayObject::PackedData::Pack(indices), usage);
+    } else {
+      vao_->UploadIndices(VertexArrayObject::PackedData::Pack(mesh_->indices), usage);
     }
-    normal = glm::normalize(normal);
+  }
+
+  // TODO: tangent and bitangent
+  // Extra needs to be uploaded manually as it does not belong to the mesh
+
+  vao_->Unbind();
+}
+
+void MeshFilter::AdjustSlots() {
+  if (attrib_slots_[MeshFilterBase::kNormal] && mesh_->normals.empty()) {
+    attrib_slots_[MeshFilterBase::kNormal] = 0;
+  } else if (!mesh_->normals.empty()) {
+    attrib_slots_[MeshFilterBase::kNormal] = 1;
+  }
+  if (attrib_slots_[MeshFilterBase::kColor] && mesh_->colors.empty()) {
+    attrib_slots_[MeshFilterBase::kColor] = 0;
+  } else if (!mesh_->colors.empty()) {
+    attrib_slots_[MeshFilterBase::kColor] = 1;
+  }
+  if (attrib_slots_[MeshFilterBase::kUv] && mesh_->uv.empty()) {
+    attrib_slots_[MeshFilterBase::kUv] = 0;
+  } else if (!mesh_->uv.empty()) {
+    attrib_slots_[MeshFilterBase::kUv] = 1;
+  }
+  if (attrib_slots_[MeshFilterBase::kIndices] && mesh_->indices.empty()) {
+    attrib_slots_[MeshFilterBase::kIndices] = 0;
+  } else if (!mesh_->indices.empty()) {
+    attrib_slots_[MeshFilterBase::kIndices] = 1;
   }
 }
 
+void MeshFilter::RecalculateIndexType() {
+  if (!mesh_ || mesh_->indices.empty()) return;
+
+  auto max = std::max_element(mesh_->indices.begin(), mesh_->indices.end());
+  if (max == mesh_->indices.end()) return;
+
+  if (*max < std::numeric_limits<uint16_t>::max()) {
+    index_type_ = GL_UNSIGNED_SHORT;
+  } else {
+    index_type_ = GL_UNSIGNED_INT;
+  }
+}

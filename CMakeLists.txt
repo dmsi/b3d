@@ -6,15 +6,18 @@ find_package(GLEW REQUIRED)
 find_package(GLFW3 REQUIRED)
 
 include_directories (
-  ${PROJECT_SOURCE_DIR}/submodules/glm
-  ${PROJECT_SOURCE_DIR}/submodules/loguru
-  ${PROJECT_SOURCE_DIR}/submodules/yaml-cpp/include
+  ${PROJECT_SOURCE_DIR}/deps/glm
+  ${PROJECT_SOURCE_DIR}/deps/loguru
+  ${PROJECT_SOURCE_DIR}/deps/yaml-cpp/include
+  ${PROJECT_SOURCE_DIR}/deps/lua/src
+  ${PROJECT_SOURCE_DIR}/deps/LuaBridge/Source/LuaBridge
   ${PROJECT_SOURCE_DIR}/src
   ${PROJECT_SOURCE_DIR}/examples
 )
 
 link_directories (
-  ${PROJECT_SOURCE_DIR}/submodules/yaml-cpp/build
+  ${PROJECT_SOURCE_DIR}/deps/yaml-cpp/build
+  ${PROJECT_SOURCE_DIR}/deps/lua/src
 )
 
 set(ALL_LIBS
@@ -22,7 +25,7 @@ set(ALL_LIBS
   ${GLEW_LIBRARY}
   glfw 
   yaml-cpp
-  pthread 
+  lua
 )
 
 # gprof support
@@ -42,6 +45,7 @@ set(ALL_SOURCES
   src/texture2d.cc
   src/texture_cube.cc
   src/meshfilter.cc
+  src/mesh.cc
   src/meshloader.cc
   src/material/shader.cc
   src/material/pass.cc
@@ -54,6 +58,7 @@ set(ALL_SOURCES
   src/image/portablepixmap.cc
   src/image/loader.cc
   src/noise/perlin.cc
+  src/luascript/luaaction.cc
 )
 
 add_definitions(
@@ -107,7 +112,11 @@ set(SANDBOX
   #skyfog_bloom
   #sobel_normalmap
   #water
+  #luatest
 )
+
+#add_library(offscreen SHARED sandbox/offscreen/main.cc) 
+#target_link_libraries(b3d ${ALL_LIBS})
 
 foreach(EX ${EXAMPLES})
   add_executable(${EX} examples/${EX}/main.cc)

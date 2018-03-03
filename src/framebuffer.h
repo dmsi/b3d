@@ -300,6 +300,9 @@ class FrameBuffer {
   std::shared_ptr<TextureRender>
   GetLayerAsTexture(Layer::Type layer_type) const;
 
+  // Color attachment 0
+  void GetPixels(std::shared_ptr<Image::ColorMap> img);
+
  private:
   std::shared_ptr<Layer> GetLayer(int layer_number, Layer::Type layer_type) const;
   Type                  type_;

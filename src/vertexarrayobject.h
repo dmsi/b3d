@@ -44,9 +44,7 @@ class VertexArrayObject {
  public:
   // Modern OpenGL requirement for vendors is minimun 16 attribute slots
   enum { 
-    kVboSlots1a = 8,               // 1 VBO => single attribute
-    kVboSlotsNa = kVboSlots1a + 8, // 1 VBO => multi attributes
-    kMaxAttributeSlots = kVboSlotsNa 
+    kMaxAttributeSlots = 16 
   };
 
   enum Usage {
@@ -68,11 +66,9 @@ class VertexArrayObject {
 
     // glm::vecx is c++ standard type layout class (xyz order ?)
     static PackedData Pack(const std::vector<uint16_t>& data) {
-      // 1 and GL_SHORT are just ignored now, 16 bit indices only 
       return PackedData(&data.at(0), sizeof(uint16_t)*data.size(), 1, GL_UNSIGNED_SHORT);
     }
     static PackedData Pack(const std::vector<uint32_t>& data) {
-      // 1 and GL_SHORT are just ignored now, 16 bit indices only 
       return PackedData(&data.at(0), sizeof(uint32_t)*data.size(), 1, GL_UNSIGNED_INT);
     }
     static PackedData Pack(const std::vector<glm::vec2>& data) {
@@ -93,8 +89,7 @@ class VertexArrayObject {
   VertexArrayObject(bool static_usage = true) 
     : vao_          (0), 
       vbo_          (kMaxAttributeSlots), 
-      indices_vbo_  (0), 
-      static_       (static_usage) {
+      indices_vbo_  (0) {
     std::fill(vbo_.begin(), vbo_.end(), VboInfo{});
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
@@ -118,8 +113,8 @@ class VertexArrayObject {
   //////////////////////////////////////////////////////////////////////////////
   // Upload data to video memory, to attribute slot
   //////////////////////////////////////////////////////////////////////////////
-  void Upload(int attrib_slot, PackedData data) {
-    if (attrib_slot < 0 || attrib_slot >= kVboSlots1a) { 
+  void Upload(int attrib_slot, PackedData data, Usage usage) {
+    if (attrib_slot < 0 || attrib_slot >= kMaxAttributeSlots) { 
       ABORT_F("Bad attribute slot %d", attrib_slot);
     }
 
@@ -131,15 +126,33 @@ class VertexArrayObject {
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
-    glBufferData(GL_ARRAY_BUFFER, data.data_size, data.data, static_ ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW); 
+    glBufferData(GL_ARRAY_BUFFER, data.data_size, data.data, usage); 
     glVertexAttribPointer(attrib_slot, data.num_components, data.type, GL_FALSE, 0, nullptr);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
+  
+  //////////////////////////////////////////////////////////////////////////////
+  // Upload indices to video memory
+  //////////////////////////////////////////////////////////////////////////////
+  void UploadIndices(PackedData indices, Usage usage) {
+    if (indices_vbo_ == 0) {
+      glGenBuffers(1, &indices_vbo_);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_);
+    }
 
-  // Per instance attributes allocation 
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.data_size, 
+                 indices.data, usage);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Layout driven uploading 
+  /////////////////////////////////////////////////////////////////////////////
+
   template <typename TLayout>
   void Allocate(int start, size_t n_elements, void* data, Usage usage) {
-    assert(start >= kVboSlots1a && start < kVboSlotsNa);
+    assert(start >= 0 && start < kMaxAttributeSlots);
 
     constexpr auto total = TLayout::Attributes();
 
@@ -169,54 +182,49 @@ class VertexArrayObject {
             TLayout::Stride(), 
             (void*)offset);
 
-        glVertexAttribDivisor(start + i.value, 1);
+        if (TLayout::IsPerInstance()) {
+          glVertexAttribDivisor(start + i.value, 1);
+        }
     }); // for_<N>
   
     glBindVertexArray(0);
   }
 
-  // Per instance upload
+  // kUsageStream => n_elements <= max_elements
+  // Other        => n_elements does not matter 
+  // max_elements is for optimization - it is possible that the driver will optimize
+  // this and when we orphane buffer with the same max size over and over again,
+  // the driver will not reallocate
   template <typename TLayout>
-  void Upload(int start, size_t n_elements, void* data, Usage usage) {
-    assert(start >= kVboSlots1a && start < kVboSlotsNa);
+  void Upload(int start, size_t n_elements, size_t max_elements, void* data, Usage usage) {
+    assert(start >= 0 && start < kMaxAttributeSlots);
+    assert(n_elements <= max_elements);
     
     constexpr auto total = TLayout::Attributes();
 
     auto& vbo = GetVbo(start, total); 
 
     if (vbo.IsEmpty()) {
-      Allocate<TLayout>(start, n_elements, data, usage);
-    } else {
-      size_t buff_sz = TLayout::Stride() * n_elements;
-      glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
-      glBufferData(GL_ARRAY_BUFFER, buff_sz, data, usage); 
-    }
-  }
-  
-  // Uploading per instance data in stream mode (simple buffer orphaning).
-  template <typename TLayout>
-  void UploadStream(int start, size_t n_elements, size_t max_elements, void* data) {
-    assert(start >= kVboSlots1a && start < kVboSlotsNa);
-    
-    constexpr auto total = TLayout::Attributes();
-
-    auto& vbo = GetVbo(start, total); 
-
-    if (vbo.IsEmpty()) {
-      Allocate<TLayout>(start, max_elements, data, kUsageStream);
+      Allocate<TLayout>(start, max_elements, data, usage);
     } else {
       size_t buff_sz = TLayout::Stride() * max_elements;
       size_t buf_sub_sz = TLayout::Stride() * n_elements;
       glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
-      glBufferData(GL_ARRAY_BUFFER, buff_sz, nullptr, GL_STREAM_DRAW); // Buffer orphaning,
-      glBufferSubData(GL_ARRAY_BUFFER, 0, buf_sub_sz, data);
+      if (usage == kUsageStream) {
+        // Buffer orphaning
+        // https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming
+        glBufferData(GL_ARRAY_BUFFER, buff_sz, nullptr, GL_STREAM_DRAW); 
+        glBufferSubData(GL_ARRAY_BUFFER, 0, buf_sub_sz, data);
+      } else {
+        glBufferData(GL_ARRAY_BUFFER, buff_sz, data, usage); 
+      }
     }
   }
   
   // Per instance attribute memory map
   template <typename TLayout>
   BufferView Map(int start, size_t n_elements) {
-    assert(start >= kVboSlots1a && start < kVboSlotsNa);
+    assert(start >= 0 && start < kMaxAttributeSlots);
     
     constexpr auto total = TLayout::Attributes();
 
@@ -238,21 +246,6 @@ class VertexArrayObject {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Upload indices to video memory
-  //////////////////////////////////////////////////////////////////////////////
-  //void UploadIndices(const uint16_t* indices, std::size_t num_indices) {
-  void UploadIndices(PackedData indices) {
-    if (indices_vbo_ == 0) {
-      glGenBuffers(1, &indices_vbo_);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_);
-    }
-
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.data_size, 
-                 indices.data, static_ ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  }
 
   //////////////////////////////////////////////////////////////////////////////
   // Bind for the draw call 
@@ -286,7 +279,7 @@ class VertexArrayObject {
 
   // checks for attribute slots intersections
   bool IsValid() const {
-    assert(false && "not implemented");
+    ABORT_F("Not implemented");
     return true;
   }
 
@@ -348,9 +341,6 @@ class VertexArrayObject {
     if (start >= 0 && start <kMaxAttributeSlots &&
         total >= 1 && start + total < kMaxAttributeSlots) {
 
-      if (start < kVboSlots1a && total > 1)
-        return false;
-
       for (int i = 0; i < total; i++)
         if (vbo_bitset_[start+i])
           return false;
@@ -363,7 +353,6 @@ class VertexArrayObject {
   std::vector<VboInfo>            vbo_;
   std::bitset<kMaxAttributeSlots> vbo_bitset_;
   GLuint                          indices_vbo_;
-  bool                            static_;
 };
 
 #endif // _VERTEXARRAYOBJECT_H_3757C313_50A4_4E57_A091_C276B99E84DB_

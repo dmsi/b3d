@@ -139,7 +139,7 @@ struct QuadTreeRenderer : public Action {
   
   // vec4 xyz - position, w - size
   // vec4 - lod color 
-  using Layout = AttributeLayout<glm::vec4, glm::vec4>;
+  using Layout = AttributeLayout<true, glm::vec4, glm::vec4>;
   std::vector<uint8_t> node_buffer;
 
   std::shared_ptr<MeshFilter> mesh_filter;
@@ -242,7 +242,9 @@ struct QuadTreeRenderer : public Action {
     tree->root->Traverse(walker);
 
     mesh_filter->
-      UploadStream<Layout>(8, mesh_renderer->n_instances, max_nodes, &node_buffer[0]);
+      Upload<Layout>(
+          8, mesh_renderer->n_instances, max_nodes, &node_buffer[0], 
+          VertexArrayObject::kUsageStream);
   }
 
   void PreDraw() override {

@@ -70,38 +70,39 @@ class MeshRenderer {
   }
 
   ////////////////////////////////////////////////////////////////////////////
-  // TODO(DS) add support for other types that GL_TRIANGLES
   ////////////////////////////////////////////////////////////////////////////
-  void DrawCall(MeshFilter& mesh_filter) {
+  void DrawCall(const MeshFilterView mf_view) {
     if (n_instances == 0) return;
-    if (auto mesh = mesh_filter.GetMesh()) {
-      mesh_filter.Bind();
-      DoDraw(mesh.get(), mesh_filter.GetSlot(MeshFilter::Slot::kIndices));
-      mesh_filter.Unbind();
+    if (mf_view.n_vertices) {
+      mf_view.Bind();
+      DoDraw(mf_view);
+      mf_view.Unbind();
     }
   }
 
  private:
-  void DoDraw(Mesh* mesh, bool has_indices) {
-    assert(mesh);
+  void DoDraw(const MeshFilterView& mf_view) {
+    assert(mf_view.n_vertices > 0);
     assert(n_instances >= 0);
+    bool has_indices = mf_view.n_indices > 0;
     if (!has_indices) assert(indexing != kIndexTrue);
 
     bool use_indices = 
       indexing == kIndexTrue or
       (has_indices and indexing == kIndexAuto);
+
+    if (primitive == kPtPatches) {
+      glPatchParameteri(GL_PATCH_VERTICES, patch_size); 
+    }
+
+    //std::cerr << n_instances  << std::endl;
   
     if (use_indices) {
       // TODO 32 bit indices?
-      glDrawElementsInstanced(ToOpenGL(primitive), mesh->indices.size(), 
-                              GL_UNSIGNED_INT, nullptr, n_instances);
-      //glDrawElementsInstanced(ToOpenGL(primitive), mesh->indices.size(), 
-      //                        GL_UNSIGNED_SHORT, nullptr, n_instances);
+      glDrawElementsInstanced(ToOpenGL(primitive), mf_view.n_indices, 
+                              mf_view.index_type, nullptr, n_instances);
     } else {
-      // TODO!!! parametrize it
-      glPatchParameteri(GL_PATCH_VERTICES, patch_size); 
-      //glDrawArrays(ToOpenGL(primitive), 0, mesh->vertices.size());
-      glDrawArraysInstanced(ToOpenGL(primitive), 0, mesh->vertices.size(), 
+      glDrawArraysInstanced(ToOpenGL(primitive), 0, mf_view.n_vertices, 
                             n_instances);
     }
   }

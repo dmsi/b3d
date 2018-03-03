@@ -245,6 +245,7 @@ class Pass {
   void SuMMatrix(const glm::mat4& m);
   void SuDirLight(const glm::vec3& dir, const Color& col);
   void SuTextures();
+  void SuTime(float time);
 
  public:
   std::string             name_;
@@ -260,6 +261,7 @@ class Pass {
   int su_dirlight_dir_ = -1;
   int su_dirlight_col_ = -1;
   int su_textures[32] = {-1};
+  int su_time_location_ = -1;
 };
 
 

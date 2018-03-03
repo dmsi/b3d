@@ -397,3 +397,15 @@ FrameBuffer::GetLayer(int layer_number, Layer::Type layer_type) const {
 
   return layer;
 }
+  
+void FrameBuffer::GetPixels(std::shared_ptr<Image::ColorMap> img) {
+  assert(img);
+  assert(img->GetWidth() == width_);
+  assert(img->GetHeight() == height_);
+  assert(type_ != kScreen);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id_);
+  glReadBuffer(GL_COLOR_ATTACHMENT0);
+  glReadPixels(0, 0, img->GetWidth(), img->GetHeight(), GL_RGBA, GL_FLOAT, &img->At(0));
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}

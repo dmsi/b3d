@@ -34,7 +34,8 @@ struct FrustrumTest : public Action {
   FrustrumTest(std::shared_ptr<Transformation> t, 
                std::shared_ptr<Camera> c1, std::shared_ptr<Camera> c2) 
     : Action(t), camera1(c1), camera2(c2) {
-    assert(camera);
+    assert(camera1);
+    assert(camera2);
   }
 
   void PreDraw() override {

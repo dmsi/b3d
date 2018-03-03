@@ -102,7 +102,7 @@ namespace StdBatch {
                      (*data)[3][3] );
       }
   };
-  using Layout  = AttributeLayout<glm::vec4, glm::vec4, glm::vec4, glm::vec4>;
+  using Layout  = AttributeLayout<true, glm::vec4, glm::vec4, glm::vec4, glm::vec4>;
   using Actor   = ActorInBatch<Layout, HeapMat4>;
   using Batch   = BatchRoot<Actor>;
   using Storage = BatchStorage<Batch>;

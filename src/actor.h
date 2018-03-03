@@ -40,6 +40,7 @@
 #include "common/util.h"
 #include "common/logging.h"
 
+
 //////////////////////////////////////////////////////////////////////////////
 // Unreal-Enine like Actor, or Unity3D GameObject ...
 //////////////////////////////////////////////////////////////////////////////
@@ -229,7 +230,7 @@ class Actor {
   std::map<ActionId, ActionPtr>    actions_;
   std::string                      name_;
 
-  std::shared_ptr<MeshFilter>      mesh_filter_;
+  std::shared_ptr<MeshFilterBase>  mesh_filter_;
   std::shared_ptr<MeshRenderer>    mesh_renderer_;
 
   glm::vec4                        extra_;

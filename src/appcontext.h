@@ -77,8 +77,9 @@ class AppContext {
     AppContext::Instance().input.Update();
   }
 
-  static void EndFrame() {
-    glfwSwapBuffers(AppContext::Instance().display.GetWindow());
+  static void EndFrame(bool swap = true) {
+    if (swap)
+      glfwSwapBuffers(AppContext::Instance().display.GetWindow());
     glfwPollEvents();
   }
  

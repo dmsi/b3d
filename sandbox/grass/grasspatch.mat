@@ -1,0 +1,160 @@
+name: grasspatch
+
+# Need to specify texture params... 
+textures:
+ 0: Assets/grass_mask.pgm
+
+.VS: &VS | 
+  #version 400 core
+  #line 6
+
+  layout(location = 0) in vec3 In_Position;
+
+  out InOut {
+    vec3 vpos;
+  } Out;
+
+  uniform float SU_TIME;
+  uniform mat4 SU_M_MATRIX;
+
+  const float R1 = 0;
+  const float R2 = 0.2;
+  const float b = 0.05;
+
+  const float PI = 3.14;
+  const float EPS = 0.0001;
+
+  float Wave(in vec3 p, in vec3 c) {
+    float t = SU_TIME;
+    float a = PI * p.x + t + 0.25*PI / (abs(cos(c.y * PI * p.z)) + EPS);
+    float w = sin(c.x * a) * cos(c.z * a);
+    return w;
+  }
+
+  void main() {
+    vec3 offset = vec3(b * (2*R1 - 1), 0, b * (2*R2 - 1));
+    vec3 wpos = (SU_M_MATRIX * vec4(In_Position, 1)).xyz;
+    offset += Wave(wpos, vec3(2, 10, 1)) * vec3(.1,0,.1);
+    //offset.x = Wave(In_Position, vec3(1));
+    Out.vpos = In_Position;
+    if (Out.vpos.y > 0) {
+      Out.vpos += offset;
+    }
+  }
+
+.TC: &TC |
+  #version 400 core
+
+  layout(vertices = 4) out;
+
+  in InOut {
+    vec3 vpos;
+  } In[];
+
+  out InOut {
+    vec3 vpos;
+  } Out[];
+
+  #define ID gl_InvocationID
+
+  void main() {
+    const float level = 8;
+    Out[ID].vpos = In[ID].vpos;
+    if (ID == 0) {
+      gl_TessLevelInner[0] = level;
+      gl_TessLevelInner[1] = 0; 
+
+      gl_TessLevelOuter[0] = 1;
+      gl_TessLevelOuter[1] = level;
+      gl_TessLevelOuter[2] = 1;
+      gl_TessLevelOuter[3] = level;
+    }
+  }
+
+.TE: &TE |
+  #version 400 core
+  #line 50
+
+  //layout(quads, equal_spacing, ccw) in;
+  layout(quads) in;
+  
+  in InOut {
+    vec3 vpos;
+  } In[];
+
+  out InOut {
+    vec3 vpos;
+    vec2 uv;
+  } Out;
+
+  uniform mat4 SU_PVM_MATRIX;
+
+  bool IsUpper(in vec3 pos) {
+    return pos.y > 0;
+  }
+
+
+  vec3 spline(in vec3 pb, in vec3 pt, in vec3 h, in float v) {
+    vec3 a = pb + v * (h - pb);
+    vec3 b = h + v * (pt - h);
+    return a + v * (b - a);
+    //return mix(pb, pt, v);
+  }
+
+  void main() {
+    const float R1 = mix(-1.0/4, 1.0/4, 0.1);
+    const float R2 = mix( 0.0/4, 3.0/4, 0.0);
+    //vec3 ha = In[2].vpos + vec3(0.3, -.4, 0.3);
+    //vec3 hb = In[3].vpos + vec3(0.3, -.4, 0.8);
+    //vec3 ha = vec3(In[0].vpos.x * R1 + In[2].vpos.x * (1 - R1),
+    //               In[0].vpos.y * R2 + In[2].vpos.y * (1 - R2),
+    //               In[0].vpos.z * R1 + In[2].vpos.z * (1 - R1));
+    
+    //vec3 hb = vec3(In[1].vpos.x * R1 + In[3].vpos.x * (1 - R1),
+    //               In[1].vpos.y * R2 + In[3].vpos.y * (1 - R2),
+    //               In[1].vpos.z * R1 + In[3].vpos.z * (1 - R1));
+
+    vec3 ha = vec3(In[0].vpos.x, In[2].vpos.y/2, In[0].vpos.z);
+    vec3 hb = vec3(In[1].vpos.x, In[3].vpos.y/2, In[1].vpos.z);
+
+    float u = gl_TessCoord.y, v = gl_TessCoord.x;
+    //vec3 a = mix(In[0].vpos, In[2].vpos, v);
+    vec3 a = spline(In[0].vpos, In[2].vpos, ha, v); 
+    //vec3 b = mix(In[1].vpos, In[3].vpos, v);
+    vec3 b = spline(In[1].vpos, In[3].vpos, hb, v);
+    Out.vpos = mix(a, b, u);
+    Out.uv = vec2(u, v);
+    gl_Position = SU_PVM_MATRIX * vec4(Out.vpos, 1);
+  }
+
+.FS: &FS | 
+  #version 400 core
+
+  in InOut {
+    vec3 vpos;
+    vec2 uv;
+  } In;
+
+  out vec4 Out_color;
+
+  uniform sampler2D TEXTURE_0;
+  
+  void main() {
+
+    float alpha = texture(TEXTURE_0, vec2(In.uv.x, 1-In.uv.y)).r; 
+    if (alpha > 0) discard;
+    Out_color  = mix(vec4(0, .3, 0, 1), vec4(0, 1, 0, 1), In.uv.y); 
+    //Out_color = vec4(alpha);
+  }
+
+pass:
+  name             : pass.normal
+  queue            : 110
+  tags             : [onscreen]
+  cull             : off 
+  fill             : solid
+  vertex           : *VS
+  tess_control     : *TC
+  tess_evaluation  : *TE
+  fragment         : *FS
+

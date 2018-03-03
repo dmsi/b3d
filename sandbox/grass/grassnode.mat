@@ -1,0 +1,100 @@
+name: grassnode 
+
+.VS: &VS |
+    #version 330 core
+
+    layout(location = 0) in vec3 In_position;
+    //layout(location = 1) in vec3 In_normal;
+    //layout(location = 2) in vec4 In_color;
+    //layout(location = 3) in vec2 In_uv;
+
+    out InOut {
+      vec3 vpos;
+    } Out;
+
+    uniform mat4 SU_PVM_MATRIX;
+
+    void main() {
+      Out.vpos = In_position;
+      //gl_Position = SU_PVM_MATRIX * vec4(In_position, 1); 
+    }
+
+.GS: &GS |
+    #version 330 core
+    #line 25 
+
+    layout(points) in;
+    layout(triangle_strip, max_vertices = 3) out;
+    //layout(line_strip, max_vertices = 2) out;
+
+    in InOut {
+      vec3 vpos;
+    } In[];
+
+    out InOut {
+      vec3 vpos;
+    } Out;
+
+    uniform mat4 SU_PVM_MATRIX;
+    uniform mat4 SU_V_MATRIX;
+    uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
+
+    void main() {
+      //vec3 A = In[2].vpos - In[0].vpos;
+      //vec3 B = In[1].vpos - In[0].vpos;
+      //Out.wnormal = mat3(SU_M_MATRIX) * normalize(cross(B, A));
+
+      //Out.vpos    = In[0].vpos;
+      //gl_Position = gl_in[0].gl_Position; EmitVertex();
+
+      //Out.vpos    = In[1].vpos;
+      //gl_Position = gl_in[1].gl_Position; EmitVertex();
+
+      //Out.vpos    = In[2].vpos;
+      //gl_Position = gl_in[2].gl_Position; EmitVertex();
+
+      //EndPrimitive();
+      //
+
+      //CameraRight_worldspace = {ViewMatrix[0][0], ViewMatrix[1][0], ViewMatrix[2][0]}
+      //CameraUp_worldspace = {ViewMatrix[0][1], ViewMatrix[1][1], ViewMatrix[2][1]}
+      //vec3 vertexPosition_worldspace =
+      //  particleCenter_wordspace
+      //  + CameraRight_worldspace * squareVertices.x * BillboardSize.x
+      //  + CameraUp_worldspace * squareVertices.y * BillboardSize.y;
+
+      Out.vpos = In[0].vpos; 
+      gl_Position = (SU_PVM_MATRIX * vec4(Out.vpos, 1)); EmitVertex();
+      Out.vpos = In[0].vpos + vec3(.2, 0, 0); 
+      gl_Position = (SU_PVM_MATRIX * vec4(Out.vpos, 1)); EmitVertex();
+      Out.vpos = In[0].vpos + vec3(0, 1, 0); 
+      gl_Position = (SU_PVM_MATRIX * vec4(Out.vpos, 1)); EmitVertex();
+      EndPrimitive();
+    }
+
+.FS: &FS |
+    #version 330 core
+    #line 156
+
+    in InOut {
+      vec3 vpos;
+    } In;
+
+    out vec4 Out_color;
+
+    uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
+    uniform vec4 SU_DIRECTIONAL_LIGHT_COLOR_0;
+
+    void main () {
+      Out_color = vec4(0, 1, 0, 1);
+    }
+
+pass:
+  name           : pass0 
+  queue          : 100
+  tags           : [onscreen]
+  cull           : ccw 
+  fill           : solid
+  vertex         : *VS
+  geometry       : *GS
+  fragment       : *FS 

@@ -36,14 +36,16 @@ inline auto Actor::AddComponent(TArgs&&... args) {
 
     return mesh_renderer_;
   } else 
-  if constexpr (std::is_same<TComponent, MeshFilter>::value) {
+  if constexpr (std::is_base_of<MeshFilterBase, TComponent>::value) {
     //
     // MeshFilter
     //
-    mesh_filter_ = std::make_shared<MeshFilter>(
+    auto ptr = std::make_shared<TComponent>(
         std::forward<TArgs>(args)...);
 
-    return mesh_filter_;
+    mesh_filter_ = ptr;
+
+    return ptr;
   } else {
     //
     // None of above 
@@ -64,11 +66,11 @@ inline auto Actor::GetComponent() {
     //
     return mesh_renderer_;
   } else
-  if constexpr (std::is_same<TComponent, MeshFilter>::value) {
+  if constexpr (std::is_base_of<MeshFilterBase, TComponent>::value) {
     //
     // MeshFilter
     //
-    return mesh_filter_;
+    return std::dynamic_pointer_cast<TComponent>(mesh_filter_);
   } else
   if constexpr (std::is_same<TComponent, Material>::value) {
     //
@@ -82,8 +84,9 @@ inline auto Actor::GetComponent() {
     //
     // Mesh (neat accessor)
     //
-    if (mesh_filter_) return mesh_filter_->GetMesh();
-    else              return std::shared_ptr<Mesh>();
+    auto mf = std::dynamic_pointer_cast<MeshFilter>(mesh_filter_); 
+    if (mf) return mf->GetMesh();
+    else    return std::shared_ptr<Mesh>();
 
   } else {
     //
@@ -106,7 +109,7 @@ inline void Actor::SetComponent(std::shared_ptr<TComponent> component) {
     //
     mesh_renderer_ = component; 
   } else 
-  if constexpr (std::is_same<TComponent, MeshFilter>::value) {
+  if constexpr (std::is_base_of<MeshFilterBase, TComponent>::value) {
     //
     // MeshFilter
     //

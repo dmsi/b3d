@@ -43,7 +43,7 @@ struct Instancing : public Action {
     // makes z = -y, y = z (90 degrees) => check the world matrix we set when create the actor!
 
     if (auto mf = GetActor().GetComponent<MeshFilter>()) {
-      using Layout = AttributeLayout<glm::vec3, Color>;
+      using Layout = AttributeLayout<true, glm::vec3, Color>;
 
       // Slots 0-7 reserved for per-vertex attributes
       // Slots 8-15 reserved for pre-instance attributes

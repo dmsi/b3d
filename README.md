@@ -16,6 +16,7 @@ MIT
  - Easy to use post-processing pipeline
  - pgm, ppm and pam as texture format, more to come...
  - dsm mesh format, more to come...
+ - LUA scripting
  
 ## Screenshots
 ![](screenshots/water.png)
@@ -34,15 +35,16 @@ C++17 compiler support is required.
 
 Build system is cmake with master makefile on top of it, following targets available:
 ```bash
-make release   # builds b3d static lib and all examples in release mode
-make debug     # builds b3d static lib and all examples in debug mode
-make clean     # cleans current build
-make distclean # removes all cmake generated files
+make release    # builds b3d static lib and all examples in release mode
+make debug      # builds b3d static lib and all examples in debug mode
+make clean      # cleans current build
+make distclean  # removes all cmake generated files
+make submodules # updates and builds submodules
 ```
 ```bash
 make
 ```
-Make command without argument will trigger release target.  
+Make without argument will trigger release target.  
 
 As the result of the build process it produces static library b3d (i.e. libb3d.a) and bunch of example executables.  
 When running an executable the Asset directory shall be on the same level as executable working directory.  
@@ -57,27 +59,22 @@ I.e. from shell:
  - yaml-cpp: https://github.com/jbeder/yaml-cpp
  - GLM: https://glm.g-truc.net (*headers only*)
  - loguru: https://github.com/emilk/loguru (*headers only*)
+ - lua: http://www.lua.org 
+ - LuaBridge: https://github.com/vinniefalco/LuaBridge (*headers only*)
 
-GLM and yaml-cpp are included as submodules, the rest is installed the usual way.
-```bash
-git submodule init
-git submodule update --recursive
-cd submodules/yaml-cpp
-mkdir build
-cd build
-cmake ..
-make
-```
+GLFW and GLEW are system-wide dependencies, the rest is included as sumbodules. 
 
 ### OSX / Linux
 ```bash
 ln -s Makefile.osx Makefile
+make submodules
 make
 ```
 
 ### Windows (MSYS)
 ```bash
 cp Makefile.msys Makefile
+make submodules
 make
 ```
 

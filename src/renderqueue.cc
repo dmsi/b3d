@@ -50,8 +50,8 @@ void RenderPassSubQueue::Draw(Scene& scene, Camera& camera) {
   pass_->Bind();
 
   for (auto& actor: actors_) {
-    std::shared_ptr<MeshRenderer> mesh_renderer = actor->GetComponent<MeshRenderer>();
-    std::shared_ptr<MeshFilter>   mesh_filter = actor->GetComponent<MeshFilter>();
+    auto mesh_renderer = actor->GetComponent<MeshRenderer>();
+    auto mesh_filter = actor->GetComponent<MeshFilterBase>();
 
     if (mesh_renderer && mesh_filter) {
       actor->PreDraw();
@@ -68,7 +68,7 @@ void RenderPassSubQueue::Draw(Scene& scene, Camera& camera) {
       pass_->SuVMatrix(view_matrix);
       pass_->SuPMatrix(proj_matrix);
 
-      mesh_renderer->DrawCall(*mesh_filter);
+      mesh_renderer->DrawCall(mesh_filter->GetView());
 
       actor->PostDraw();
     } 

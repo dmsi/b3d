@@ -19,3 +19,7 @@ distclean:
 
 clean:
 	$(MAKE) -C build clean
+
+submodules:
+	$(MAKE) -C deps -f make.lua macosx
+	$(MAKE) -C deps -f make.gitmodules

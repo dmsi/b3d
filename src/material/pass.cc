@@ -177,6 +177,7 @@ void Pass::SetShader(std::shared_ptr<Shader> shader) {
   for (int i = 0; i < sizeof(su_textures)/sizeof(int); ++i) {
     su_textures[i] = shader->GetUniformLocation("TEXTURE_" + std::to_string(i));
   }
+  su_time_location_ = shader->GetUniformLocation("SU_TIME");
 }
   
 void Pass::SuPvmMatrix(const glm::mat4& pvm) {
@@ -204,4 +205,8 @@ void Pass::SuTextures() {
   for (int i = 0; i < sizeof(su_textures)/sizeof(int); ++i) {
     shader_->SetUniform(su_textures[i], i); 
   }
+}
+
+void Pass::SuTime(float time) {
+  shader_->SetUniform(su_time_location_, time);
 }

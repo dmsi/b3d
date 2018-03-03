@@ -258,7 +258,6 @@ class TextLabel {
     }
     
     mesh_filter_->SetMode(MeshFilter::BakeMode::kDynamic);
-    mesh_filter_->SetSlot(MeshFilter::Slot::kUv);
 
     float screen_width = (float)AppContext::Instance().display.GetWidth();
     float screen_height = (float)AppContext::Instance().display.GetHeight();
@@ -300,7 +299,7 @@ class TextLabel {
     material.Bind();
     pass.Bind();
     //pass.SetUniform("TextColor", color);
-    mesh_renderer_->DrawCall(*mesh_filter_);
+    mesh_renderer_->DrawCall(mesh_filter_->GetView());
     pass.Unbind();
     material.Unbind();
     glDisable  (GL_BLEND);

@@ -107,7 +107,7 @@ class Transformation {
     dirty_ = true;
   }
 
-  const glm::vec3& GetLocalPosition() const {
+  glm::vec3 GetLocalPosition() const {
     return local_position_;
   }
 
@@ -142,7 +142,7 @@ class Transformation {
     dirty_ = true;
   };
 
-  const glm::vec3& GetLocalScale() const {
+  glm::vec3 GetLocalScale() const {
     return local_scale_;
   }
 

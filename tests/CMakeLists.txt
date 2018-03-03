@@ -6,16 +6,17 @@ find_package(GLEW REQUIRED)
 find_package(GLFW3 REQUIRED)
 
 include_directories (
-  ${PROJECT_SOURCE_DIR}/../submodules/glm
-  ${PROJECT_SOURCE_DIR}/../submodules/yaml-cpp/include
+  ${PROJECT_SOURCE_DIR}/../deps/glm
+  ${PROJECT_SOURCE_DIR}/../deps/yaml-cpp/include
   ${PROJECT_SOURCE_DIR}/../src
   ${PROJECT_SOURCE_DIR}/../examples
-  ${PROJECT_SOURCE_DIR}/../submodules/googletest/googletest/include
+  ${PROJECT_SOURCE_DIR}/../deps/googletest/googletest/include
+  ${PROJECT_SOURCE_DIR}/../deps/loguru
 )
 
 link_directories (
-  ${PROJECT_SOURCE_DIR}/../submodules/yaml-cpp/build
-  ${PROJECT_SOURCE_DIR}/../submodules/googletest/build/googlemock/gtest
+  ${PROJECT_SOURCE_DIR}/../deps/yaml-cpp/build
+  ${PROJECT_SOURCE_DIR}/../deps/googletest/build/googlemock/gtest
   ${PROJECT_SOURCE_DIR}/../build
 )
 

@@ -85,6 +85,7 @@ void Scene::Draw() {
 }
 
 void Scene::SetSceneUniforms(Pass& pass, const Camera& camera) {
+  pass.SuTime(AppContext::Instance().timer.GetTime());
   pass.SuTextures();
 
   for (auto& kv: lights_) {

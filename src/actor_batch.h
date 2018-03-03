@@ -194,9 +194,13 @@ class BatchRoot : public Actor {
         kv.second->UpdateMemoryHeap();
       }
 
+      // TODO a lot of different stuff like MeshFilterBase, VertexArrayObject
+      // just makes unnecessary deps
       if (n_elements) {
-        mf->template UploadPerInstance<Layout>(
-            8, n_elements, heap_->Memory(), VertexArrayObject::kUsageStream); 
+        mf->template Upload<Layout>(
+            MeshFilterBase::kPerInstance, 
+            n_elements, n_elements, heap_->Memory(), 
+            VertexArrayObject::kUsageStream); 
       }
     }
   }
