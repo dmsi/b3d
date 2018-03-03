@@ -1,12 +1,12 @@
 [submodule "submodules/yaml-cpp"]
-	path = submodules/yaml-cpp
+	path = deps/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp
 [submodule "submodules/glm"]
-	path = submodules/glm
+	path = deps/glm
 	url = https://github.com/g-truc/glm
 [submodule "submodules/googletest"]
-	path = submodules/googletest
+	path = deps/googletest
 	url = https://github.com/google/googletest
 [submodule "submodules/loguru"]
-	path = submodules/loguru
+	path = deps/loguru
 	url = https://github.com/emilk/loguru
