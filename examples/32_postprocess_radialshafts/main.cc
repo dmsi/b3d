@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
     . Action<Rotator>(0, 60, 60)
     . Done()
     ->GetComponent<MeshRenderer>()
-    ->primitive = MeshRenderer::kPtPatches;
+    ->SetPatch(3);
 
   // Main camera
   Cfg<Camera>(scene, "camera.main")

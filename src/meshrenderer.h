@@ -61,6 +61,11 @@ class MeshRenderer {
   size_t        n_instances = 1;
   size_t        patch_size = 4;
 
+  void SetPatch(size_t size) {
+    primitive = kPtPatches;
+    patch_size = size;
+  }
+
   void SetMaterial(std::shared_ptr<Material> material) {
     material_ = material;
   }

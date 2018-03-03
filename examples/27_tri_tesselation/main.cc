@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
     . Action<TessShader>(1, 2)
     . Done()
     ->GetComponent<MeshRenderer>()
-    ->primitive = MeshRenderer::kPtPatches;
+    ->SetPatch(3);
 
   // Main camera
   Cfg<Camera>(scene, "camera.main")
