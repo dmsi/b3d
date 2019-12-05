@@ -3,7 +3,7 @@
 ![](screenshots/the_knight.png)
 
 
-3D rendering engine written in C++, inspired by Unity3D and UnrealEngine. 
+3D rendering framework written in C++, inspired by Unity3D and UnrealEngine. 
 
 ## License
 MIT
