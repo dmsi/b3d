@@ -18,4 +18,3 @@ gtest: git
 clean:
 	@rm -rf yaml-cpp/build
 	@rm -rf googletest/build
-  
