@@ -1,6 +1,6 @@
 # Master makefile
 
-all: release 
+all: release
 
 debug: cmake_debug
 	$(MAKE) -C build
@@ -15,7 +15,7 @@ cmake_release:
 	@mkdir -p build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..
 
 distclean:
-	@rm -rf build 
+	@rm -rf build
 
 clean:
 	$(MAKE) -C build clean
