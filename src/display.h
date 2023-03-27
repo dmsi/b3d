@@ -23,7 +23,7 @@
 //
 
 #ifndef _DISPLAY_H_6F2FA1A5_D80C_4E6A_B667_4A7CCF86094F_
-#define _DISPLAY_H_6F2FA1A5_D80C_4E6A_B667_4A7CCF86094F_ 
+#define _DISPLAY_H_6F2FA1A5_D80C_4E6A_B667_4A7CCF86094F_
 
 #include <string>
 #include <sstream>
@@ -36,7 +36,7 @@
 #include "common/logging.h"
 
 //////////////////////////////////////////////////////////////////////////////
-// OpenGL context 
+// OpenGL context
 //////////////////////////////////////////////////////////////////////////////
 struct Profile {
   int                      major_version;
@@ -51,7 +51,7 @@ struct Profile {
     std::vector<std::string> tokens{ std::istream_iterator<std::string>{iss},
                                      std::istream_iterator<std::string>{} };
     // Since case insensitive string comparison is super cumbersome in std C++
-    // and there are no one-two line solutions for this - the profile is 
+    // and there are no one-two line solutions for this - the profile is
     // required to be in lower case for now.
     if (tokens.size() != 3) {
       ABORT_F("Invalid profile %s", ctxt_as_str.c_str());
@@ -72,7 +72,7 @@ struct Profile {
 };
 
 //////////////////////////////////////////////////////////////////////////////
-// Display with window 
+// Display with window
 //////////////////////////////////////////////////////////////////////////////
 class Display {
  public:
@@ -97,11 +97,11 @@ class Display {
       ABORT_F("Failed to initialize GLFW");
     }
 
-    glfwWindowHint(GLFW_SAMPLES,               4); 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, profile_.major_version); 
+    glfwWindowHint(GLFW_SAMPLES,               4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, profile_.major_version);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, profile_.minore_version);
-    glfwWindowHint(GLFW_OPENGL_PROFILE,        profile_.profile); 
-    // For OSX 
+    glfwWindowHint(GLFW_OPENGL_PROFILE,        profile_.profile);
+    // For OSX
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     glfw_window_ = glfwCreateWindow(width_, height_,
@@ -111,27 +111,32 @@ class Display {
       ABORT_F("Failed to create GLFW window");
     }
 
-    glfwMakeContextCurrent(glfw_window_); 
-    glewExperimental = true; // Needed in core profile
+    glfwMakeContextCurrent(glfw_window_);
 
-    if (glewInit() != GLEW_OK) {
-      ABORT_F("Failed to initialize GLEW");
+    //glewExperimental = true; // Needed in core profile
+    //if (glewInit() != GLEW_OK) {
+    //  ABORT_F("Failed to initialize GLEW");
+    //}
+
+    // Load GL functions and extentions from OpenGL library
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+      ABORT_F("Failed to initialize GLAD");
     }
-  
+
     // For MAC retina display
     glfwGetFramebufferSize(glfw_window_, &width_, &height_);
 
     //////////////////////////////////////////////////////////////////////////
     // Print GL version for reference (hardcoded stuff)
     //////////////////////////////////////////////////////////////////////////
-    LOG_F(INFO, "Version     %s", glGetString(GL_VERSION));  
-    LOG_F(INFO, "Vendor      %s", glGetString(GL_VENDOR));  
-    LOG_F(INFO, "Renderer    %s", glGetString(GL_RENDERER));  
-  
+    LOG_F(INFO, "Version     %s", glGetString(GL_VERSION));
+    LOG_F(INFO, "Vendor      %s", glGetString(GL_VENDOR));
+    LOG_F(INFO, "Renderer    %s", glGetString(GL_RENDERER));
+
     glfwSetInputMode(glfw_window_, GLFW_STICKY_KEYS, GL_TRUE);
-    
+
     //////////////////////////////////////////////////////////////////////////
-    // Another portion of hardcoded stuff, which is related to rendering 
+    // Another portion of hardcoded stuff, which is related to rendering
     //////////////////////////////////////////////////////////////////////////
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -157,13 +162,13 @@ class Display {
   int               GetHeight()      const { return height_; }
   const Profile&    GetProfile()     const { return profile_; }
 
-  GLFWwindow*       GetWindow() { 
+  GLFWwindow*       GetWindow() {
     if (!glfw_window_) {
       ABORT_F("Display::Init() must be called once before Display::GetWindow()");
     }
-    return glfw_window_; 
+    return glfw_window_;
   }
-  
+
  private:
   int                     width_;
   int                     height_;

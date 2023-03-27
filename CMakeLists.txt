@@ -1,129 +1,177 @@
-cmake_minimum_required (VERSION 3.1)
-project (borsch3d)
+cmake_minimum_required (VERSION 3.10)
 
+project(B3D VERSION 0.1.0 LANGUAGES C CXX)
+
+#------------------------------------------------------------------------------
+# Options & Vars
+#------------------------------------------------------------------------------
+option(B3D_PROFILING "Builds with profiling information" OFF)
+option(B3D_BUILD_EXAMPLES "Builds with examples" ON)
+option(B3D_BUILD_SANDBOX "Builds with sandbox examples (for internal use)" ON)
+option(B3D_BUILD_GLFW "Builds GLFW along with B3D" ON)
+option(B3D_BUILD_TESTS "Builds B3D tests" OFF)
+
+# TODO does not work...
+option (FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." TRUE)
+if (${FORCE_COLORED_OUTPUT})
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+       add_compile_options (-fdiagnostics-color=always)
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+       add_compile_options (-fcolor-diagnostics)
+    endif ()
+endif ()
+
+
+set(B3D_LIBRARY b3d)
+set(DEPS_DIR ${PROJECT_SOURCE_DIR}/deps)
+
+if (NOT CMAKE_BUILD_TYPE)
+  message(STATUS "CMAKE_BUILD_TYPE not set: Release is used for the current build")
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+  message(STATUS "Debug mode activated")
+  set(_B3D_DEBUG ON)
+elseif (CMAKE_BUILD_TYPE STREQUAL Release)
+  message(STATUS "Release mode activated")
+  set(_B3D_DEBUG OFF)
+endif()
+
+#------------------------------------------------------------------------------
+# Packages for all platforms
+#------------------------------------------------------------------------------
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(GLFW3 REQUIRED)
+find_package(Threads REQUIRED)
+find_package(PkgConfig REQUIRED)
 
+#------------------------------------------------------------------------------
+# Platform-specific packages
+#------------------------------------------------------------------------------
+if (APPLE)
+  find_library(COCOA_LIBRARY Cocoa)
+  find_library(COREVIDEO_LIBRARY CoreVideo)
+  find_library(IOKIT_LIBRARY IOKit)
+endif()
+
+#------------------------------------------------------------------------------
+# Include dirs
+#------------------------------------------------------------------------------
 include_directories (
-  ${PROJECT_SOURCE_DIR}/deps/glm
-  ${PROJECT_SOURCE_DIR}/deps/loguru
-  ${PROJECT_SOURCE_DIR}/deps/yaml-cpp/include
-  ${PROJECT_SOURCE_DIR}/deps/lua/src
-  ${PROJECT_SOURCE_DIR}/deps/LuaBridge/Source/LuaBridge
+  ${DEPS_DIR}/glad/include
+  ${DEPS_DIR}/yaml-cpp/include
+  ${DEPS_DIR}/glm
+  ${DEPS_DIR}/loguru
+  ${DEPS_DIR}/entt/single_include
+  ${DEPS_DIR}/lua/src
+  ${DEPS_DIR}/LuaBridge/Source/LuaBridge
   ${PROJECT_SOURCE_DIR}/src
   ${PROJECT_SOURCE_DIR}/examples
 )
 
+#------------------------------------------------------------------------------
+# LIB dirs
+#------------------------------------------------------------------------------
 link_directories (
-  ${PROJECT_SOURCE_DIR}/deps/yaml-cpp/build
-  ${PROJECT_SOURCE_DIR}/deps/lua/src
+  ${DEPS_DIR}/lua/src
 )
 
 set(ALL_LIBS
-	${OPENGL_LIBRARY}
-  ${GLEW_LIBRARY}
-  glfw 
+  ${OPENGL_LIBRARY}
+  ${CMAKE_DL_LIBS}
+  ${CMAKE_THREAD_LIBS_INIT}
   yaml-cpp
   lua
 )
 
-# gprof support
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-#set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+#------------------------------------------------------------------------------
+# Add GLFW library
+#------------------------------------------------------------------------------
+if (B3D_BUILD_GLFW)
+  # https://www.glfw.org/docs/3.3/build.html
+  list (APPEND ALL_LIBS glfw)
+else()
+  pkg_search_module(GLFW REQUIRED glfw3)
+  include_directories(${GLFW_INCLUDE_DIRS})
+  link_directories(${GLFW_LIBRARY_DIRS})
+  list (APPEND ALL_LIBS ${GLFW_LIBRARIES})
+endif()
 
+#------------------------------------------------------------------------------
+# Add platform-specific libs
+#------------------------------------------------------------------------------
+if (APPLE)
+  list (APPEND ALL_LIBS
+    ${COCOA_LIBRARY}
+    ${COREVIDEO_LIBRARY}
+    ${IOKIT_LIBRARY}
+  )
+elseif (UNIX AND NOT APPLE)
+  list (APPEND ALL_LIBS
+    ${X11_LIBRARIES}
+  )
+endif()
+
+#------------------------------------------------------------------------------
+# Set compiler flags
+# TODO: Set debug flags and release flags
+#------------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 17)
 
-# Debug
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+# TODO this does not work well with MSVS compiler
+if (_B3D_DEBUG)
+  # different tools available like sanitize thread or memory
+  #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -O0 -g -fsanitize=thread")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -O0 -g" )
+else()
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -g")
+endif()
 
-set(ALL_SOURCES
-  src/appcontext.cc
-  src/input.cc
-  src/texture.cc
-  src/texture2d.cc
-  src/texture_cube.cc
-  src/meshfilter.cc
-  src/mesh.cc
-  src/meshloader.cc
-  src/material/shader.cc
-  src/material/pass.cc
-  src/material/material.cc
-  src/material/material_loader.cc
-  src/scene.cc
-  src/renderqueue.cc
-  src/rendertarget.cc
-  src/framebuffer.cc
-  src/image/portablepixmap.cc
-  src/image/loader.cc
-  src/noise/perlin.cc
-  src/luascript/luaaction.cc
-)
+if (APPLE)
+  if (B3D_PROFILING)
+    # TODO: This is not for profiling, it is required for LuaJIT/FFI (witout FFI works fine)
+    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -pagezero_size 10000 -image_base 100000000")
+  endif()
+elseif (UNIX AND NOT APPLE)
+  if (B3D_PROFILING)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+  endif()
+endif()
 
-add_definitions(
-  -DGLM_ENABLE_EXPERIMENTAL
-)
+#------------------------------------------------------------------------------
+# Build targets
+#------------------------------------------------------------------------------
 
-add_library(b3d STATIC ${ALL_SOURCES})
-target_link_libraries(b3d ${ALL_LIBS})
+set(GLAD_ALL_EXTENSIONS ON CACHE BOOL "" FORCE)
+set(GLAD_REPRODUCIBLE ON CACHE BOOL "" FORCE)
+add_subdirectory(${DEPS_DIR}/glad)
+list(APPEND ALL_LIBS ${GLAD_LIBRARIES})
 
-set(EXAMPLES
-  01_helloworld
-  02_rotating_model
-  04_ortho_camera
-  05_cubemap_skybox
-  06_clipping_plane
-  07_render_to_texture
-  08_dudv_distortion
-  09_render_to_cubemap
-  10_flatshading_terrain
-  11_directional_light
-  12_deferred_rendering
-  13_horizontal_reflections
-  14_water
-  15_skyfog
-  16_shadowmap
-  17_omni_shadowmap
-  18_omni_shadowmap_multi
-  20_multiple_color_attachments
-  21_multicam_frustum_test
-  25_instancing_raw
-  26_instancing_batch
-  27_tri_tesselation
-  30_postprocess_gauss_blur
-  31_postprocess_bloom
-  32_postprocess_radialshafts
-  40_quadtree_visual
-  41_quadtree_tesselation
-)
+add_subdirectory(${DEPS_DIR}/yaml-cpp)
 
-set(SANDBOX
-  #aabb_transform
-  #atmosphere
-  #frustum_check
-  #hmap
-  #objectpool
-  #profiling_nonbatch
-  #quad_tesselation
-  #radialshafts
-  #sandbox
-  #simulation
-  #skyfog_bloom
-  #sobel_normalmap
-  #water
-  #luatest
-)
+if (B3D_BUILD_GLFW)
+  set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  add_subdirectory(${DEPS_DIR}/glfw)
+endif()
 
-#add_library(offscreen SHARED sandbox/offscreen/main.cc) 
-#target_link_libraries(b3d ${ALL_LIBS})
+add_subdirectory(src)
 
-foreach(EX ${EXAMPLES})
-  add_executable(${EX} examples/${EX}/main.cc)
-  target_link_libraries(${EX} ${ALL_LIBS} b3d)
-endforeach(EX)
-  
-foreach(EX ${SANDBOX})
-  add_executable(${EX} sandbox/${EX}/main.cc)
-  target_link_libraries(${EX} ${ALL_LIBS} b3d)
-endforeach(EX)
+if (B3D_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+#if (B3D_BUILD_SANDBOX)
+#  add_subdirectory(sandbox)
+#endif()
+
+#------------------------------------------------------------------------------
+# Build tests
+#------------------------------------------------------------------------------
+if (B3D_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(${DEPS_DIR}/googletest)
+  add_subdirectory(tests)
+endif()

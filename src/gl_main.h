@@ -25,7 +25,7 @@
 #ifndef _GL_MAIN_H_5AEA5F7A_B846_48BD_AC73_F0D60F0D62A9_
 #define _GL_MAIN_H_5AEA5F7A_B846_48BD_AC73_F0D60F0D62A9_ 
 
-#include <GL/glew.h>
+#include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
 #endif // _GL_MAIN_H_5AEA5F7A_B846_48BD_AC73_F0D60F0D62A9_
