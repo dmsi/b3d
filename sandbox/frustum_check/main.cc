@@ -238,10 +238,6 @@ int main(int argc, char* argv[]) {
   using T = std::vector<std::string>;
   Scene scene;
 
-  loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
-  loguru::add_file("out.log", loguru::Truncate, loguru::Verbosity_MAX);
-  LOG_SCOPE_F(INFO, "Helo blyat!");
-
   // Initialize application.
   AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("3 3 core"));
   AppContext::Instance().display.ShowCursor(false);
@@ -253,12 +249,12 @@ int main(int argc, char* argv[]) {
     . Tags("onscreen")
     . Clear(.8, .8, .8, 1)
     . Done();
-  
-  auto topview_tex = Cfg<RenderTarget>(scene, "rt.topview", 0) 
+
+  auto topview_tex = Cfg<RenderTarget>(scene, "rt.topview", 0)
     . Camera("camera.topview")
     . Tags("topview")
     . Type(FrameBuffer::kTexture2D)
-    . Resolution(width, height) 
+    . Resolution(width, height)
     . Layer(Layer::kColor, Layer::kReadWrite)
     . Layer(Layer::kDepth, Layer::kWrite)
     . Clear(.0, .0, .0, 1)
@@ -267,18 +263,18 @@ int main(int argc, char* argv[]) {
 
   // Main camera
   auto maincam = Cfg<Camera>(scene, "camera.main")
-    . Perspective(60, (float)width/height, .1, 20) 
+    . Perspective(60, (float)width/height, .1, 20)
     . Position(0, 1, 5)
     . Action<FlyingCameraController>(5)
     . Done();
 
   auto testcam = Cfg<Camera>(scene, "camera.topview")
-    . Perspective(60, (float)width/height, 1, 500) 
+    . Perspective(60, (float)width/height, 1, 500)
     . Position(0, 10, 30)
     . EulerAngles(-30, 0, 0)
     . Parent(maincam)
     . Done();
- 
+
   Cfg<Actor>(scene, "testcam.origin.visual")
     . Model("Assets/arrow.dsm", "Assets/arrow.mat")
     . Tags(0, T{"topview"})
@@ -291,7 +287,7 @@ int main(int argc, char* argv[]) {
     . Tags(0, T{"topview"})
     . Action<FrustumVisual>(maincam)
     . Done();
- 
+
   Cfg<Actor>(scene, "actor.screen.topview")
     . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
     . Texture(0, topview_tex)
@@ -315,12 +311,12 @@ int main(int argc, char* argv[]) {
     . Tags(0, T{"onscreen", "topview"})
     . Action<BoundsVisual>(aaa)
     . Done();
-  
+
   // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()
     . Done();
-  
+
   // Main loop. Press ESC to exit.
   do {
     AppContext::BeginFrame();

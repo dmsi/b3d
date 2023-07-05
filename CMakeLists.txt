@@ -61,10 +61,7 @@ include_directories (
   ${DEPS_DIR}/glad/include
   ${DEPS_DIR}/yaml-cpp/include
   ${DEPS_DIR}/glm
-  ${DEPS_DIR}/loguru
   ${DEPS_DIR}/entt/single_include
-  ${DEPS_DIR}/lua/src
-  ${DEPS_DIR}/LuaBridge/Source/LuaBridge
   ${PROJECT_SOURCE_DIR}/src
   ${PROJECT_SOURCE_DIR}/examples
 )
@@ -73,7 +70,6 @@ include_directories (
 # LIB dirs
 #------------------------------------------------------------------------------
 link_directories (
-  ${DEPS_DIR}/lua/src
 )
 
 set(ALL_LIBS
@@ -81,7 +77,6 @@ set(ALL_LIBS
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
   yaml-cpp
-  lua
 )
 
 #------------------------------------------------------------------------------
@@ -130,7 +125,7 @@ endif()
 if (APPLE)
   if (B3D_PROFILING)
     # TODO: This is not for profiling, it is required for LuaJIT/FFI (witout FFI works fine)
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -pagezero_size 10000 -image_base 100000000")
+    #set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -pagezero_size 10000 -image_base 100000000")
   endif()
 elseif (UNIX AND NOT APPLE)
   if (B3D_PROFILING)
@@ -148,6 +143,7 @@ set(GLAD_REPRODUCIBLE ON CACHE BOOL "" FORCE)
 add_subdirectory(${DEPS_DIR}/glad)
 list(APPEND ALL_LIBS ${GLAD_LIBRARIES})
 
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(${DEPS_DIR}/yaml-cpp)
 
 if (B3D_BUILD_GLFW)
@@ -163,9 +159,9 @@ if (B3D_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-#if (B3D_BUILD_SANDBOX)
-#  add_subdirectory(sandbox)
-#endif()
+if (B3D_BUILD_SANDBOX)
+  add_subdirectory(sandbox)
+endif()
 
 #------------------------------------------------------------------------------
 # Build tests

@@ -219,8 +219,8 @@ int main(int argc, char* argv[]) {
   using T = std::vector<std::string>;
   Scene scene;
 
-  loguru::g_stderr_verbosity = loguru::Verbosity_WARNING;
-  loguru::add_file("out.log", loguru::Truncate, loguru::Verbosity_MAX);
+  //loguru::g_stderr_verbosity = loguru::Verbosity_WARNING;
+  //loguru::add_file("out.log", loguru::Truncate, loguru::Verbosity_MAX);
 
   // Initialize application.
   AppContext::Init(1280, 720, "Quadtree visual [b3d]", Profile("3 3 core"));

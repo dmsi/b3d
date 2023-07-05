@@ -2,7 +2,6 @@
 # B3D Library target
 #------------------------------------------------------------------------------
 set(ALL_SOURCES
-  ${DEPS_DIR}/loguru/loguru.cpp
   appcontext.cc
   input.cc
   texture.cc
@@ -22,7 +21,6 @@ set(ALL_SOURCES
   image/portablepixmap.cc
   image/loader.cc
   noise/perlin.cc
-  luascript/luaaction.cc
 )
 
 add_definitions(

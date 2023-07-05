@@ -1,4 +1,4 @@
-all: yamlcpp gtest
+all:
 
 git:
 	@git submodule init
