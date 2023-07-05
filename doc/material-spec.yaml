@@ -12,7 +12,7 @@ name: Super/Puper/Shader
 textures:
   0: Assets/tango-128.dds
   1: Another.png
-  # cube map order right, left, top, bottom, back, front 
+  # cube map order right, left, top, bottom, back, front
   3: [positive_x.ppm, negative_x.ppm, positive_y.ppm, negative_y.ppm, positive_x.ppm, netagive_x.ppm]
 
 pass:
@@ -41,8 +41,8 @@ pass:
   # blend if off by default if the whole session ommited
   blend:
     # No defaults, both factors and op must be presented
-    # Factors: one, zero, src_color, src_alpha, dst_color, dst_alpha, 
-    # one_minus_src_color, one_minus_src_alpha, one_minus_dst_color, 
+    # Factors: one, zero, src_color, src_alpha, dst_color, dst_alpha,
+    # one_minus_src_color, one_minus_src_alpha, one_minus_dst_color,
     # one_minus_dst_alpha
     factors : [src_alpha, one_minus_src_alpha]
     # Operations: add, sub, rev_sub

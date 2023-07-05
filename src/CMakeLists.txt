@@ -21,7 +21,6 @@ set(ALL_SOURCES
   image/portablepixmap.cc
   image/loader.cc
   noise/perlin.cc
-  luascript/luaaction.cc
 )
 
 add_definitions(

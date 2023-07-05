@@ -62,8 +62,6 @@ include_directories (
   ${DEPS_DIR}/yaml-cpp/include
   ${DEPS_DIR}/glm
   ${DEPS_DIR}/entt/single_include
-  ${DEPS_DIR}/lua/src
-  ${DEPS_DIR}/LuaBridge/Source/LuaBridge
   ${PROJECT_SOURCE_DIR}/src
   ${PROJECT_SOURCE_DIR}/examples
 )
@@ -72,7 +70,6 @@ include_directories (
 # LIB dirs
 #------------------------------------------------------------------------------
 link_directories (
-  ${DEPS_DIR}/lua/src
 )
 
 set(ALL_LIBS
@@ -80,7 +77,6 @@ set(ALL_LIBS
   ${CMAKE_DL_LIBS}
   ${CMAKE_THREAD_LIBS_INIT}
   yaml-cpp
-  lua
 )
 
 #------------------------------------------------------------------------------
@@ -129,7 +125,7 @@ endif()
 if (APPLE)
   if (B3D_PROFILING)
     # TODO: This is not for profiling, it is required for LuaJIT/FFI (witout FFI works fine)
-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -pagezero_size 10000 -image_base 100000000")
+    #set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  -pagezero_size 10000 -image_base 100000000")
   endif()
 elseif (UNIX AND NOT APPLE)
   if (B3D_PROFILING)

@@ -2,7 +2,7 @@
 
 ![](screenshots/the_knight.png)
 
-3D rendering framework written in C++, inspired by Unity3D and UnrealEngine.
+Graphics rendering framework for C++
 
 ## License
 
@@ -17,7 +17,7 @@ MIT
 -   Easy to use post-processing pipeline
 -   pgm, ppm and pam as texture format, more to come...
 -   dsm mesh format, more to come...
--   LUA scripting
+-   Single-threaded
 
 ## Screenshots
 
@@ -67,8 +67,6 @@ I.e. from shell:
 -   yaml-cpp: https://github.com/jbeder/yaml-cpp
 -   GLM: https://glm.g-truc.net (_headers only_)
 -   loguru: https://github.com/emilk/loguru (_headers only_)
--   lua: http://www.lua.org
--   LuaBridge: https://github.com/vinniefalco/LuaBridge (_headers only_)
 
 GLFW and GLEW are system-wide dependencies, the rest is included as sumbodules.
 

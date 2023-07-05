@@ -35,7 +35,6 @@
 #include "image/loader.h"
 #include "meshloader.h"
 #include "meshfilter_raw.h"
-#include "luascript/luaaction.h"
 #include "common/debug.h"
 
 
