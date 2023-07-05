@@ -61,7 +61,6 @@ include_directories (
   ${DEPS_DIR}/glad/include
   ${DEPS_DIR}/yaml-cpp/include
   ${DEPS_DIR}/glm
-  ${DEPS_DIR}/loguru
   ${DEPS_DIR}/entt/single_include
   ${DEPS_DIR}/lua/src
   ${DEPS_DIR}/LuaBridge/Source/LuaBridge
@@ -148,6 +147,7 @@ set(GLAD_REPRODUCIBLE ON CACHE BOOL "" FORCE)
 add_subdirectory(${DEPS_DIR}/glad)
 list(APPEND ALL_LIBS ${GLAD_LIBRARIES})
 
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(${DEPS_DIR}/yaml-cpp)
 
 if (B3D_BUILD_GLFW)

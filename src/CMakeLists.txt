@@ -2,7 +2,6 @@
 # B3D Library target
 #------------------------------------------------------------------------------
 set(ALL_SOURCES
-  ${DEPS_DIR}/loguru/loguru.cpp
   appcontext.cc
   input.cc
   texture.cc

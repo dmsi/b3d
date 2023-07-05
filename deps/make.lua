@@ -7,7 +7,7 @@ mingw: get
 	make -C lua mingw
 
 get: clean
-	@curl -s http://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz | tar x
+	@curl -s http://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz | tar xz
 	@mv lua-${LUA_VERSION} lua
 
 clean:

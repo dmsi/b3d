@@ -7,9 +7,6 @@
 [submodule "submodules/googletest"]
 	path = deps/googletest
 	url = https://github.com/google/googletest
-[submodule "submodules/loguru"]
-	path = deps/loguru
-	url = https://github.com/emilk/loguru
 [submodule "deps/LuaBridge"]
 	path = deps/LuaBridge
 	url = https://github.com/vinniefalco/LuaBridge
