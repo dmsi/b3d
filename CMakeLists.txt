@@ -159,9 +159,9 @@ if (B3D_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-#if (B3D_BUILD_SANDBOX)
-#  add_subdirectory(sandbox)
-#endif()
+if (B3D_BUILD_SANDBOX)
+  add_subdirectory(sandbox)
+endif()
 
 #------------------------------------------------------------------------------
 # Build tests
