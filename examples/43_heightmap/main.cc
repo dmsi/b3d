@@ -62,7 +62,7 @@ struct TerrainHmap: public Action {
   }
 
   void Build() {
-    hmap = Image::Load("Assets/HeightMaps/geo_20x20.pgm");
+    hmap = Image::Load("assets/heightmaps/geo_20x20.pgm");
     std::function<float(int, int)>     sample_alt = [this](int x, int z) {
       int ix = x % hmap->GetWidth();
       int iz = z % hmap->GetHeight();
@@ -185,13 +185,13 @@ int main(int argc, char* argv[]) {
 
   TerrainHmap::Params p {1000, 8000};
   auto t = Cfg<Actor>(scene, "actor.terrain")
-    . Material("Assets/Materials/terrain_heightmap.mat")
+    . Material("assets/materials/terrain_heightmap.mat")
     . Texture(0, atmosphere_tex)
     . Action<TerrainHmap>(p)
     . Done();
 
   Cfg<Actor>(scene, "actor.skydome")
-    . Model("Assets/sphere.dsm", "Assets/Materials/skydome_perez.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/skydome_perez.mat")
     . Tags(0, T{"onscreen", "atmosphere"})
     . Done();
 

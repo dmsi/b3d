@@ -156,5 +156,5 @@ pass:
   tags     : [shadow-caster]
   queue    : 100
   cull     : cw
-  vertex   : Assets/Shaders/shadowmap_caster.vs
-  fragment : Assets/Shaders/shadowmap_caster.fs
+  vertex   : assets/shaders/shadowmap_caster.vs
+  fragment : assets/shaders/shadowmap_caster.fs

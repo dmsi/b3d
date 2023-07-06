@@ -2,12 +2,12 @@ name: skybox_cubemap
 
 textures:
   0: 
-    - Assets/3rdParty/sky_cubemap/right.ppm
-    - Assets/3rdParty/sky_cubemap/left.ppm
-    - Assets/3rdParty/sky_cubemap/top.ppm
-    - Assets/3rdParty/sky_cubemap/bottom.ppm
-    - Assets/3rdParty/sky_cubemap/back.ppm
-    - Assets/3rdParty/sky_cubemap/front.ppm
+    - assets/3rdparty/sky_cubemap/right.ppm
+    - assets/3rdparty/sky_cubemap/left.ppm
+    - assets/3rdparty/sky_cubemap/top.ppm
+    - assets/3rdparty/sky_cubemap/bottom.ppm
+    - assets/3rdparty/sky_cubemap/back.ppm
+    - assets/3rdparty/sky_cubemap/front.ppm
 
 
 pass:

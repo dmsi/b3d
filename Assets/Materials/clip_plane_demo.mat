@@ -2,7 +2,7 @@
 name: texture_demo.mat 
 
 textures: 
-  0: Assets/Textures/tango-128.ppm
+  0: assets/textures/tango-128.ppm
 
 pass:
   name: texture_demo.mat/pass0 

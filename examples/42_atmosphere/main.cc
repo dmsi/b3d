@@ -50,13 +50,13 @@ int main(int argc, char* argv[]) {
     ->GetLayerAsTexture(0, Layer::kColor);
 
   Cfg<Actor>(scene, "actor.terrain")
-    . Material("Assets/Materials/terrain_atmosphere.mat")
+    . Material("assets/materials/terrain_atmosphere.mat")
     . Texture(0, atmosphere_tex)
     . Action<TerrainGenerator>()
     . Done();
 
   Cfg<Actor>(scene, "actor.skydome")
-    . Model("Assets/sphere.dsm", "Assets/Materials/skydome_perez.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/skydome_perez.mat")
     . Done();
 
   Cfg<Light>(scene, "light.sun", Light::kDirectional)

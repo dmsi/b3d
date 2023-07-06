@@ -102,8 +102,8 @@ int main(int argc, char* argv[]) {
 
   // Step 2.2. Setup the model which is going to be rendered to texture.
   auto actor = scene.Add<Actor>("actor.knight");
-  actor->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/Materials/texture.mat"));
-  actor->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load("Assets/knight.dsm"));
+  actor->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("assets/materials/texture.mat"));
+  actor->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load("assets/models/knight.dsm"));
   actor->AddAction<Rotator>()->rotation_speed = glm::vec3(0, 45, 0);
   actor->GetComponent<MeshRenderer>()->GetMaterial()->GetPass(0)->SetTags({"offscreen"});
   
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
   // Step 3.1. Create 4 "screens" 
   // Right Top - Red filter
   auto screen_rt = scene.Add<Actor>("actor.screen_right_top");
-  screen_rt->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/Materials/Core/screen_color_r2t.mat"));
+  screen_rt->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("assets/materials/core/screen_color_r2t.mat"));
   screen_rt->AddComponent<MeshFilter>()->SetMesh(MakeQuadMesh());
   screen_rt->AddAction<SetColorUniform>()->color = glm::vec4(1, 0, 0, 1);
   // Set color texture from the offscreen render target 
@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
   
   // Left Top - Green filter
   auto screen_lt = scene.Add<Actor>("actor.screen_left_top");
-  screen_lt->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/Materials/Core/screen_color_r2t.mat"));
+  screen_lt->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("assets/materials/core/screen_color_r2t.mat"));
   screen_lt->AddComponent<MeshFilter>()->SetMesh(MakeQuadMesh(glm::vec3(-1, 0, 0)));
   screen_lt->AddAction<SetColorUniform>()->color = glm::vec4(0, 1, 0, 1);
   // Set color texture from the offscreen render target 
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
 
   // Left Bottom - Normal filter
   auto screen_lb = scene.Add<Actor>("actor.screen_left_bottom");
-  screen_lb->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/Materials/Core/screen_color_r2t.mat"));
+  screen_lb->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("assets/materials/core/screen_color_r2t.mat"));
   screen_lb->AddComponent<MeshFilter>()->SetMesh(MakeQuadMesh(glm::vec3(-1, -1, 0)));
   screen_lb->AddAction<SetColorUniform>()->color = glm::vec4(1, 1, 1, 1);
   // Set color texture from the offscreen render target 
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
   
   // Right Bottom - Depth texture 
   auto screen_rb = scene.Add<Actor>("actor.screen_right_bottom");
-  screen_rb->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/Materials/Core/screen_depth_r2t.mat"));
+  screen_rb->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("assets/materials/core/screen_depth_r2t.mat"));
   screen_rb->AddComponent<MeshFilter>()->SetMesh(MakeQuadMesh(glm::vec3(0, -1, 0)));
   // Set depth texture from the offscreen render target 
   screen_rb->GetComponent<MeshRenderer>()->GetMaterial()->SetTexture(0, depth_tex);

@@ -51,7 +51,7 @@ class FpsMeter : public Action {
       fps_label(1.8f*1.2f * glm::vec2(1.0f,1.0f), glm::vec2(20.0f, 10.0f),    
                transform->GetActor().AddComponent<MeshFilter>(),
                transform->GetActor().AddComponent<MeshRenderer>()),
-      fps_label_font("Assets/Fonts/mono.fnt") {
+      fps_label_font("assets/fonts/mono.fnt") {
     for (float& f: fps_buffer) {
       f = 0;
     }
@@ -59,7 +59,7 @@ class FpsMeter : public Action {
     fps_frame = 0;
     fps_label.SetText(fps_label_font, "Hello!");
     if (auto mr = transform->GetActor().GetComponent<MeshRenderer>()) {
-      mr->SetMaterial(MaterialLoader::Load("Assets/Fonts/mono.mat"));
+      mr->SetMaterial(MaterialLoader::Load("assets/fonts/mono.mat"));
       if (!tags.empty()) {
         mr->GetMaterial()->GetPass(0)->SetTags(tags);
       }

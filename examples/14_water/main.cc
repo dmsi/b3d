@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 
   // Step 3. Configuring water surface
   auto water = Cfg<Actor>(scene, "actor.water_surface")
-    . Model("Assets/plane.dsm", "Assets/Materials/water_surf.mat")
+    . Model("assets/models/plane.dsm", "assets/materials/water_surf.mat")
     . Position(0,  20,   0)
     . Scale   (200, 1, 200)
     . Texture (0, reflection_tex)
@@ -119,14 +119,14 @@ int main(int argc, char* argv[]) {
 
   // Step 3.1. Building terrain. 
   Cfg<Actor>(scene, "actor.terrain")
-    . Material("Assets/Materials/terrain_flatshading_water_env.mat")
+    . Material("assets/materials/terrain_flatshading_water_env.mat")
     . Action<TerrainGeneratorCustom>()
     . Action<SetTerrainUniform>(water)
     . Done();
 
   // Step 3.2. Adding skydome.
   Cfg<Actor>(scene, "actor.skydome")
-    . Model("Assets/sphere.dsm", "Assets/Materials/skydome_water_env.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/skydome_water_env.mat")
     . Done();
 
   // Step 4. Add 'sun' light source.
