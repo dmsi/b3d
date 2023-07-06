@@ -1,8 +1,8 @@
 name: quadtree_tesselation
 
 textures:
-  0: Assets/HeightMaps/sfo_8x8_hmap.pgm
-  1: Assets/HeightMaps/sfo_8x8_nmap.ppm
+  0: assets/heightmaps/sfo_8x8_hmap.pgm
+  1: assets/heightmaps/sfo_8x8_nmap.ppm
 
 .VS: &VS |
   #version 400 core

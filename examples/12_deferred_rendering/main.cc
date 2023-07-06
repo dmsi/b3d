@@ -93,24 +93,24 @@ int main(int argc, char* argv[]) {
   SurfaceMaterial cyl_srf {Color(.4, .4, .8, 1), Color(.2), Color(.7), 100, false};
 
   Cfg<Actor>(scene, "actor.floor")
-    . Model("Assets/plane.dsm", "Assets/Materials/deferred_basic.mat")
+    . Model("assets/models/plane.dsm", "assets/materials/deferred_basic.mat")
     . Action<DeferredShader>(flr_srf)
     . Done(); 
 
   Cfg<Actor>(scene, "actor.knight")
-    . Model("Assets/knight.dsm", "Assets/Materials/deferred_basic.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/deferred_basic.mat")
     . Action<Rotator>(vec3(0, 90, 0))
     . Action<DeferredShader>(knt_srf)
     . Done();
 
   Cfg<Actor>(scene, "actor.sphere")
-    . Model("Assets/sphere.dsm", "Assets/Materials/deferred_basic.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/deferred_basic.mat")
     . Position(-2, .5, 0)
     . Action<DeferredShader>(shr_srf)
     . Done();
 
   Cfg<Actor>(scene, "actor.pillar")
-    . Model("Assets/cylinder.dsm", "Assets/Materials/deferred_basic.mat")
+    . Model("assets/models/cylinder.dsm", "assets/materials/deferred_basic.mat")
     . Position(2, 1, 0)
     . EulerAngles(90, 0, 0)
     . Scale(.5, .5, 2)
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
 
   // Main screen
   Cfg<Actor>(scene, "actor.display.main")
-    . Model("Assets/screen.dsm", "Assets/Materials/deferred_combine.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/deferred_combine.mat")
     . Texture(0, albedo_map)
     . Texture(1, normal_map)
     . Texture(2, specular_map)
@@ -132,28 +132,28 @@ int main(int argc, char* argv[]) {
   
   // Side displays shows deferred steps
   Cfg<Actor>(scene, "actor.display.albedo")
-    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture.mat")
     . Texture(0, albedo_map)
     . Scale(.25, .25, 1) 
     . Position(1-.25, 1-.25, 0)
     . Done();
 
   Cfg<Actor>(scene, "actor.display.normal")
-    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture.mat")
     . Texture(0, normal_map)
     . Scale(.25, .25, 1) 
     . Position(1-.25, .25, 0)
     . Done();
   
   Cfg<Actor>(scene, "actor.display.specular")
-    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture.mat")
     . Texture(0, specular_map)
     . Scale(.25, .25, 1) 
     . Position(1-.25, -.25, 0)
     . Done();
 
   Cfg<Actor>(scene, "actor.display.eye")
-    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture.mat")
     . Texture(0, eye_map)
     . Scale(.25, .25, 1) 
     . Position(1-.25, -.75, 0)

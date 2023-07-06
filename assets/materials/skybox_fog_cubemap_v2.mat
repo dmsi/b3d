@@ -2,12 +2,12 @@ name: skybox_cubemap
 
 textures:
   0: 
-    - Assets/3rdParty/sky_cubemap/right.ppm
-    - Assets/3rdParty/sky_cubemap/left.ppm
-    - Assets/3rdParty/sky_cubemap/top.ppm
-    - Assets/3rdParty/sky_cubemap/bottom.ppm
-    - Assets/3rdParty/sky_cubemap/back.ppm
-    - Assets/3rdParty/sky_cubemap/front.ppm
+    - assets/3rdparty/sky_cubemap/right.ppm
+    - assets/3rdparty/sky_cubemap/left.ppm
+    - assets/3rdparty/sky_cubemap/top.ppm
+    - assets/3rdparty/sky_cubemap/bottom.ppm
+    - assets/3rdparty/sky_cubemap/back.ppm
+    - assets/3rdparty/sky_cubemap/front.ppm
 
 
 pass:
@@ -21,11 +21,10 @@ pass:
   vertex : | 
           #version 330 core
 
-          layout(location = 0) in vec3 vertex_position;
+          layout(location = 0) in vec3 IN_position;
 
           out VertexData {
             vec3 cube_uv;
-            vec3 wpos;
           } OUT;
 
           uniform mat4 SU_V_MATRIX;
@@ -38,9 +37,8 @@ pass:
             view[3][1] = 0;
             view[3][2] = 0;
             mat4 pvm = SU_P_MATRIX * view;
-            vec3 p = vertex_position * 100; // prevent from projection clipping
-            OUT.cube_uv = vertex_position; 
-            OUT.wpos = p; 
+            vec3 p = IN_position * 10; // prevent from projection clipping
+            OUT.cube_uv = IN_position; 
             gl_Position = (pvm * vec4(p, 1));
           }
 
@@ -49,7 +47,6 @@ pass:
 
           in VertexData {
             vec3 cube_uv;
-            vec3 wpos;
           } IN;
           
           out vec4 OUT_color;
@@ -57,20 +54,18 @@ pass:
           uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
           uniform vec4 SU_DIRECTIONAL_LIGHT_COLOR_0;
 
+          uniform vec4 fog_color = vec4(.4, .5, .6, 1);
+          uniform float fog_lower_limit = 0;
+          uniform float fog_upper_limit = 0.5;
+
           uniform samplerCube TEXTURE_0;
 
           void main () {
-            // finding where the sun in the skybox would be...
-            float size_factor = 150; // bigger - smaller the 'sun'
-            vec4 tint = vec4(.2,.5,.6,1);
-            float brightness = 1.2;
-
-            vec3 to_sun = normalize(-SU_DIRECTIONAL_LIGHT_DIRECTION_0);
-            vec3 dir = normalize(IN.wpos);
-            float d = max(dot(to_sun, dir), 0);
-            d = pow(d, size_factor);
-            vec4 sun_c = vec4(d, d, d, 1); // OUT_color += sun_c;
-
+            float fog = (IN.cube_uv.y - fog_lower_limit) / (fog_upper_limit - fog_lower_limit);
+            fog = clamp(fog, 0, 1);
             OUT_color = texture(TEXTURE_0, IN.cube_uv);
-            //OUT_color -= sun_c;
+            OUT_color = mix(fog_color, OUT_color, fog);
+            vec3 lum = vec3(0.2126, 0.7152, 0.0722);
+            OUT_color *= dot(OUT_color.rgb, lum); 
+            OUT_color.a = 1;
           }

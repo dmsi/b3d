@@ -107,12 +107,12 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.skybox")
-    . Model("Assets/sphere.dsm", "Assets/Materials/skybox_cubemap.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/skybox_cubemap.mat")
     . Tags(0, T{"onscreen", "cubeenv"}) 
     . Done();
   
   Cfg<Actor>(scene, "actor.mirror")
-    . Model("Assets/sphere.dsm", "Assets/Materials/cubemap_rr_surface.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/cubemap_rr_surface.mat")
     . Tags(0, T{"onscreen"})  // onscreen tag comes from material, overwrite it just for consistancy 
     . Texture(0, cube_tex)
     . Position(0, 1, 0)
@@ -121,34 +121,34 @@ int main(int argc, char* argv[]) {
     . Done();
 
   auto floor = Cfg<Actor>(scene, "actor.floor")
-    . Model("Assets/plane.dsm", "Assets/Materials/texture.mat")
+    . Model("assets/models/plane.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Action<Rotator>(vec3(0, 30, 0))
     . Done();
   
   auto k1 = Cfg<Actor>(scene, "actor.k1")
-    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position(-4, 0, -4)
     . EulerAngles(0, 45, 0)
     . Done();
   
   auto k2 = Cfg<Actor>(scene, "actor.k2")
-    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position( 4, 0, -4)
     . EulerAngles(0, -45, 0)
     . Done();
   
   auto k3 = Cfg<Actor>(scene, "actor.k3")
-    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position( 4, 0,  4)
     . EulerAngles(0, -135, 0)
     . Done();
   
   auto k4 = Cfg<Actor>(scene, "actor.k4")
-    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position(-4, 0,  4)
     . EulerAngles(0, 135, 0)

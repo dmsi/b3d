@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
 
   // Light source visual
   Cfg<Actor>(scene, "actor.lamp.dbg")
-    . Model("Assets/sphere.dsm", "Assets/Materials/lamp.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/lamp.mat")
     . Scale(.5, .5, .5)
     . Parent(lamp)
     . Done();
@@ -171,10 +171,10 @@ int main(int argc, char* argv[]) {
   surf_postament.shininess = 10;
   surf_knight.specular   = Color(.6, .6, .6, 1); surf_knight.shininess = 150;
 
-  std::string shadow_technique = "Assets/Materials/shadow_caster_receiver_pointlight.mat";
+  std::string shadow_technique = "assets/materials/shadow_caster_receiver_pointlight.mat";
 
   Cfg<Actor>(scene, "actor.room")
-    . Model("Assets/unity_cube.dsm", shadow_technique)
+    . Model("assets/models/unity_cube.dsm", shadow_technique)
     . Texture(0, shadow_map)
     . Scale(10, 5, 15)
     . Position(0, 2.5, 0)
@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
 
   // cylinder.dsm - 1x1 size, flat side in zy plane
   Cfg<Actor>(scene, "actor.pillar1")
-    . Model("Assets/cylinder.dsm", shadow_technique)
+    . Model("assets/models/cylinder.dsm", shadow_technique)
     . Texture     (0, shadow_map)
     . EulerAngles (90,  0,  0)
     . Scale       (.5, .5,  2)
@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.pillar2")
-    . Model("Assets/cylinder.dsm", shadow_technique)
+    . Model("assets/models/cylinder.dsm", shadow_technique)
     . Texture     (0, shadow_map)
     . EulerAngles (90,  0,  0)
     . Scale       (.5, .5,  2)
@@ -202,7 +202,7 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.pillar3")
-    . Model("Assets/cylinder.dsm", shadow_technique)
+    . Model("assets/models/cylinder.dsm", shadow_technique)
     . Texture     (0, shadow_map)
     . EulerAngles (90,  0,  0)
     . Scale       (.5, .5,  2)
@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   Cfg<Actor>(scene, "actor.pillar4")
-    . Model("Assets/cylinder.dsm", shadow_technique)
+    . Model("assets/models/cylinder.dsm", shadow_technique)
     . Texture     (0, shadow_map)
     . EulerAngles (90,  0,  0)
     . Scale       (.5, .5,  2)
@@ -220,7 +220,7 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.pillar5")
-    . Model("Assets/cylinder.dsm", shadow_technique)
+    . Model("assets/models/cylinder.dsm", shadow_technique)
     . Texture     (0, shadow_map)
     . EulerAngles (90,  0,  0)
     . Scale       (.5, .5,  2)
@@ -229,7 +229,7 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.pillar6")
-    . Model("Assets/cylinder.dsm", shadow_technique)
+    . Model("assets/models/cylinder.dsm", shadow_technique)
     . Texture     (0, shadow_map)
     . EulerAngles (90,  0,  0)
     . Scale       (.5, .5,  2)
@@ -238,7 +238,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   Cfg<Actor>(scene, "actor.postament")
-    . Model("Assets/cylinder.dsm", shadow_technique)
+    . Model("assets/models/cylinder.dsm", shadow_technique)
     . Texture     (0, shadow_map)
     . EulerAngles (90,  0,  0)
     . Scale       (1,   1, .5)
@@ -247,10 +247,10 @@ int main(int argc, char* argv[]) {
     . Done();
   
   auto knight_tex = std::make_shared<Texture2D>(
-      Image::Load("Assets/Textures/tango-128.ppm"));
+      Image::Load("assets/textures/tango-128.ppm"));
 
   Cfg<Actor>(scene, "actor.knight")
-    . Model("Assets/knight.dsm", shadow_technique)
+    . Model("assets/models/knight.dsm", shadow_technique)
     . Texture     (0, shadow_map)
     . Texture     (1, knight_tex)
     . Position    (0,  .5,  0)

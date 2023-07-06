@@ -1,7 +1,7 @@
 name: deferred_basic
 
 textures: 
-  0: Assets/Textures/tango-128.ppm
+  0: assets/textures/tango-128.ppm
 
 .VS: &VS_deferred |
     #version 330 core

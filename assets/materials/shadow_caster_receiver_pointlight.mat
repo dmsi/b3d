@@ -39,10 +39,9 @@ name: shadow_caster_receiver_pointlight
   out vec4 OUT_color;
 
   struct PtLight {
-    vec3              position;    //
-    vec3              attenuation; // x + y*d + z*d*d, d - distance
-    vec4              color;       // 
-    vec2              nearfar;     // shadowcamera near/far
+    vec3 position;
+    vec3 attenuation; // x + y*d + z*d*d, d - distance
+    vec4 color;
   };
   
   struct Material {
@@ -52,20 +51,13 @@ name: shadow_caster_receiver_pointlight
     float shininess;
   };
 
-  // GLSL 3.3 does not 100% support uniform indices in samplers arrays 
-  uniform int               total_lights;
-  uniform PtLight           light[7];
-  uniform samplerCubeShadow TEXTURE_1;
-  uniform samplerCubeShadow TEXTURE_2;
-  uniform samplerCubeShadow TEXTURE_3;
-  uniform samplerCubeShadow TEXTURE_4;
-  uniform samplerCubeShadow TEXTURE_5;
-  uniform samplerCubeShadow TEXTURE_6;
-  uniform samplerCubeShadow TEXTURE_7;
+  uniform samplerCubeShadow TEXTURE_0; // depth cubemap
+  uniform sampler2D         TEXTURE_1; // diffuse texture
 
-  uniform int               has_albedo_map;
-  uniform sampler2D         TEXTURE_0; // albedo map 
+  uniform int               has_diffuse_texture;
+  uniform PtLight           light;
   uniform Material          surface;
+  uniform vec2              nearfar; // shadowcamera near/far
 
   // https://stackoverflow.com/questions/10786951/omnidirectional-shadow-mapping-with-depth-cubemap
   float VectorToDepthValue(vec3 Vec, float n, float f) {
@@ -102,44 +94,29 @@ name: shadow_caster_receiver_pointlight
 
     vec3 diff = shadow * diff_int * surface.diffuse.rgb * kd_texture.rgb;          
     vec3 light = (diff + spec) * light_color; 
-    return light / attenuation;
-  }
-
-  vec3 Lht(PtLight light, vec3 normal, samplerCubeShadow shadow_map) {
-    vec3  to_light      = light.position - IN.wpos;
-    float light_dist    = length(to_light);
-    vec3  to_light_unit = to_light / light_dist; 
-    float attenuation   = dot(vec3(light.attenuation), vec3(1, light_dist, light_dist*light_dist));
-    
-    float to_light_depth = VectorToDepthValue(to_light, light.nearfar.x, light.nearfar.y); 
-    float shadowmap_pcf = texture(shadow_map, -vec4(to_light_unit, -to_light_depth));
-    float shadow = 1 - 0.35 * (1 - shadowmap_pcf); // 0 - no shadow, 1 - full shadow
-    
-    vec4 kd_texture = vec4(1, 1, 1, 1);
-
-    vec3 to_eye = normalize(IN.weye);
-    return Shading(normal, to_eye, to_light_unit, light.color.rgb, 
-                   surface, kd_texture, shadow, attenuation);
+    return light / attenuation + surface.ambient.rgb;
   }
 
   void main () {
-    vec3 nrm = normalize(IN.wnrm);
+    vec3  nrm           = normalize(IN.wnrm);
+    vec3  to_light      = light.position - IN.wpos;
+    float light_dist    = length(to_light);
+    vec3  to_light_unit = to_light / light_dist; 
+    float attenuation   = dot(vec3(light.attenuation), 
+                              vec3(1, light_dist, light_dist*light_dist));
+    
+    float to_light_depth = VectorToDepthValue(to_light, nearfar.x, nearfar.y); 
+    float shadowmap_pcf = texture(TEXTURE_0, -vec4(to_light_unit, -to_light_depth));
+    float shadow = 1 - 0.25 * (1 - shadowmap_pcf); // 0 - no shadow, 1 - full shadow
 
     vec4 kd_texture = vec4(1, 1, 1, 1);
-    if (has_albedo_map > 0) {
-      kd_texture.rgb = texture(TEXTURE_0, IN.uv).rgb;
+    if (has_diffuse_texture > 0) {
+      kd_texture.rgb = texture(TEXTURE_1, IN.uv).rgb;
     }
 
-    vec3 lht = vec3(0);
-    if (total_lights > 0) lht += Lht(light[0], nrm, TEXTURE_1);
-    if (total_lights > 1) lht += Lht(light[1], nrm, TEXTURE_2);
-    if (total_lights > 2) lht += Lht(light[2], nrm, TEXTURE_3);
-    if (total_lights > 3) lht += Lht(light[3], nrm, TEXTURE_4);
-    if (total_lights > 4) lht += Lht(light[4], nrm, TEXTURE_5);
-    if (total_lights > 5) lht += Lht(light[5], nrm, TEXTURE_6);
-    if (total_lights > 6) lht += Lht(light[6], nrm, TEXTURE_7);
-
-    OUT_color.rgb = lht * kd_texture.rgb + surface.ambient.rgb;
+    vec3 to_eye = normalize(IN.weye);
+    OUT_color.rgb = Shading(nrm, to_eye, to_light_unit, light.color.rgb, 
+                            surface, kd_texture, shadow, attenuation);
     OUT_color.a = 1;
   }
 
@@ -156,5 +133,5 @@ pass:
   tags     : [shadow-caster]
   queue    : 100
   cull     : cw
-  vertex   : Assets/Shaders/shadowmap_caster.vs
-  fragment : Assets/Shaders/shadowmap_caster.fs
+  vertex   : assets/shaders/shadowmap_caster.vs
+  fragment : assets/shaders/shadowmap_caster.fs

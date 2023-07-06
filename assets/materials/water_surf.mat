@@ -7,8 +7,8 @@ name: water_surf.mat
 #  3 - dudv map
 #  4 - normal map
 textures:
-  3: Assets/3rdParty/water/water_dudv_map.ppm
-  4: Assets/3rdParty/water/water_normal_map.ppm
+  3: assets/3rdparty/water/water_dudv_map.ppm
+  4: assets/3rdparty/water/water_normal_map.ppm
 
 .VS: &VS |
     #version 330 core

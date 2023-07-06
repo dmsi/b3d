@@ -1,9 +1,8 @@
-# b3d
+# b3d (PoC project)
 
 ![](screenshots/the_knight.png)
 
 Graphics rendering framework for C++
-PoC project
 
 ## License
 

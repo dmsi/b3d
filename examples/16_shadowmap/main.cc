@@ -143,13 +143,13 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.floor")
-    . Model("Assets/plane.dsm", "Assets/Materials/shadow_caster_receiver_dirlight.mat")
+    . Model("assets/models/plane.dsm", "assets/materials/shadow_caster_receiver_dirlight.mat")
     . Texture(0, shadow_tex)
     . Action<ShadowUniform>(sun, cam_shadowmap)
     . Done();
 
   Cfg<Actor>(scene, "actor.1")
-    . Model("Assets/torus.dsm", "Assets/Materials/shadow_caster_receiver_dirlight.mat")
+    . Model("assets/models/torus.dsm", "assets/materials/shadow_caster_receiver_dirlight.mat")
     . Texture(0, shadow_tex)
     . Position(0, 1.0, 0)
     . Scale(.8, .8, .8)
@@ -158,7 +158,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   Cfg<Actor>(scene, "actor.2")
-    . Model("Assets/unity_cube.dsm", "Assets/Materials/shadow_caster_receiver_dirlight.mat")
+    . Model("assets/models/unity_cube.dsm", "assets/materials/shadow_caster_receiver_dirlight.mat")
     . Texture(0, shadow_tex)
     . Position(-2, 0.5, -2)
     . Action<Rotator>(vec3(0, -30, 0))
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.3")
-    . Model("Assets/knight.dsm", "Assets/Materials/shadow_caster_receiver_dirlight.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/shadow_caster_receiver_dirlight.mat")
     . Texture(0, shadow_tex)
     . Position(2, 0, 2)
     . Action<Rotator>(vec3(0, 45, 0))
@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
   
   // Overlay display for the shadowmap and FPS
   Cfg<Actor>(scene, "actor.display.shadowmap")
-    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture_border.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture_border.mat")
     . Tags(0, T{"onscreen"})
     . Texture(0, shadow_tex)
     . Scale   (.25, .25, 0)
