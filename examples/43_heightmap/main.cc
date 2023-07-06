@@ -204,36 +204,20 @@ int main(int argc, char* argv[]) {
     . Done()
     ->GetLayerAsTexture(0, Layer::kColor);
 
-  //TerrainHmap::Params p {700, 4000};
   TerrainHmap::Params p {1000, 8000};
   auto t = Cfg<Actor>(scene, "actor.terrain")
-    . Material("sandbox/hmap/terrain.mat")
+    . Material("Assets/terrain_heightmap.mat")
     . Texture(0, atmosphere_tex)
     . Action<TerrainHmap>(p)
     . Done();
 
-  /*
-  if (auto m = t->GetComponent<Mesh>()) {
-    int size = sqrt(m->vertices.size());
-    auto nmap = std::make_shared<Image::ColorMap>(size, size);
-    for (size_t iz = 0; iz < size; ++iz) {
-      for (size_t ix = 0; ix < size; ++ix) {
-        auto n = m->normals[iz * size + ix];
-        nmap->At(ix, iz) = Color(glm::normalize(n) * 0.5f + 0.5f, 1);
-      }
-    }
-    Image::PortablePixMap::Write("nmap.ppm", *nmap);
-  }*/
-
   Cfg<Actor>(scene, "actor.skydome")
-    . Model("Assets/sphere.dsm", "sandbox/hmap/skydome_perez.mat")
-    //. Model("Assets/sphere.dsm", "Assets/skybox_cubemap.mat")
+    . Model("Assets/sphere.dsm", "Assets/skydome_perez.mat")
     . Tags(0, T{"onscreen", "atmosphere"})
     . Done();
 
   Cfg<Light>(scene, "light.sun", Light::kDirectional)
     . EulerAngles(20, 180, 0)
-    //. Action<Rot>(10, 0, 0)
     . Done();
 
   // Main camera
@@ -243,19 +227,12 @@ int main(int argc, char* argv[]) {
     . Action<FlyingCameraController>(200)
     . Done();
 
-  //Cfg<Actor>(scene, "knight")
-  //  . Model("Assets/knight.dsm", "Assets/texture.mat")
-  //  . Position(0, 0, -6)
-  //  . Parent(cam)
-  //  . Done();
-
   // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()
     . Done();
 
   // Main loop. Press ESC to exit.
-  //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   do {
     AppContext::BeginFrame();
     scene.Update();

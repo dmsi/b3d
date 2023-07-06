@@ -29,6 +29,8 @@ set(EXAMPLES
   32_postprocess_radialshafts
   40_quadtree_visual
   41_quadtree_tesselation
+  42_atmosphere
+  43_heightmap
 )
 
 add_definitions(

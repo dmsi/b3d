@@ -3,10 +3,8 @@
 #------------------------------------------------------------------------------
 set(EXAMPLES
   aabb_transform
-  atmosphere
   frustum_check
   grass
-  hmap
   layoutmesh
   objectpool
   profiling_nonbatch
