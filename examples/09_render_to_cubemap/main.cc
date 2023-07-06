@@ -27,7 +27,7 @@
 
 // 1. Moves on 'Lemniscate of Gerono' trajectory in xz plane, keeps y
 // 2. Updates camera position which is used for rendering to cubemap
-// 3. Set shader varialbles 
+// 3. Set shader varialbles
 struct MirrorHandler: public Action {
   std::shared_ptr<Camera> camera;
   float angle = 0;
@@ -37,7 +37,7 @@ struct MirrorHandler: public Action {
   float surface_rr = 0.5; // 0 - reflections, 1 - refractions
   float refractive_index = 1.0/1.1; // https://en.wikipedia.org/wiki/List_of_refractive_indices
 
-  MirrorHandler(std::shared_ptr<Transformation> transform, 
+  MirrorHandler(std::shared_ptr<Transformation> transform,
                 std::shared_ptr<Camera> acamera)
     : Action(transform), camera(acamera) {}
 
@@ -49,7 +49,7 @@ struct MirrorHandler: public Action {
     float x = radius*cos(a);
     float z = radius*sin(a) * cos(a);
     transform->SetLocalPosition(glm::vec3(x, p.y, z));
-    
+
     // 2. Sync camera position
     camera->transform->SetLocalPosition(transform->GetLocalPosition());
   }
@@ -74,12 +74,12 @@ int main(int argc, char* argv[]) {
   AppContext::Instance().display.ShowCursor(false);
   int width = AppContext::Instance().display.GetWidth();
   int height = AppContext::Instance().display.GetHeight();
-  
+
   // Step 2. Setup onscreen and cubeenv rendertargets
   Cfg<RenderTarget>(scene, "rt.screen", 1)
     . Tags("onscreen")
     . Done();
-  
+
   int w = 100, h = 100;
   auto cube_tex = Cfg<RenderTarget>(scene, "rt.cubeenv", 0)
     . Camera("camera.cubemap")
@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     . Done()
     ->GetLayerAsTexture(0, Layer::kColor);
 
-  // Step 3. Compose the scene. 
+  // Step 3. Compose the scene.
   Cfg<Camera>(scene, "camera.main")
     . Perspective(60, (float)width/height, .1, 500)
     . Position(7, 6, 7)
@@ -99,8 +99,8 @@ int main(int argc, char* argv[]) {
     . Action<FlyingCameraController>(5)
     . Done();
 
-  // For the cubemap camera FOV=90 and ratio 1:1. 
-  // The rotation is controlled by the RenderTarget where it is 
+  // For the cubemap camera FOV=90 and ratio 1:1.
+  // The rotation is controlled by the RenderTarget where it is
   // assigned to. The position is controlled by an action.
   auto cubecam = Cfg<Camera>(scene, "camera.cubemap")
     . Perspective(90, 1, .1, 500)
@@ -108,12 +108,12 @@ int main(int argc, char* argv[]) {
 
   Cfg<Actor>(scene, "actor.skybox")
     . Model("assets/models/sphere.dsm", "assets/materials/skybox_cubemap.mat")
-    . Tags(0, T{"onscreen", "cubeenv"}) 
+    . Tags(0, T{"onscreen", "cubeenv"})
     . Done();
-  
+
   Cfg<Actor>(scene, "actor.mirror")
     . Model("assets/models/sphere.dsm", "assets/materials/cubemap_rr_surface.mat")
-    . Tags(0, T{"onscreen"})  // onscreen tag comes from material, overwrite it just for consistancy 
+    . Tags(0, T{"onscreen"})  // onscreen tag comes from material, overwrite it just for consistancy
     . Texture(0, cube_tex)
     . Position(0, 1, 0)
     . Scale(2, 2, 2)
@@ -125,28 +125,28 @@ int main(int argc, char* argv[]) {
     . Tags(0, T{"onscreen", "cubeenv"})
     . Action<Rotator>(vec3(0, 30, 0))
     . Done();
-  
+
   auto k1 = Cfg<Actor>(scene, "actor.k1")
     . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position(-4, 0, -4)
     . EulerAngles(0, 45, 0)
     . Done();
-  
+
   auto k2 = Cfg<Actor>(scene, "actor.k2")
     . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position( 4, 0, -4)
     . EulerAngles(0, -45, 0)
     . Done();
-  
+
   auto k3 = Cfg<Actor>(scene, "actor.k3")
     . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position( 4, 0,  4)
     . EulerAngles(0, -135, 0)
     . Done();
-  
+
   auto k4 = Cfg<Actor>(scene, "actor.k4")
     . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})

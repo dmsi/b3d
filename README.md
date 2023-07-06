@@ -116,7 +116,7 @@ Example - NDC plane covering the screen:
 
 ```c++
 #include "b3d.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 int main(int argc, char* argv[]) {
   Scene scene;
@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
   };
 
   auto triangle = scene.Add<Actor>("actor.triangle");
-  triangle->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/color.mat"));
+  triangle->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("assets/materials/color.mat"));
   triangle->AddComponent<MeshFilter>()->SetMesh(mesh);
 
   // Step 3. Define main camera.
@@ -205,8 +205,7 @@ pass:
 
 ```c++
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 // 1. Moves on 'Lemniscate of Gerono' trajectory in xz plane, keeps y
 // 2. Updates camera position which is used for rendering to cubemap
@@ -267,7 +266,7 @@ int main(int argc, char* argv[]) {
   auto cube_tex = Cfg<RenderTarget>(scene, "rt.cubeenv", 0)
     . Camera("camera.cubemap")
     . Tags("cubeenv")
-    . Type(FrameBuffer::kCubemap)
+    . Type(FrameBuffer::kCubeMap)
     . Resolution(w, h)
     . Layer(Layer::kColor, Layer::kReadWrite)
     . Layer(Layer::kDepth, Layer::kWrite)
@@ -290,12 +289,12 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.skybox")
-    . Model("Assets/sphere.dsm", "Assets/skybox_cubemap.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/skybox_cubemap.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Done();
 
   Cfg<Actor>(scene, "actor.mirror")
-    . Model("Assets/sphere.dsm", "Assets/cubemap_rr_surface.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/cubemap_rr_surface.mat")
     . Tags(0, T{"onscreen"})  // onscreen tag comes from material, overwrite it just for consistancy
     . Texture(0, cube_tex)
     . Position(0, 1, 0)
@@ -304,34 +303,34 @@ int main(int argc, char* argv[]) {
     . Done();
 
   auto floor = Cfg<Actor>(scene, "actor.floor")
-    . Model("Assets/plane.dsm", "Assets/texture.mat")
+    . Model("assets/models/plane.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Action<Rotator>(vec3(0, 30, 0))
     . Done();
 
   auto k1 = Cfg<Actor>(scene, "actor.k1")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position(-4, 0, -4)
     . EulerAngles(0, 45, 0)
     . Done();
 
   auto k2 = Cfg<Actor>(scene, "actor.k2")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position( 4, 0, -4)
     . EulerAngles(0, -45, 0)
     . Done();
 
   auto k3 = Cfg<Actor>(scene, "actor.k3")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position( 4, 0,  4)
     . EulerAngles(0, -135, 0)
     . Done();
 
   auto k4 = Cfg<Actor>(scene, "actor.k4")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position(-4, 0,  4)
     . EulerAngles(0, 135, 0)
