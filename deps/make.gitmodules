@@ -1,4 +1,4 @@
-all:
+all: git
 
 git:
 	@git submodule init

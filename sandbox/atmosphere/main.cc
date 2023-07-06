@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     . Tags("onscreen")
     . Clear(.8, .8, .8, 1)
     . Done();
-  
+
   auto atmosphere_tex = Cfg<RenderTarget>(scene, "rt.atmosphere", 100)
     . Tags("atmosphere")
     . Type(FrameBuffer::kTexture2D)
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
     . Layer(Layer::kColor, Layer::kReadWrite)
     . Done()
     ->GetLayerAsTexture(0, Layer::kColor);
-  
+
   Cfg<Actor>(scene, "actor.terrain")
     . Material("sandbox/atmosphere/terrain_atmosphere.mat")
     . Texture(0, atmosphere_tex)
@@ -72,12 +72,12 @@ int main(int argc, char* argv[]) {
     . Position(0, 200, 4)
     . Action<FlyingCameraController>(200)
     . Done();
-  
+
   // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()
     . Done();
-  
+
   // Main loop. Press ESC to exit.
   do {
     AppContext::BeginFrame();

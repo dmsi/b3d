@@ -56,7 +56,7 @@ struct TerrainHmap: public Action {
   Params params;
   std::shared_ptr<Image::ColorMap> hmap;
 
-  TerrainHmap(std::shared_ptr<Transformation> t, Params p) 
+  TerrainHmap(std::shared_ptr<Transformation> t, Params p)
     : Action(t), params(p) {
     Build();
   }
@@ -74,8 +74,8 @@ struct TerrainHmap: public Action {
       //return h*params.max_altitude;
     };
     std::function<Color(int, int)> sample_col = [this, sample_alt](int x, int z) {
-      //return Color(1); 
-      float n = sample_alt(x, z) / params.max_altitude; 
+      //return Color(1);
+      float n = sample_alt(x, z) / params.max_altitude;
 
       float elevation = .15;
       if (n < elevation) {
@@ -85,19 +85,19 @@ struct TerrainHmap: public Action {
     };
 
     auto mesh = Grid(
-        sample_alt, sample_col, 
+        sample_alt, sample_col,
         hmap->GetWidth(),
         params.xz_scale);
 
     GetActor().AddComponent<MeshFilter>()->SetMesh(mesh);
 
-    LOG_F(INFO, "Terrain generated   vert=%ld   triangles=%ld", 
+    LOG_F(INFO, "Terrain generated   vert=%ld   triangles=%ld",
           mesh->vertices.size(), mesh->indices.size()/3);
   }
 
- private: 
-  std::shared_ptr<Mesh> Grid(std::function<float(int, int)> sample_altitude, 
-                             std::function<Color(int, int)> sample_color, 
+ private:
+  std::shared_ptr<Mesh> Grid(std::function<float(int, int)> sample_altitude,
+                             std::function<Color(int, int)> sample_color,
                              int resolution,  // n_vertices per row = . res x res
                              float scale) {
     assert(resolution > 1);
@@ -111,7 +111,7 @@ struct TerrainHmap: public Action {
     mesh->uv.resize(n_vertices);
     mesh->colors.resize(n_vertices);
     mesh->indices.resize(n_indices);
-    
+
     int triangle_index = 0;
     auto add_triangle = [mesh, &triangle_index] (int a, int b, int c) {
       mesh->indices[triangle_index] = a;
@@ -139,7 +139,7 @@ struct TerrainHmap: public Action {
         if (x < resolution - 3 && z < resolution - 3) {
           altitude = 0;
           int i = 0;
-          for (int xx=x; xx <= x+2; ++xx) 
+          for (int xx=x; xx <= x+2; ++xx)
             for (int zz=z; zz <= z+2; ++zz) {
               altitude += sample_altitude(xx, zz);
               i++;
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
     . Tags("onscreen")
     . Clear(.8, .8, .8, 1)
     . Done();
-  
+
   auto atmosphere_tex = Cfg<RenderTarget>(scene, "rt.atmosphere", 100)
     . Tags("atmosphere")
     . Type(FrameBuffer::kTexture2D)
@@ -203,7 +203,7 @@ int main(int argc, char* argv[]) {
     . Layer(Layer::kColor, Layer::kReadWrite)
     . Done()
     ->GetLayerAsTexture(0, Layer::kColor);
-  
+
   //TerrainHmap::Params p {700, 4000};
   TerrainHmap::Params p {1000, 8000};
   auto t = Cfg<Actor>(scene, "actor.terrain")
@@ -240,7 +240,7 @@ int main(int argc, char* argv[]) {
   auto cam = Cfg<Camera>(scene, "camera.main")
     . Perspective(60, (float)width/height, 5, 12000)
     . Position(0, 100, 4)
-    . Action<FlyingCameraController>(200) 
+    . Action<FlyingCameraController>(200)
     . Done();
 
   //Cfg<Actor>(scene, "knight")
@@ -248,12 +248,12 @@ int main(int argc, char* argv[]) {
   //  . Position(0, 0, -6)
   //  . Parent(cam)
   //  . Done();
-  
+
   // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()
     . Done();
-  
+
   // Main loop. Press ESC to exit.
   //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   do {
