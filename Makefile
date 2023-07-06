@@ -10,12 +10,14 @@ else
 	endif
 endif
 
-all: release submodules
+all: release
 
-debug: cmake_debug
+.NOTPARALLEL: submodules
+
+debug: submodules cmake_debug
 	$(MAKE) -C build
 
-release: cmake_release
+release: submodules cmake_release
 	$(MAKE) -C build
 
 cmake_debug:
