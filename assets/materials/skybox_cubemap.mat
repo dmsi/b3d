@@ -1,24 +1,24 @@
-name: skybox_cubemap 
+name: skybox_cubemap
 
 textures:
-  0: 
-    - assets/3rdparty/sky_cubemap/right.ppm
-    - assets/3rdparty/sky_cubemap/left.ppm
-    - assets/3rdparty/sky_cubemap/top.ppm
-    - assets/3rdparty/sky_cubemap/bottom.ppm
-    - assets/3rdparty/sky_cubemap/back.ppm
-    - assets/3rdparty/sky_cubemap/front.ppm
+  0:
+    - assets/textures/skybox/nebula/right.ppm
+    - assets/textures/skybox/nebula/left.ppm
+    - assets/textures/skybox/nebula/top.ppm
+    - assets/textures/skybox/nebula/bottom.ppm
+    - assets/textures/skybox/nebula/front.ppm
+    - assets/textures/skybox/nebula/back.ppm
 
 
 pass:
-  name   : pass0 
-  cull   : cw 
+  name   : pass0
+  cull   : cw
   queue  : 10
   tags   : [onscreen]
   zwrite : off
   ztest  : on
 
-  vertex : | 
+  vertex : |
           #version 330 core
 
           layout(location = 0) in vec3 vertex_position;
@@ -33,27 +33,27 @@ pass:
 
           void main() {
             // Remove translation from the view matrix
-            mat4 view = SU_V_MATRIX; 
+            mat4 view = SU_V_MATRIX;
             view[3][0] = 0;
             view[3][1] = 0;
             view[3][2] = 0;
             mat4 pvm = SU_P_MATRIX * view;
             vec3 p = vertex_position * 100; // prevent from projection clipping
-            OUT.cube_uv = vertex_position; 
-            OUT.wpos = p; 
+            OUT.cube_uv = vertex_position;
+            OUT.wpos = p;
             gl_Position = (pvm * vec4(p, 1));
           }
 
-  fragment: | 
+  fragment: |
           #version 330 core
 
           in VertexData {
             vec3 cube_uv;
             vec3 wpos;
           } IN;
-          
+
           out vec4 OUT_color;
-          
+
           uniform vec3 SU_DIRECTIONAL_LIGHT_DIRECTION_0;
           uniform vec4 SU_DIRECTIONAL_LIGHT_COLOR_0;
 
