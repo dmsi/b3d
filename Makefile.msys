@@ -21,5 +21,4 @@ clean:
 	$(MAKE) -C build clean
 
 submodules:
-	$(MAKE) -C deps -f mingw
 	$(MAKE) -C deps -f make.gitmodules
