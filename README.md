@@ -43,7 +43,6 @@ make release    # builds b3d static lib and all examples in release mode
 make debug      # builds b3d static lib and all examples in debug mode
 make clean      # cleans current build
 make distclean  # removes all cmake generated files
-make submodules # updates and builds submodules
 ```
 
 ```bash
@@ -63,12 +62,11 @@ I.e. from shell:
 ### Dependencies
 
 -   glfw: http://www.glfw.org
--   glew: http://glew.sourceforge.net
+-   glad2: https://github.com/Dav1dde/glad
 -   yaml-cpp: https://github.com/jbeder/yaml-cpp
 -   GLM: https://glm.g-truc.net (_headers only_)
--   loguru: https://github.com/emilk/loguru (_headers only_)
 
-GLFW and GLEW are system-wide dependencies, the rest is included as sumbodules.
+> NOTE All the dependencies are built when `make release` or `make debug` is triggered.
 
 ### OSX / Linux
 
