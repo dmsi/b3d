@@ -3,6 +3,7 @@
 ![](screenshots/the_knight.png)
 
 Graphics rendering framework for C++
+PoC project
 
 ## License
 
@@ -15,20 +16,25 @@ MIT
 -   Unity3D-like component system
 -   Tags-based render targets
 -   Easy to use post-processing pipeline
--   pgm, ppm and pam as texture format, more to come...
--   dsm mesh format, more to come...
+-   Texture formats: pgm, ppm and pam
+-   Model formats: dsm mesh
 -   Single-threaded
 
 ## Screenshots
 
 ![](screenshots/water.png)
 ![](screenshots/terrain.png)
-![](screenshots/flatshading_terrain.png)
 ![](screenshots/reflections.png)
 ![](screenshots/multiple_color_attachments.png)
 ![](screenshots/bloom.png)
 ![](screenshots/dudv_distortion.png)
 ![](screenshots/omni_shadowmap.png)
+
+## Supported platforms
+
+-   Windows 10/11: CodeBlocks / MinGW
+-   MacOS: Unix Makefiles
+-   Linux: Unix Makefiles
 
 ## Build and run
 
@@ -45,11 +51,13 @@ make clean      # cleans current build
 make distclean  # removes all cmake generated files
 ```
 
+Make without argument will trigger release target:
+
 ```bash
 make
 ```
 
-Make without argument will trigger release target.
+> NOTE Parallel build is supported, specify `-jN` option for the make command. For example `make -j8`.
 
 As the result of the build process it produces static library b3d (i.e. libb3d.a) and bunch of example executables.  
 When running an executable the Asset directory shall be on the same level as executable working directory.  
@@ -67,22 +75,6 @@ I.e. from shell:
 -   GLM: https://glm.g-truc.net (_headers only_)
 
 > NOTE All the dependencies are built when `make release` or `make debug` is triggered.
-
-### OSX / Linux
-
-```bash
-ln -s Makefile.osx Makefile
-make submodules
-make
-```
-
-### Windows (MSYS)
-
-```bash
-cp Makefile.msys Makefile
-make submodules
-make
-```
 
 ## DSM mesh format
 
@@ -377,10 +369,9 @@ int main(int argc, char* argv[]) {
 
 -   Some examples have visual artifacts
 -   Some examples give shader error
--   "Quick and dirty" under the hood.
--   Euler ... Quaternion ... Matrices are inconsistent.
+-   "Quick and dirty" under the hood
+-   Euler ... Quaternion ... Matrices are inconsistent
 -   Unit tests (gtest)
--   Logging to stderr
+-   Logger not implemented
 -   No resource management
 -   No proper error handling
--   Other to come...
