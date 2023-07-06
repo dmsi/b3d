@@ -1,4 +1,4 @@
-# borsch.3d
+# b3d
 
 ![](screenshots/the_knight.png)
 
