@@ -76,15 +76,15 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.plane")
-    .Model("Assets/plane.dsm", "Assets/texture.mat")
+    .Model("Assets/plane.dsm", "Assets/Materials/texture.mat")
     .Done();
   
   Cfg<Actor>(scene, "actor.knight")
-    .Model("Assets/knight.dsm", "Assets/texture.mat")
+    .Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
     .Done();
   
   Cfg<Actor>(scene, "actor.skybox")
-    . Model("Assets/blender_cube.dsm", "Assets/skybox_cubemap.mat")
+    . Model("Assets/blender_cube.dsm", "Assets/Materials/skybox_cubemap.mat")
     . Done();
   
   Cfg<Actor>(scene, "actor.fps.meter")

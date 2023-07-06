@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 
   // Step 2. Prepare the actor. Using action in order to rotate.
   auto actor = scene.Add<Actor>("actor.knight");
-  actor->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/texture.mat"));
+  actor->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/Materials/texture.mat"));
   actor->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load("Assets/knight.dsm"));
   actor->AddAction<MyRotator>()->rotation_speed = glm::vec3(0, 45, 0);
   

@@ -29,8 +29,6 @@ int main(int argc, char* argv[]) {
   using glm::vec3;
   Scene scene;
 
-  LOG_SCOPE_F(INFO, "Helo blyat!");
-
   // Initialize application.
   AppContext::Init(1280, 720, "Atmosphere rendering [b3d]", Profile("3 3 core"));
   AppContext::Instance().display.ShowCursor(false);
@@ -52,13 +50,13 @@ int main(int argc, char* argv[]) {
     ->GetLayerAsTexture(0, Layer::kColor);
 
   Cfg<Actor>(scene, "actor.terrain")
-    . Material("Assets/terrain_atmosphere.mat")
+    . Material("Assets/Materials/terrain_atmosphere.mat")
     . Texture(0, atmosphere_tex)
     . Action<TerrainGenerator>()
     . Done();
 
   Cfg<Actor>(scene, "actor.skydome")
-    . Model("Assets/sphere.dsm", "Assets/skydome_perez.mat")
+    . Model("Assets/sphere.dsm", "Assets/Materials/skydome_perez.mat")
     . Done();
 
   Cfg<Light>(scene, "light.sun", Light::kDirectional)

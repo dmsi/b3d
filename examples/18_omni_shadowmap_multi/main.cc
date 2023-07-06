@@ -173,7 +173,7 @@ LightInfo CreatePointLight(Scene& scene, float startpos) {
 
   // Light source visual
   Cfg<Actor>(scene, "actor.lamp.dbg" + std::to_string(counter))
-    . Model("Assets/sphere.dsm", "Assets/lamp.mat")
+    . Model("Assets/sphere.dsm", "Assets/Materials/lamp.mat")
     . Scale(.5, .5, .5)
     . Parent(lamp)
     . Done();
@@ -229,7 +229,7 @@ int main(int argc, char* argv[]) {
   surf_postament.shininess = 10;
   surf_knight.specular   = Color(.6, .6, .6, 1); surf_knight.shininess = 150;
 
-  std::string shadow_technique = "Assets/shadow_caster_receiver_multi_pointlight.mat";
+  std::string shadow_technique = "Assets/Materials/shadow_caster_receiver_multi_pointlight.mat";
 
   Cfg<Actor>(scene, "actor.room")
     . Model("Assets/unity_cube.dsm", shadow_technique)

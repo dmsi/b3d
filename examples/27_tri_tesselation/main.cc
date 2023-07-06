@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
   // Spawn icosahedron and instruct MeshRenderer to use patch as
   // the draw primitive.
   Cfg<Actor>(scene, "actor.tess")
-    . Model("Assets/icosahedron.dsm", "Assets/tri_tesselation.mat")
+    . Model("Assets/icosahedron.dsm", "Assets/Materials/tri_tesselation.mat")
     . Action<TessShader>(1, 2)
     . Done()
     ->GetComponent<MeshRenderer>()

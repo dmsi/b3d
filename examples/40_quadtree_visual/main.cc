@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
  
   // Display to show the visualised quadtree 
   Cfg<Actor>(scene, "actor.screen.topview")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Texture(0, topview_tex)
     . Scale(.25, .25, 1)
     . Position(0.75, 0.75, 0)
@@ -270,14 +270,14 @@ int main(int argc, char* argv[]) {
 
   // Put knight to the world origin, just for orientation 
   Cfg<Actor>(scene, "actor.knight")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
     . Tags(0, T{"onscreen", "topview"})
     . Done();
 
   // TODO: Use batch + instancing instead
   auto pool = Cfg<ActorPool>(scene, "actor.terr.patch", 1400)
     . Mesh(Patch(true))
-    . Material("Assets/xzplane_border.mat")
+    . Material("Assets/Materials/xzplane_border.mat")
     . Tags(0, T{"onscreen", "topview"})
     . Action<QuadTreeVisualiser>(maincam, 5, 20)
     . Done();

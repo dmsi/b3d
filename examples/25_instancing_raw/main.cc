@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   Cfg<Actor>(scene, "actor.arrow")
-    . Model("Assets/arrow.dsm", "Assets/instance_basic.mat")
+    . Model("Assets/arrow.dsm", "Assets/Materials/instance_basic.mat")
     . EulerAngles(-90, 0, 0) // post pre-instance offset transform! 
     . Action<Instancing>()
     . Done();

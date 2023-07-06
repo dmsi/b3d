@@ -36,21 +36,21 @@ int main(int argc, char* argv[]) {
 
   // Step 2. Build the terrain.
   scene.Add<Actor>("actor.terrain")->AddAction<TerrainLoader>();
-  
+
   // Step 3. Set directional light (the sun).
   scene.Add<Light>("light.sun", Light::kDirectional)
     ->transform->SetLocalEulerAngles(-210, 0, 0);
-  
-  // Step 4. Set main camera. 
+
+  // Step 4. Set main camera.
   std::shared_ptr<Camera> camera = scene.Add<Camera>("camera.main");
   camera->SetPerspective(60, 1.0f*width/height, 1, 2000);
   camera->transform->SetLocalPosition(0, 70, 3);
   camera->transform->SetLocalEulerAngles(-30, 0, 0);
   camera->AddAction<FlyingCameraController>()->moving_speed = 30;
-  
-  // Step 5. Setup FPS meter. 
+
+  // Step 5. Setup FPS meter.
   scene.Add<Actor>("actor.fps_meter")->AddAction<FpsMeter>();
-  
+
   // Step 6. Setup RenderTarget and FrameBuffer.
   Cfg<RenderTarget>(scene, "rt.screen", 2000)
     . Tags("onscreen")

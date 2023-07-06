@@ -38,7 +38,7 @@
 struct TerrainLoader: public Action {
   using NoiseMap = Array2d<float>;
 
-  std::string material = "Assets/terrain_flatshading.mat";
+  std::string material = "Assets/Materials/terrain_flatshading.mat";
 
   TerrainLoader(std::shared_ptr<Transformation> transform) : Action(transform) {
     // TODO

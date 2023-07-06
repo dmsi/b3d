@@ -75,24 +75,24 @@ int main(int argc, char* argv[]) {
   SurfaceMaterial cyl_srf {Color(.4, .4, .8, 1), Color(.2), Color(.7), 100, false};
 
   Cfg<Actor>(scene, "actor.floor")
-    . Model("Assets/plane.dsm", "Assets/dirlight.mat")
+    . Model("Assets/plane.dsm", "Assets/Materials/dirlight.mat")
     . Action<DirLightShader>(flr_srf)
     . Done(); 
 
   Cfg<Actor>(scene, "actor.knight")
-    . Model("Assets/knight.dsm", "Assets/dirlight.mat")
+    . Model("Assets/knight.dsm", "Assets/Materials/dirlight.mat")
     . Action<Rotator>(vec3(0, 90, 0))
     . Action<DirLightShader>(knt_srf)
     . Done();
 
   Cfg<Actor>(scene, "actor.sphere")
-    . Model("Assets/sphere.dsm", "Assets/dirlight.mat")
+    . Model("Assets/sphere.dsm", "Assets/Materials/dirlight.mat")
     . Position(-2, .5, 0)
     . Action<DirLightShader>(shr_srf)
     . Done();
 
   Cfg<Actor>(scene, "actor.pillar")
-    . Model("Assets/cylinder.dsm", "Assets/dirlight.mat")
+    . Model("Assets/cylinder.dsm", "Assets/Materials/dirlight.mat")
     . Position(2, 1, 0)
     . EulerAngles(90, 0, 0)
     . Scale(.5, .5, 2)

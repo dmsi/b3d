@@ -178,7 +178,7 @@ int main(int argc, char* argv[]) {
  
   // cam1 origin visualiser
   Cfg<Actor>(scene, "cam1.origin.visual")
-    . Model("Assets/arrow.dsm", "Assets/arrow.mat")
+    . Model("Assets/arrow.dsm", "Assets/Materials/arrow.mat")
     . Tags(0, T{"maincam"})
     . EulerAngles(0, 180, 0)
     . Parent(cam1)
@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
 
   // cam1 frustum visualiser
   Cfg<Actor>(scene, "cam1.frustum.visual")
-    . Material("Assets/frustum.mat")
+    . Material("Assets/Materials/frustum.mat")
     . Tags(0, T{"maincam"})
     . Action<FrustumVisual>(cam1)
     . Done();
@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
  
   // cam2 origin visualiser
   Cfg<Actor>(scene, "cam2.origin.visual")
-    . Model("Assets/arrow.dsm", "Assets/arrow.mat")
+    . Model("Assets/arrow.dsm", "Assets/Materials/arrow.mat")
     . Tags(0, T{"maincam"})
     . EulerAngles(0, 180, 0)
     . Parent(cam2)
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
 
   // cam2 frustum visualiser
   Cfg<Actor>(scene, "cam2.frustum.visual")
-    . Material("Assets/frustum.mat")
+    . Material("Assets/Materials/frustum.mat")
     . Tags(0, T{"maincam"})
     . Action<FrustumVisual>(cam2)
     . Done();
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
   // Spawn objects which position is going to be frustum-tested
   /////////////////////////////////////////////////////////////////////////////
   auto obj_mesh = MeshLoader::Load("Assets/arrow.dsm");
-  auto obj_mtrl = MaterialLoader::Load("Assets/tint.mat");
+  auto obj_mtrl = MaterialLoader::Load("Assets/Materials/tint.mat");
   for (int i = 0; i < 60; ++i) {
     Cfg<Actor>(scene, "actor.obj" + std::to_string(i))
       . Model(obj_mesh, obj_mtrl)
@@ -235,21 +235,21 @@ int main(int argc, char* argv[]) {
   // Note: displays should have different copies of the same materials, because
   // they are going to use different textures.
   Cfg<Actor>(scene, "actor.screen.left")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Texture(0, maincam_tex)
     . Scale(0.49, 0.49, 1)
     . Position(-0.5, 0, 0)
     . Done();
   
   Cfg<Actor>(scene, "actor.screen.righttop")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Texture(0, cam1_tex)
     . Scale(0.49, 0.49, 1)
     . Position( 0.5,  0.5, 0)
     . Done();
   
   Cfg<Actor>(scene, "actor.screen.rightbottom")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Texture(0, cam2_tex)
     . Scale(0.49, 0.49, 1)
     . Position( 0.5, -0.5, 0)

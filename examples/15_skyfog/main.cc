@@ -54,11 +54,11 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.terrain")
-    . Model("Assets/terrain.dsm", "Assets/terrain_flatshading_fog_v2.mat")
+    . Model("Assets/terrain.dsm", "Assets/Materials/terrain_flatshading_fog_v2.mat")
     . Done();
 
   Cfg<Actor>(scene, "actor.skybox")
-    . Model("Assets/blender_cube.dsm", "Assets/skybox_fog_cubemap_v2.mat")
+    . Model("Assets/blender_cube.dsm", "Assets/Materials/skybox_fog_cubemap_v2.mat")
     . Done();
 
   // Show world coordinate axes in right top corner

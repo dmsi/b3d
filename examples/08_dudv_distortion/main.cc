@@ -90,24 +90,24 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.knight1")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
     . Position(-2, 0, 0)
     . EulerAngles(0, 30, 0)
     . Done();
   
   Cfg<Actor>(scene, "actor.knight2")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
     . Action<Rotator>(glm::vec3(0, 30, 0))
     . Done();
   
   Cfg<Actor>(scene, "actor.knight3")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
     . Position(2, 0, 0)
     . EulerAngles(0, -30, 0)
     . Done();
   
   Cfg<Actor>(scene, "actor.post-processing.display")
-    . Model("Assets/screen.dsm", "Assets/screen_dudv_distortion.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/screen_dudv_distortion.mat")
     . Texture(0, render_tex)
     . Action<SetPostProcessingUniform>()
     . Done();

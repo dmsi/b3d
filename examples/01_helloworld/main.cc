@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
   }; 
 
   auto triangle = scene.Add<Actor>("actor.triangle");
-  triangle->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/color.mat"));
+  triangle->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/Materials/color.mat"));
   triangle->AddComponent<MeshFilter>()->SetMesh(mesh);
   
   // Step 3. Define main camera. 

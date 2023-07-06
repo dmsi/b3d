@@ -65,17 +65,17 @@ void InitPostProcessingPipeline(Scene& scene) {
   
   // hightlight/downscale -> radial blur -> gauss blur -> combine
   int w = width / 8, h = height / 8;
-  PostprocessPipeline pp_highlight(scene, "Assets/Postprocess");
+  PostprocessPipeline pp_highlight(scene, "Assets/Materials/Postprocess");
   pp_highlight.Input(10, TexLs{scene_tex});
   pp_highlight.Stage("highlight",   w,  h,  "bloom_highlight.mat");
   pp_highlight.Done();
 
-  PostprocessPipeline pp_radblur(scene, "Assets/Postprocess");
+  PostprocessPipeline pp_radblur(scene, "Assets/Materials/Postprocess");
   pp_radblur.Input(20, TexLs{pp_highlight.Tex()});
   pp_radblur.Stage("radialblur", w, h, "radial_blur.mat");
   pp_radblur.Done();
   
-  PostprocessPipeline pp_gaussblur(scene, "Assets/Postprocess");
+  PostprocessPipeline pp_gaussblur(scene, "Assets/Materials/Postprocess");
   pp_gaussblur.Input(25, TexLs{pp_radblur.Tex()});
   pp_gaussblur
     . Stage("hblur",       w,  h,  "gauss_blur.mat")
@@ -92,7 +92,7 @@ void InitPostProcessingPipeline(Scene& scene) {
     . Action<BlurUniform> (w,  h,  vec2(0, 1));
   pp_gaussblur.Done();
   
-  PostprocessPipeline pp_final(scene, "Assets/Postprocess");
+  PostprocessPipeline pp_final(scene, "Assets/Materials/Postprocess");
   pp_final.Input(30, TexLs{scene_tex, pp_gaussblur.Tex()});
   pp_final.Stage("combine",   width,  height,  "bloom_combine.mat");
   pp_final.Done();
@@ -100,7 +100,7 @@ void InitPostProcessingPipeline(Scene& scene) {
   auto final_tex = pp_final.Tex(); 
 
   Cfg<Actor>(scene, "actor.display.final")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Tags(0, T{"pp-final"})
     . Texture(0, final_tex)
     . Done();
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
   InitPostProcessingPipeline(scene);
 
   Cfg<Actor>(scene, "actor.knight")
-    . Model("Assets/icosahedron.dsm", "Assets/tri_tesselation_v2.mat")
+    . Model("Assets/icosahedron.dsm", "Assets/Materials/tri_tesselation_v2.mat")
     . Action<Rotator>(0, 60, 60)
     . Done()
     ->GetComponent<MeshRenderer>()

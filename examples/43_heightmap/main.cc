@@ -206,13 +206,13 @@ int main(int argc, char* argv[]) {
 
   TerrainHmap::Params p {1000, 8000};
   auto t = Cfg<Actor>(scene, "actor.terrain")
-    . Material("Assets/terrain_heightmap.mat")
+    . Material("Assets/Materials/terrain_heightmap.mat")
     . Texture(0, atmosphere_tex)
     . Action<TerrainHmap>(p)
     . Done();
 
   Cfg<Actor>(scene, "actor.skydome")
-    . Model("Assets/sphere.dsm", "Assets/skydome_perez.mat")
+    . Model("Assets/sphere.dsm", "Assets/Materials/skydome_perez.mat")
     . Tags(0, T{"onscreen", "atmosphere"})
     . Done();
 

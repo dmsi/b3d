@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
   // Downsample then blur, then downsample and blur again
   // 5 passes in total, 11x11 gauss kernel.
   int w = width / 8, h = height / 8;
-  PostprocessPipeline pp_blur(scene, "Assets/Postprocess");
+  PostprocessPipeline pp_blur(scene, "Assets/Materials/Postprocess");
   pp_blur.Input(10, PostprocessPipeline::TexLs{scene_tex});
   pp_blur
     . Stage("downscale",   w,  h,  "bypass.mat");
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
   // Step 3. 4x4 Displays. Transformations in NDC, aspect ratio not changed. 
   /////////////////////////////////////////////////////////////////////////////
   Cfg<Actor>(scene, "actor.display.lt")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Tags(0, T{"pp-final"})
     . Texture(0, scene_tex)
     . Scale   ( .5,  .5,  1)
@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   Cfg<Actor>(scene, "actor.display.rt")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Tags(0, T{"pp-final"})
     . Texture(0, downs_tex)
     . Scale   ( .5,  .5,  1)
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   Cfg<Actor>(scene, "actor.display.lb")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Tags(0, T{"pp-final"})
     . Texture(0, pass1_tex)
     . Scale   ( .5,  .5,  1)
@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.display.rb")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("Assets/screen.dsm", "Assets/Materials/overlay_texture.mat")
     . Tags(0, T{"pp-final"})
     . Texture(0, final_tex)
     . Scale   ( .5,  .5,  1)
@@ -172,22 +172,22 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.skybox")
-    . Model("Assets/sphere.dsm", "Assets/skybox_cubemap.mat")
+    . Model("Assets/sphere.dsm", "Assets/Materials/skybox_cubemap.mat")
     . Done();
 
   Cfg<Actor>(scene, "actor.knight1")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
     . Position   (-2, 0, 0)
     . EulerAngles(0, 30, 0)
     . Done();
   
   Cfg<Actor>(scene, "actor.knight2")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
     . Action<Rotator>(vec3(0, 30, 0))
     . Done();
   
   Cfg<Actor>(scene, "actor.knight3")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("Assets/knight.dsm", "Assets/Materials/texture.mat")
     . Position   (2, 0, 0)
     . EulerAngles(0, -30, 0)
     . Done();
