@@ -1,7 +1,7 @@
 name: directional_light
 
 textures: 
-  0: Assets/tango-128.ppm
+  0: Assets/Textures/tango-128.ppm
 
 .VS: &VS |
     #version 330 core

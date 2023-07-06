@@ -62,19 +62,14 @@ struct TerrainHmap: public Action {
   }
 
   void Build() {
-    //hmap = Image::Load("Assets/sfo_8x8_hmap.pgm");
-    hmap = Image::Load("Assets/geo_20x20.pgm");
-    //hmap = Image::Load("img.ppm");
-    //hmap = Image::Load("Assets/mv_8x8.pgm");
+    hmap = Image::Load("Assets/HeightMaps/geo_20x20.pgm");
     std::function<float(int, int)>     sample_alt = [this](int x, int z) {
       int ix = x % hmap->GetWidth();
       int iz = z % hmap->GetHeight();
       float h = hmap->At(ix, iz).r;
       return params.max_altitude * Sigma(h);
-      //return h*params.max_altitude;
     };
     std::function<Color(int, int)> sample_col = [this, sample_alt](int x, int z) {
-      //return Color(1);
       float n = sample_alt(x, z) / params.max_altitude;
 
       float elevation = .15;
@@ -135,18 +130,6 @@ struct TerrainHmap: public Action {
           altitude = sample_altitude(x, z);
         }
 
-        /*
-        if (x < resolution - 3 && z < resolution - 3) {
-          altitude = 0;
-          int i = 0;
-          for (int xx=x; xx <= x+2; ++xx)
-            for (int zz=z; zz <= z+2; ++zz) {
-              altitude += sample_altitude(xx, zz);
-              i++;
-            }
-          altitude /= (float)i;
-        }*/
-
         mesh->vertices[vertex_index] = glm::vec3(xpos, altitude, zpos);
         mesh->uv[vertex_index] = glm::vec2(u, v);
 
@@ -155,8 +138,6 @@ struct TerrainHmap: public Action {
         }
 
         if (x < resolution - 1 && z < resolution - 1) {
-          //add_triangle(vertex_index, vertex_index + resolution + 1, vertex_index + resolution);
-          //add_triangle(vertex_index, vertex_index + 1, vertex_index + resolution + 1);
           add_triangle(vertex_index, vertex_index + resolution, vertex_index + resolution + 1);
           add_triangle(vertex_index, vertex_index + resolution + 1, vertex_index + 1);
         }
@@ -181,8 +162,6 @@ int main(int argc, char* argv[]) {
   using glm::vec3;
   using T = std::vector<std::string>;
   Scene scene;
-
-  LOG_SCOPE_F(INFO, "Helo blyat!");
 
   // Initialize application.
   AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("3 3 core"));

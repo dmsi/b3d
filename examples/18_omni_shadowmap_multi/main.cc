@@ -297,7 +297,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   auto knight_tex = std::make_shared<Texture2D>(
-      Image::Load("Assets/tango-128.ppm"));
+      Image::Load("Assets/Textures/tango-128.ppm"));
 
   Cfg<Actor>(scene, "actor.knight")
     . Model("Assets/knight.dsm", shadow_technique)

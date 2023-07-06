@@ -50,7 +50,7 @@ name: reflection_refraction.mat
 
 
 textures: 
-  0: Assets/tango-128.ppm
+  0: Assets/Textures/tango-128.ppm
 
 pass:
   name     : pass.normal 

@@ -1,7 +1,7 @@
 name: DuDv_distortion
 
 textures: 
-  0: Assets/tango-128.ppm
+  0: Assets/Textures/tango-128.ppm
   1: Assets/3rdParty/water/water_dudv_map.ppm
 
 pass:
