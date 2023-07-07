@@ -33,7 +33,7 @@
 //
 // Usage:
 //  using TexLs = std::vector<std::shared_ptr<Texture>>;
-//  PostprocessPipeline blur(scene, "Assets/Postprocessing");
+//  PostprocessPipeline blur(scene, "assets/postprocessing");
 //  blur.Input(10, TexLs{input_tex1, input_tex2, ... });
 //  blur
 //    . Stage("downscale", w/8, h/8, "bypass.mat");
@@ -136,7 +136,7 @@ class PostprocessPipeline {
       s.rcfg . Done();
       rt_ls_.emplace_back(s.rcfg.GetClient());
 
-      s.dcfg . Model("Assets/screen.dsm", s.mtrl)
+      s.dcfg . Model("assets/models/screen.dsm", s.mtrl)
              . Tags (0, TagLs{s.tag});
 
       // Display

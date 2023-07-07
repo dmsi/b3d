@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
   //
   int batch_size = 1000;
   auto batch = Cfg<StdBatch::Batch>(scene, "actor.batch", batch_size)
-    . Model("Assets/arrow.dsm", "Assets/instance_batch.mat")
+    . Model("assets/models/arrow.dsm", "assets/materials/instance_batch.mat")
     . Done();
 
   for (int i = 0; i < batch_size; ++i) {

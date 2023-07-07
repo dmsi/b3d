@@ -38,14 +38,14 @@
 struct TerrainLoader: public Action {
   using NoiseMap = Array2d<float>;
 
-  std::string material = "Assets/terrain_flatshading.mat";
+  std::string material = "assets/materials/terrain_flatshading.mat";
 
   TerrainLoader(std::shared_ptr<Transformation> transform) : Action(transform) {
     // TODO
     //  1. Use PAM/P7 instead of colormap.cm 
     //  2. Use PPM/P5 instead of heightmap_sampled.hm
-    noise_map_ = ReadNoiseMap("Assets/heightmap_sampled.hm");
-    color_map_ = ReadColorMap("Assets/colormap.cm");
+    noise_map_ = ReadNoiseMap("assets/heightmaps/heightmap_sampled.hm");
+    color_map_ = ReadColorMap("assets/heightmaps/colormap.cm");
   }
 
   void Start() override {

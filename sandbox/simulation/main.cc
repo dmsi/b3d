@@ -31,8 +31,6 @@ int main(int argc, char* argv[]) {
   using glm::vec3;
   Scene scene;
 
-  LOG_SCOPE_F(INFO, "Helo blyat!");
-
   // Initialize application.
   AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("3 3 core"));
   AppContext::Instance().display.ShowCursor(false);

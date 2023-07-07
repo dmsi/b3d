@@ -85,27 +85,27 @@ struct CoordinateAxes : public Action {
         ->GetLayerAsTexture(0, Layer::kColor);
   
       Cfg<Actor>(scene, "actor.dbg.axis.x" + ext_name)
-        . Model       ("Assets/arrow.dsm", "Assets/axis.mat")
+        . Model       ("assets/models/arrow.dsm", "assets/materials/axis.mat")
         . Tags        (0, T{tag})
         . EulerAngles (0, 90, 0)
         . Action<SetAxisUniform>(Color(1, 0, 0, 1))
         . Done();
 
       Cfg<Actor>(scene, "actor.dbg.axis.y" + ext_name)
-        . Model       ("Assets/arrow.dsm", "Assets/axis.mat")
+        . Model       ("assets/models/arrow.dsm", "assets/materials/axis.mat")
         . Tags        (0, T{tag})
         . EulerAngles (-90, 0, 0)
         . Action<SetAxisUniform>(Color(0, 1, 0, 1))
         . Done();
 
       Cfg<Actor>(scene, "actor.dbg.axis.z" + ext_name)
-        . Model       ("Assets/arrow.dsm", "Assets/axis.mat")
+        . Model       ("assets/models/arrow.dsm", "assets/materials/axis.mat")
         . Tags        (0, T{tag})
         . Action<SetAxisUniform>(Color(0, 0, 1, 1))
         . Done();
 
       Cfg<Actor>(scene, "actor.dbg.axis.origin" + ext_name)
-        . Model("Assets/sphere.dsm", "Assets/axis.mat")
+        . Model("assets/models/sphere.dsm", "assets/materials/axis.mat")
         . Tags        (0, T{tag})
         . Scale       (.3, .3, .3)
         . Action<SetAxisUniform>(Color(.8, .8, 0, 1))
@@ -113,7 +113,7 @@ struct CoordinateAxes : public Action {
 
       float sx = width_p / ratio, sy = width_p;
       Cfg<Actor>(scene, "actor.dbg.display." + ext_name)
-        . Model("Assets/screen.dsm", "Assets/overlay_axes.mat")
+        . Model("assets/models/screen.dsm", "assets/materials/overlay_axes.mat")
         . Tags    (0, T{"onscreen"})
         . Texture (0, xyz_tex)
         . Scale   (sx, sy, 0)

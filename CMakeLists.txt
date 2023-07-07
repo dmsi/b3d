@@ -7,7 +7,7 @@ project(B3D VERSION 0.1.0 LANGUAGES C CXX)
 #------------------------------------------------------------------------------
 option(B3D_PROFILING "Builds with profiling information" OFF)
 option(B3D_BUILD_EXAMPLES "Builds with examples" ON)
-option(B3D_BUILD_SANDBOX "Builds with sandbox examples (for internal use)" ON)
+option(B3D_BUILD_SANDBOX "Builds with sandbox examples (for internal use)" OFF)
 option(B3D_BUILD_GLFW "Builds GLFW along with B3D" ON)
 option(B3D_BUILD_TESTS "Builds B3D tests" OFF)
 

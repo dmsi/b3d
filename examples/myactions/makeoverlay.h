@@ -114,7 +114,7 @@ struct MakeOverlayArea : public Action {
 
     auto& actor = transform->GetActor();
     actor.AddComponent<MeshRenderer>()
-      ->SetMaterial( MaterialLoader::Load("Assets/Examples/screen_color_r2t.mat") );
+      ->SetMaterial( MaterialLoader::Load("assets/materials/core/screen_color_r2t.mat") );
     actor.AddComponent<MeshFilter>()
       ->SetMesh( MakeMesh(offset, scale) );
 

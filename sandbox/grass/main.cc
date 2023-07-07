@@ -44,10 +44,6 @@ int main(int argc, char* argv[]) {
   using glm::vec3;
   Scene scene;
 
-  loguru::g_stderr_verbosity = loguru::Verbosity_WARNING;
-  loguru::add_file("out.log", loguru::Truncate, loguru::Verbosity_MAX);
-  LOG_SCOPE_F(INFO, "Helo blyat!");
-
   // Initialize application.
   AppContext::Init(1280, 720, "Sandbox [b3d]", Profile("4 0 core"));
   AppContext::Instance().display.ShowCursor(false);
@@ -60,7 +56,7 @@ int main(int argc, char* argv[]) {
     . Clear(.8, .8, .8, 1)
     //. Clear(0, 0, 0, 1)
     . Done();
-  
+
   //Cfg<Actor>(scene, "actor.terrain")
   //  . Model("Assets/screen.dsm", "Assets/texture.mat")
   //  . EulerAngles(-90, 0, 0)
@@ -91,16 +87,16 @@ int main(int argc, char* argv[]) {
     . Position(0, 0, 2)
     . Action<FlyingCameraController>(1)
     . Done();
-  
+
   // Fps meter.
   Cfg<Actor>(scene, "actor.fps.meter")
     . Action<FpsMeter>()
     . Done();
-  
+
   Cfg<Actor>(scene, "actor.axes")
     . Action<CoordinateAxes>(scene, 0, cam, .15)
     . Done();
-  
+
   // Main loop. Press ESC to exit.
   do {
     AppContext::BeginFrame();

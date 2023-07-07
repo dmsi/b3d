@@ -3,8 +3,18 @@
 #------------------------------------------------------------------------------
 set(EXAMPLES
   aabb_transform
-  atmosphere
   frustum_check
+  grass
+  layoutmesh
+  objectpool
+  profiling_nonbatch
+  quad_tesselation
+  radialshafts
+  simulation
+  skyfog_bloom
+  sobel_normalmap
+  uniformstorage
+  water
 )
 
 add_definitions(

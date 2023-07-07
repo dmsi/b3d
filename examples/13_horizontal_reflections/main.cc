@@ -74,28 +74,28 @@ int main(int argc, char* argv[]) {
   
   // Step 3. Setup the reflections destination 
   auto mirror = Cfg<Actor>(scene, "actor.mirror")
-    . Model("Assets/plane.dsm", "Assets/reflection_dst.mat")
+    . Model("assets/models/plane.dsm", "assets/materials/reflection_dst.mat")
     . Position(0, water_level, 0)
     . Texture(0, reflection_texture)
     . Done();
 
   // Step 3.2. Setup the reflections sources
   Cfg<Actor>(scene, "actor.knight1")
-    . Model("Assets/knight.dsm", "Assets/reflection_src.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/reflection_src.mat")
     . Position(-2.5, .5,  -2.5)
     . Action<SetClipPlaneUniform>(mirror)
     . Action<Rotator>(vec3(0, -90, 0))
     . Done();
 
   Cfg<Actor>(scene, "actor.knight2")
-    . Model("Assets/knight.dsm", "Assets/reflection_src.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/reflection_src.mat")
     . Position(2.5,  .5,  2.5)
     . Action<SetClipPlaneUniform>(mirror)
     . Action<Rotator>(vec3(0, 90, 0))
     . Done();
 
   Cfg<Actor>(scene, "actor.cube")
-    . Model("Assets/unity_cube.dsm", "Assets/reflection_src.mat")
+    . Model("assets/models/unity_cube.dsm", "assets/materials/reflection_src.mat")
     . Position(0,  .5,  0)
     . Action<SetClipPlaneUniform>(mirror)
     . Action<Rotator>(vec3(90, 90, 90))

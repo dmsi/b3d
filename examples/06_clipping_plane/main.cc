@@ -112,12 +112,12 @@ int main(int argc, char* argv[]) {
   // For instance horizontal clipping plane at elevation = 2
   // (0, 1, 0, -2) => discards all below 2
   // We are using SineWaiver as an action to move the plane along its normal
-  auto plane0 = SpawnActor("Assets/plane.dsm", "Assets/clip_plane_dbg.mat");
+  auto plane0 = SpawnActor("assets/models/plane.dsm", "assets/materials/clip_plane_dbg.mat");
   plane0->transform->SetLocalScale(.5, 1, .5);
   plane0->AddAction<SineWaiver>();
 
   // Step 3.2. Configure vertical clipping plane.
-  auto plane1 = SpawnActor("Assets/plane.dsm", "Assets/clip_plane_dbg.mat");
+  auto plane1 = SpawnActor("assets/models/plane.dsm", "assets/materials/clip_plane_dbg.mat");
   plane1->transform->SetLocalEulerAngles(0, 0, 90);
   plane1->transform->SetLocalPosition(0.5, 0, 0);
   plane1->transform->SetLocalScale(.5, 1, .5);
@@ -126,19 +126,19 @@ int main(int argc, char* argv[]) {
   // Step 3.3. Setup our cubes which supposed to be clipped.
   // We are using SetClipPlaneUniform action here in order to pass plane
   // parameters to the vertex shader.
-  auto actor = SpawnActor("Assets/unity_cube.dsm", "Assets/clip_plane_demo.mat");
+  auto actor = SpawnActor("assets/models/unity_cube.dsm", "assets/materials/clip_plane_demo.mat");
   actor->transform->SetLocalPosition(-1.5, 0, 0);
   actor->AddAction<SetClipPlaneUniform>()->Setup(plane0, plane1);
   
-  actor = SpawnActor("Assets/unity_cube.dsm", "Assets/clip_plane_demo.mat");
+  actor = SpawnActor("assets/models/unity_cube.dsm", "assets/materials/clip_plane_demo.mat");
   actor->transform->SetLocalPosition(1.5, 0, 0);
   actor->AddAction<SetClipPlaneUniform>()->Setup(plane0, plane1);
   
-  actor = SpawnActor("Assets/unity_cube.dsm", "Assets/clip_plane_demo.mat");
+  actor = SpawnActor("assets/models/unity_cube.dsm", "assets/materials/clip_plane_demo.mat");
   actor->transform->SetLocalPosition(0, 0, 1.5);
   actor->AddAction<SetClipPlaneUniform>()->Setup(plane0, plane1);
   
-  actor = SpawnActor("Assets/knight.dsm", "Assets/clip_plane_demo.mat");
+  actor = SpawnActor("assets/models/knight.dsm", "assets/materials/clip_plane_demo.mat");
   actor->transform->SetLocalPosition(0, .5, 1.5);
   actor->transform->SetLocalScale(.5, .5, .5);
   actor->AddAction<Rotator>()->rotation_speed = glm::vec3(0, 60, 0);

@@ -70,25 +70,25 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.knight1")
-    . Model("Assets/knight.dsm", "Assets/texture_mca.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture_mca.mat")
     . Position   (-2,  0, 0)
     . EulerAngles( 0, 30, 0)
     . Done();
   
   Cfg<Actor>(scene, "actor.knight2")
-    . Model("Assets/knight.dsm", "Assets/texture_mca.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture_mca.mat")
     . Action<Rotator>(glm::vec3(0, 30, 0))
     . Done();
   
   Cfg<Actor>(scene, "actor.knight3")
-    . Model("Assets/knight.dsm", "Assets/texture_mca.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture_mca.mat")
     . Position   (2,   0, 0)
     . EulerAngles(0, -30, 0)
     . Done();
   
   // 4 displays - all positioning in NDC
   Cfg<Actor>(scene, "actor.display.lt")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture.mat")
     . Tags(0, T{"post-processing"})
     . Texture(0, tex0)
     . Scale   ( .5,  .5,  1)
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
     . Done();
   
   Cfg<Actor>(scene, "actor.display.rt")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture.mat")
     . Tags(0, T{"post-processing"})
     . Texture(0, tex1)
     . Scale   ( .5,  .5,  1)
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.display.lb")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture.mat")
     . Tags(0, T{"post-processing"})
     . Texture(0, tex2)
     . Scale   ( .5,  .5,  1)
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.display.rb")
-    . Model("Assets/screen.dsm", "Assets/overlay_texture.mat")
+    . Model("assets/models/screen.dsm", "assets/materials/overlay_texture.mat")
     . Tags(0, T{"post-processing"})
     . Texture(0, tex3)
     . Scale   ( .5,  .5,  1)

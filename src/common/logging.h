@@ -26,7 +26,7 @@
 #define _LOGGING_H_79F3FBC9_31A1_4373_98D5_D250A794F1D6_
 
 //#include <loguru.hpp>
-#define ABORT_F(...)
+#define ABORT_F(...) abort()
 #define LOG_F(...)
 #define LOG_SCOPE_F(...)
 #define INFO "INFO"

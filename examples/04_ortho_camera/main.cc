@@ -31,8 +31,8 @@ int main(int argc, char* argv[]) {
   
   // Helper function for spawning 3D actors
   auto SpawnActor = [&scene, &counter] () {
-    const std::string obj = "Assets/unity_cube.dsm";
-    const std::string mat = "Assets/texture.mat";
+    const std::string obj = "assets/models/unity_cube.dsm";
+    const std::string mat = "assets/materials/texture.mat";
     auto actor = scene.Add<Actor>("actor." + obj + "#" + std::to_string(counter));
     actor->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load(mat));
     actor->AddComponent<MeshFilter>()->SetMesh(MeshLoader::Load(obj));

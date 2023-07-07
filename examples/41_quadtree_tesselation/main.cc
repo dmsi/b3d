@@ -283,7 +283,7 @@ int main(int argc, char* argv[]) {
   // Quadtree terrain
   Cfg<Actor>(scene, "actor.terrain")
     . Mesh(Patch())
-    . Material("Assets/quadtree_tesselation.mat")
+    . Material("assets/materials/quadtree_tesselation.mat")
     . Action<QuadTreeRenderer>(maincam, 8, 4000, 1000)
     . Done();
 

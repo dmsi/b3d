@@ -67,10 +67,6 @@ int main(int argc, char* argv[]) {
   using glm::vec3;
   Scene scene;
 
-  bool use_lua = (argc > 1);
-
-  LOG_SCOPE_F(INFO, "Helo blyat!");
-
   // Initialize application.
   AppContext::Init(1280, 720, "Non batch profiling test [b3d]", Profile("3 3 core"));
   AppContext::Instance().display.ShowCursor(false);
@@ -92,11 +88,7 @@ int main(int argc, char* argv[]) {
     a . Model(mesh, mtrl)
       . Position(Math::Random(-40, 40), 0 , Math::Random(-40, 40))
       . Action<SomeHeavyActorOptimized>();
-    if (!use_lua) {
       a . Action<Rotator>(vec3(0, 10+Math::Random()*120, 0));
-    } else {
-      a . Action<LuaAction>(LuaAction::List{"scripts/rotator_y"});
-    }
 
     a.Done();
   }

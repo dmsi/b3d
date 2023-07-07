@@ -85,7 +85,7 @@ struct BoundsVisual : public Action {
     mf->SetMesh(m);
 
     auto mr = GetActor().AddComponent<MeshRenderer>();
-    mr->SetMaterial(MaterialLoader::Load("Assets/bound_lines.mat"));
+    mr->SetMaterial(MaterialLoader::Load("Assets/Materials/bound_lines.mat"));
 
     mr->primitive = MeshRenderer::kPtLines;
   }

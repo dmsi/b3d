@@ -1,4 +1,4 @@
-# borsch.3d
+# b3d (PoC project)
 
 ![](screenshots/the_knight.png)
 
@@ -15,26 +15,33 @@ MIT
 -   Unity3D-like component system
 -   Tags-based render targets
 -   Easy to use post-processing pipeline
--   pgm, ppm and pam as texture format, more to come...
--   dsm mesh format, more to come...
+-   Texture formats: pgm, ppm and pam
+-   Model formats: dsm mesh
 -   Single-threaded
 
 ## Screenshots
 
 ![](screenshots/water.png)
 ![](screenshots/terrain.png)
-![](screenshots/flatshading_terrain.png)
 ![](screenshots/reflections.png)
 ![](screenshots/multiple_color_attachments.png)
 ![](screenshots/bloom.png)
 ![](screenshots/dudv_distortion.png)
 ![](screenshots/omni_shadowmap.png)
 
+## Supported platforms
+
+-   Windows 10/11: CodeBlocks / MinGW
+-   MacOS: Unix Makefiles
+-   Linux: Unix Makefiles
+
 ## Build and run
 
 ```
 C++17 compiler support is required.
 ```
+
+### MacOS / Linux / Windows 10/11 MSYS2
 
 Build system is cmake with master makefile on top of it, following targets available:
 
@@ -43,14 +50,15 @@ make release    # builds b3d static lib and all examples in release mode
 make debug      # builds b3d static lib and all examples in debug mode
 make clean      # cleans current build
 make distclean  # removes all cmake generated files
-make submodules # updates and builds submodules
 ```
+
+Make without argument will trigger release target:
 
 ```bash
 make
 ```
 
-Make without argument will trigger release target.
+> NOTE Parallel build is supported, specify `-jN` option for the make command. For example `make -j8`.
 
 As the result of the build process it produces static library b3d (i.e. libb3d.a) and bunch of example executables.  
 When running an executable the Asset directory shall be on the same level as executable working directory.  
@@ -60,31 +68,61 @@ I.e. from shell:
 ./build/01_helloworld
 ```
 
-### Dependencies
+### Windows 10/11 CodeBlocks
+
+Requirements:
+
+-   Git
+-   Python 3
+-   MinGW
+-   CodeBlocks
+-   cmake
+
+Create build directory and use cmake to generate CodeBlocks project.
+For example in PowerShell, release target:
+
+```
+git.exe submodule init
+git.exe submodule update --recursive
+mkdir build
+cd build
+cmake.exe
+cmake.exe -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - MinGW Makefiles" ..
+```
+
+Then open `B3D.cbp` in CodeBlocks and build.
+
+The example executable are produced in `build/examples`. In order to run examples copy `assets` into `build/examples` then use explorer and run executables as usual.
+
+### Windows 10/11 PowerShell MinGW
+
+Requirements:
+
+-   Git
+-   Python 3
+-   MinGW
+-   cmake
+
+In PowerShell:
+
+```
+git.exe submodule init
+git.exe submodule update --recursive
+mkdir build
+cd build
+cmake.exe
+cmake.exe -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - MinGW Makefiles" ..
+mingw32-make.exe -j8
+```
+
+## Dependencies
 
 -   glfw: http://www.glfw.org
--   glew: http://glew.sourceforge.net
+-   glad2: https://github.com/Dav1dde/glad
 -   yaml-cpp: https://github.com/jbeder/yaml-cpp
 -   GLM: https://glm.g-truc.net (_headers only_)
--   loguru: https://github.com/emilk/loguru (_headers only_)
 
-GLFW and GLEW are system-wide dependencies, the rest is included as sumbodules.
-
-### OSX / Linux
-
-```bash
-ln -s Makefile.osx Makefile
-make submodules
-make
-```
-
-### Windows (MSYS)
-
-```bash
-cp Makefile.msys Makefile
-make submodules
-make
-```
+> NOTE All the dependencies are built when `make release` or `make debug` is triggered.
 
 ## DSM mesh format
 
@@ -127,7 +165,7 @@ Example - NDC plane covering the screen:
 
 ```c++
 #include "b3d.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 int main(int argc, char* argv[]) {
   Scene scene;
@@ -145,7 +183,7 @@ int main(int argc, char* argv[]) {
   };
 
   auto triangle = scene.Add<Actor>("actor.triangle");
-  triangle->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("Assets/color.mat"));
+  triangle->AddComponent<MeshRenderer>()->SetMaterial(MaterialLoader::Load("assets/materials/color.mat"));
   triangle->AddComponent<MeshFilter>()->SetMesh(mesh);
 
   // Step 3. Define main camera.
@@ -216,8 +254,7 @@ pass:
 
 ```c++
 #include "b3d.h"
-#include "myactions/all.h"
-#include "myhelpers/all.h"
+#include "my/all.h"
 
 // 1. Moves on 'Lemniscate of Gerono' trajectory in xz plane, keeps y
 // 2. Updates camera position which is used for rendering to cubemap
@@ -278,7 +315,7 @@ int main(int argc, char* argv[]) {
   auto cube_tex = Cfg<RenderTarget>(scene, "rt.cubeenv", 0)
     . Camera("camera.cubemap")
     . Tags("cubeenv")
-    . Type(FrameBuffer::kCubemap)
+    . Type(FrameBuffer::kCubeMap)
     . Resolution(w, h)
     . Layer(Layer::kColor, Layer::kReadWrite)
     . Layer(Layer::kDepth, Layer::kWrite)
@@ -301,12 +338,12 @@ int main(int argc, char* argv[]) {
     . Done();
 
   Cfg<Actor>(scene, "actor.skybox")
-    . Model("Assets/sphere.dsm", "Assets/skybox_cubemap.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/skybox_cubemap.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Done();
 
   Cfg<Actor>(scene, "actor.mirror")
-    . Model("Assets/sphere.dsm", "Assets/cubemap_rr_surface.mat")
+    . Model("assets/models/sphere.dsm", "assets/materials/cubemap_rr_surface.mat")
     . Tags(0, T{"onscreen"})  // onscreen tag comes from material, overwrite it just for consistancy
     . Texture(0, cube_tex)
     . Position(0, 1, 0)
@@ -315,34 +352,34 @@ int main(int argc, char* argv[]) {
     . Done();
 
   auto floor = Cfg<Actor>(scene, "actor.floor")
-    . Model("Assets/plane.dsm", "Assets/texture.mat")
+    . Model("assets/models/plane.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Action<Rotator>(vec3(0, 30, 0))
     . Done();
 
   auto k1 = Cfg<Actor>(scene, "actor.k1")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position(-4, 0, -4)
     . EulerAngles(0, 45, 0)
     . Done();
 
   auto k2 = Cfg<Actor>(scene, "actor.k2")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position( 4, 0, -4)
     . EulerAngles(0, -45, 0)
     . Done();
 
   auto k3 = Cfg<Actor>(scene, "actor.k3")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position( 4, 0,  4)
     . EulerAngles(0, -135, 0)
     . Done();
 
   auto k4 = Cfg<Actor>(scene, "actor.k4")
-    . Model("Assets/knight.dsm", "Assets/texture.mat")
+    . Model("assets/models/knight.dsm", "assets/materials/texture.mat")
     . Tags(0, T{"onscreen", "cubeenv"})
     . Position(-4, 0,  4)
     . EulerAngles(0, 135, 0)
@@ -379,10 +416,9 @@ int main(int argc, char* argv[]) {
 
 -   Some examples have visual artifacts
 -   Some examples give shader error
--   "Quick and dirty" under the hood.
--   Euler ... Quaternion ... Matrices are inconsistent.
+-   "Quick and dirty" under the hood
+-   Euler ... Quaternion ... Matrices are inconsistent
 -   Unit tests (gtest)
--   Logging to stderr
+-   Logger not implemented
 -   No resource management
 -   No proper error handling
--   Other to come...

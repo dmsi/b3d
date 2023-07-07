@@ -1,0 +1,71 @@
+name: reflection_refraction.mat 
+
+.VS: &VS | 
+  #version 330 core
+
+  // Input must follow the layout
+  layout(location = 0) in vec3 vertex_position;
+  layout(location = 1) in vec3 vertex_normal;
+  layout(location = 2) in vec4 vertex_color;
+  layout(location = 3) in vec2 vertex_uv;
+
+  out VertexData {
+    vec3 wpos;
+    vec3 wnormal;
+    vec2 uv;
+    vec3 vcol;
+  } OUT;
+
+  uniform mat4 SU_PVM_MATRIX;
+  uniform mat4 SU_M_MATRIX;
+  uniform vec4 clip_plane;
+
+  void main() {
+    gl_Position = SU_PVM_MATRIX * vec4(vertex_position, 1); 
+    OUT.uv = vertex_uv;
+    OUT.wpos = (SU_M_MATRIX * vec4(vertex_position, 1)).xyz;
+    OUT.wnormal = normalize((SU_M_MATRIX * vec4(vertex_normal.xyz, 0)).xyz);
+    OUT.vcol = vertex_color.rgb;
+    gl_ClipDistance[0] = dot(clip_plane, vec4(OUT.wpos, 1));
+  }
+
+.FS: &FS | 
+  #version 330 core
+
+  in VertexData {
+    vec3 wpos;
+    vec3 wnormal;
+    vec2 uv;
+    vec3 vcol;
+  } IN;
+
+  uniform sampler2D TEXTURE_0;
+
+  out vec4 color;
+  void main () {
+    vec2 uv = vec2(IN.uv.x, 1-IN.uv.y);
+    vec3 c0 = texture(TEXTURE_0, uv).rgb;
+    color = vec4(c0, 1);
+  }
+
+
+textures: 
+  0: assets/textures/tango-128.ppm
+
+pass:
+  name     : pass.normal 
+  tags     : [onscreen] 
+  cull     : ccw 
+  queue    : 100
+  vertex   : *VS 
+  fragment : *FS 
+
+pass:
+  name     : pass.reflection
+  tags     : [reflection]
+  cull     : ccw 
+  clipping : [0]
+  queue    : 100 
+  vertex   : *VS 
+  fragment : *FS 
+

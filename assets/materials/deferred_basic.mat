@@ -1,0 +1,79 @@
+name: deferred_basic
+
+textures: 
+  0: assets/textures/tango-128.ppm
+
+.VS: &VS_deferred |
+    #version 330 core
+
+    layout(location = 0) in vec3 IN_position;
+    layout(location = 1) in vec3 IN_normal;
+    layout(location = 3) in vec2 IN_uv;
+
+    out InOut {
+      vec3 wnormal;
+      vec3 wto_eye;
+      vec2 uv;
+    } OUT;
+
+    uniform mat4 SU_PVM_MATRIX;
+    uniform mat4 SU_M_MATRIX;
+    uniform mat4 SU_V_MATRIX;
+
+    void main() {
+      OUT.wnormal = (SU_M_MATRIX * vec4(IN_normal, 0)).xyz;
+      vec3 wpos = (SU_M_MATRIX * vec4(IN_position, 1)).xyz;
+      OUT.wto_eye = (inverse(SU_V_MATRIX) * vec4(0, 0, 0, 1)).xyz - wpos;
+      OUT.uv = vec2(IN_uv.x, 1-IN_uv.y);
+      gl_Position = SU_PVM_MATRIX * vec4(IN_position, 1); 
+    }
+
+.FS: &FS_deferred |
+    #version 330 core
+
+    in InOut {
+      vec3 wnormal;
+      vec3 wto_eye;
+      vec2 uv;
+    } IN;
+    
+    layout(location = 0) out vec4 OUT_color0;
+    layout(location = 1) out vec4 OUT_color1;
+    layout(location = 2) out vec4 OUT_color2;
+    layout(location = 3) out vec4 OUT_color3;
+
+    struct Material {
+      vec4  diffuse;
+      vec4  ambient;
+      vec4  specular;
+      float shininess;
+      bool  has_albedo;
+    };
+
+    uniform sampler2D TEXTURE_0; 
+    uniform Material  surface;
+    uniform vec3      SU_DIRECTIONAL_LIGHT_DIRECTION_0;
+    uniform vec4      SU_DIRECTIONAL_LIGHT_COLOR_0;
+
+    void main () {
+      vec4 albedo = vec4(1);
+      if (surface.has_albedo) {
+        albedo = texture(TEXTURE_0, IN.uv);
+      }
+
+      vec3 normal = normalize(IN.wnormal);
+      vec3 to_eye = normalize(IN.wto_eye);
+
+      OUT_color0 = albedo * surface.diffuse;
+      OUT_color1 = vec4(normal*.5 + .5, 1);
+      OUT_color2 = vec4(surface.specular.rgb, surface.shininess/100);
+      OUT_color3 = vec4(to_eye*.5 + .5, 1);
+    }
+
+pass:
+  name     : pass.deferred
+  queue    : 100
+  tags     : [deferred]
+  cull     : ccw 
+  vertex   : *VS_deferred 
+  fragment : *FS_deferred 
