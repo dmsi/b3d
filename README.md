@@ -92,7 +92,7 @@ cmake.exe -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - MinGW Makefiles" ..
 
 Then open `B3D.cbp` in CodeBlocks and build.
 
-The example executable are produced in `build/examples. In order to run examples copy `assets`into`build/examples` then use explorer and run executables as usual.
+The example executable are produced in `build/examples`. In order to run examples copy `assets` into `build/examples` then use explorer and run executables as usual.
 
 ### Windows 10/11 PowerShell MinGW
 
