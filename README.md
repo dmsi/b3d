@@ -41,6 +41,8 @@ MIT
 C++17 compiler support is required.
 ```
 
+### MacOS / Linux / Windows 10/11 MSYS2
+
 Build system is cmake with master makefile on top of it, following targets available:
 
 ```bash
@@ -66,7 +68,54 @@ I.e. from shell:
 ./build/01_helloworld
 ```
 
-### Dependencies
+### Windows 10/11 CodeBlocks
+
+Requirements:
+
+-   Git
+-   Python 3
+-   MinGW
+-   CodeBlocks
+-   cmake
+
+Create build directory and use cmake to generate CodeBlocks project.
+For example in PowerShell, release target:
+
+```
+git.exe submodule init
+git.exe submodule update --recursive
+mkdir build
+cd build
+cmake.exe
+cmake.exe -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - MinGW Makefiles" ..
+```
+
+Then open `B3D.cbp` in CodeBlocks and build.
+
+The example executable are produced in `build/examples. In order to run examples copy `assets`into`build/examples` then use explorer and run executables as usual.
+
+### Windows 10/11 PowerShell MinGW
+
+Requirements:
+
+-   Git
+-   Python 3
+-   MinGW
+-   cmake
+
+In PowerShell:
+
+```
+git.exe submodule init
+git.exe submodule update --recursive
+mkdir build
+cd build
+cmake.exe
+cmake.exe -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - MinGW Makefiles" ..
+mingw32-make.exe -j8
+```
+
+## Dependencies
 
 -   glfw: http://www.glfw.org
 -   glad2: https://github.com/Dav1dde/glad
